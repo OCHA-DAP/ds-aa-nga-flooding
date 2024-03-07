@@ -44,8 +44,7 @@ def load_raw_nga_floodscan():
     return da
 
 
-def calculate_adm2_exposures():
-    adm2 = codab.load_codab(admin_level=2)
+def calculate_exposure_raster():
     pop = worldpop.load_raw_worldpop()
     da = load_raw_nga_floodscan()
     da_year = da.groupby("time.year").max()
@@ -57,8 +56,14 @@ def calculate_adm2_exposures():
         da_year_mask_resample <= 1
     )
     exposure = da_year_mask_resample * pop.isel(band=0)
-    dfs = []
+    exposure.to_netcdf(PROC_FS_DIR / "nga_flood_exposure.nc")
 
+
+def calculate_adm2_exposures():
+    adm2 = codab.load_codab(admin_level=2)
+    exposure = load_raster_flood_exposures()
+
+    dfs = []
     for _, row in adm2.iterrows():
         da_clip = exposure.rio.clip([row.geometry])
         dff = (
@@ -73,3 +78,13 @@ def calculate_adm2_exposures():
     df = pd.concat(dfs, ignore_index=True)
     filename = "nga_adm2_count_flood_exposed.csv"
     df.to_csv(PROC_FS_DIR / filename, index=False)
+
+
+def load_raster_flood_exposures():
+    filename = "nga_flood_exposure.nc"
+    return xr.open_dataarray(PROC_FS_DIR / filename)
+
+
+def load_adm2_flood_exposures():
+    filename = "nga_adm2_count_flood_exposed.csv"
+    return pd.read_csv(PROC_FS_DIR / filename)
