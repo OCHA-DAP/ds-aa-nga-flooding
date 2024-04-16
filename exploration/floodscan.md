@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 from adjustText import adjust_text
 
 from src.datasources import floodscan, codab, worldpop
-from src.constants import AOI_ADM1_PCODES
+from src.constants import *
 ```
 
 ```python
@@ -135,7 +135,7 @@ plt.subplots_adjust(wspace=0)
 cols = [
     # "ADM1_PCODE",
     "ADM1_EN",
-    # "ADM2_PCODE",
+    "ADM2_PCODE",
     "ADM2_EN",
     # "total_pop",
     "total_exposed",

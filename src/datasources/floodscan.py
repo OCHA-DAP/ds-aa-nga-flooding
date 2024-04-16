@@ -2,7 +2,9 @@ import os
 from pathlib import Path
 
 import pandas as pd
+import rioxarray as rxr
 import xarray as xr
+from tqdm import tqdm
 
 from src.datasources import codab, worldpop
 
@@ -88,3 +90,31 @@ def load_raster_flood_exposures():
 def load_adm2_flood_exposures():
     filename = "nga_adm2_count_flood_exposed.csv"
     return pd.read_csv(PROC_FS_DIR / filename)
+
+
+def calculate_adm2_daily_rasterstats():
+    fs = load_raw_nga_floodscan()
+    fs = fs.rio.write_crs(4326)
+    adm = codab.load_codab(admin_level=2, aoi_only=True)
+    dfs = []
+    for pcode, group in tqdm(adm.groupby("ADM2_PCODE")):
+        try:
+            da_clip = fs.rio.clip(group.geometry)
+        except rxr.exceptions.NoDataInBounds as e:
+            print(f"{e} for {pcode}")
+            continue
+        df_in = (
+            da_clip.mean(dim=["lat", "lon"])
+            .to_dataframe()["SFED_AREA"]
+            .reset_index()
+        )
+        df_in["ADM2_PCODE"] = pcode
+        dfs.append(df_in)
+    fs_df = pd.concat(dfs, ignore_index=True)
+    filename = "nga_adm2_daily_mean_sfed.csv"
+    fs_df.to_csv(PROC_FS_DIR / filename, index=False)
+
+
+def load_adm2_daily_rasterstats():
+    filename = "nga_adm2_daily_mean_sfed.csv"
+    return pd.read_csv(PROC_FS_DIR / filename, parse_dates=["time"])
