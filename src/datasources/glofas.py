@@ -1,0 +1,39 @@
+import os
+from pathlib import Path
+
+import pandas as pd
+import xarray as xr
+from tqdm import tqdm
+
+from src.constants import WUROBOKI_LAT, WUROBOKI_LON
+
+DATA_DIR = Path(os.getenv("AA_DATA_DIR"))
+GF_RAW_DIR = (
+    DATA_DIR / "public" / "raw" / "nga" / "glofas" / "cems-glofas-historical"
+)
+GF_TEST_DIR = DATA_DIR / "public" / "raw" / "nga" / "glofas" / "test"
+GF_PROC_DIR = DATA_DIR / "public" / "processed" / "nga" / "glofas"
+
+
+def process_reanalysis():
+    files = [x for x in os.listdir(GF_RAW_DIR) if x.endswith(".grib")]
+    dfs = []
+    for file in tqdm(files):
+        da_in = xr.load_dataset(GF_RAW_DIR / file, engine="cfgrib")["dis24"]
+        df_in = (
+            da_in.sel(
+                latitude=WUROBOKI_LAT, longitude=WUROBOKI_LON, method="nearest"
+            )
+            .to_dataframe()
+            .reset_index()[["time", "dis24"]]
+        )
+        dfs.append(df_in)
+    df = pd.concat(dfs, ignore_index=True)
+    df = df.sort_values("time")
+    filename = "wuroboki_glofas_reanalysis.csv"
+    df.to_csv(GF_PROC_DIR / filename, index=False)
+
+
+def load_reanalysis():
+    filename = "wuroboki_glofas_reanalysis.csv"
+    return pd.read_csv(GF_PROC_DIR / filename, parse_dates=["time"])
