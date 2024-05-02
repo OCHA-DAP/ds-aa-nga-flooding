@@ -29,8 +29,19 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from src.datasources import glofas
+from src.datasources import glofas, floodscan
 from src.constants import *
+```
+
+```python
+BENUE_ADM2_PCODES = ["NG002016", "NG002009", "NG002021", "NG002005"]
+fs = floodscan.load_adm2_daily_rasterstats()
+fs = fs[fs["ADM2_PCODE"].isin(BENUE_ADM2_PCODES)]
+```
+
+```python
+fs_mean = fs.groupby(fs["time"].dt.year)["SFED_AREA"].mean().reset_index()
+fs_mean = fs_mean.rename(columns={"time": "year"})
 ```
 
 ```python
@@ -79,7 +90,31 @@ rea_peaks["cerf"] = rea_peaks["year"].isin(CERF_YEARS)
 ```
 
 ```python
-compare = rea_peaks.merge(ref_peaks, on="year", suffixes=["_a", "_f"])
+rea_peaks["rank"] = rea_peaks["dis24"].rank(ascending=False)
+rea_peaks["rp"] = len(rea_peaks) / rea_peaks["rank"]
+rea_peaks.sort_values("rank")
+```
+
+```python
+fig, ax = plt.subplots(dpi=300)
+rea_peaks.sort_values("rp").plot(x="rp", y="dis24", ax=ax, legend=False)
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.set_xlim(1, 10)
+ax.set_ylim(top=3500)
+ax.set_xlabel("Return period (years)")
+ax.set_ylabel("Maximum yearly flowrate (m^3 / s)")
+ax.set_title("Benue river at Wuroboki\nGloFAS reanalysis (2003-2022)")
+```
+
+```python
+compare
+```
+
+```python
+compare = rea_peaks.merge(ref_peaks, on="year", suffixes=["_a", "_f"]).merge(
+    fs_mean
+)
 ```
 
 ```python
@@ -109,6 +144,112 @@ metrics
 ```
 
 ```python
+rp_a_3 = 2600
+rp_a_5 = 3000
+rp_f = 2911.802066666667
+compare_lt = compare[compare["lt_max"] == 7]
+fig, ax = plt.subplots(dpi=300)
+compare_lt.plot(
+    y="dis24_a",
+    x="dis24_f",
+    ax=ax,
+    marker=".",
+    color="k",
+    linestyle="",
+    legend=False,
+)
+
+ax.axvline(x=rp_f, color="dodgerblue", linestyle="-", linewidth=0.3)
+ax.axvspan(
+    rp_f,
+    6000,
+    ymin=0,
+    ymax=1,
+    color="dodgerblue",
+    alpha=0.1,
+)
+
+ax.axhline(y=rp_a_3, color="red", linestyle="-", linewidth=0.3)
+ax.axhspan(
+    rp_a_3,
+    6000,
+    color="red",
+    alpha=0.05,
+    linestyle="None",
+)
+
+ax.axhline(y=rp_a_5, color="red", linestyle="-", linewidth=0.3)
+ax.axhspan(
+    rp_a_5,
+    6000,
+    color="red",
+    alpha=0.05,
+    linestyle="None",
+)
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.set_ylabel("Reanalysis")
+ax.set_xlabel("Forecast (up to 7 day leadtime)")
+ax.set_ylim(top=5500)
+ax.set_xlim(right=5600)
+ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
+```
+
+```python
+rp_a_3 = 2600
+rp_a_5 = 3000
+rp_f = 2911.802066666667
+compare_lt = compare[compare["lt_max"] == 7]
+fig, ax = plt.subplots(dpi=300)
+compare_lt.plot(
+    y="SFED_AREA",
+    x="dis24_f",
+    ax=ax,
+    marker=".",
+    color="k",
+    linestyle="",
+    legend=False,
+)
+
+# ax.axvline(x=rp_f, color="dodgerblue", linestyle="-", linewidth=0.3)
+# ax.axvspan(
+#     rp_f,
+#     6000,
+#     ymin=0,
+#     ymax=1,
+#     color="dodgerblue",
+#     alpha=0.1,
+# )
+
+# ax.axhline(y=rp_a_3, color="red", linestyle="-", linewidth=0.3)
+# ax.axhspan(
+#     rp_a_3,
+#     6000,
+#     color="red",
+#     alpha=0.05,
+#     linestyle="None",
+# )
+
+# ax.axhline(y=rp_a_5, color="red", linestyle="-", linewidth=0.3)
+# ax.axhspan(
+#     rp_a_5,
+#     6000,
+#     color="red",
+#     alpha=0.05,
+#     linestyle="None",
+# )
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.set_ylabel("Reanalysis")
+ax.set_xlabel("Forecast (up to 7 day leadtime)")
+# ax.set_ylim(top=5500)
+# ax.set_xlim(right=5600)
+ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
+```
+
+```python
 compare[compare["lt_max"] == 1]
 ```
 
@@ -120,4 +261,8 @@ rea[rea["time"].dt.year == 2014].plot(x="time", y="dis24")
 ref[(ref["time"].dt.year == 2014) & (ref["leadtime"] == 1)].plot(
     x="time", y="dis24"
 )
+```
+
+```python
+
 ```

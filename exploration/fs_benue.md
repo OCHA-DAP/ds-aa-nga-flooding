@@ -60,14 +60,30 @@ df_max_adm2 = df.groupby("ADM2_PCODE")["SFED_AREA"].max().reset_index()
 ```
 
 ```python
-df_max_adm2.sort_values("SFED_AREA", ascending=False)
+BENUE_ADM2_PCODES = ["NG002016", "NG002009", "NG002021", "NG002005"]
 ```
 
 ```python
-fig, ax = plt.subplots(dpi=300)
-adm2_a.merge(df_max_adm2).plot(column="SFED_AREA", cmap="Blues", ax=ax)
-adm2_a.boundary.plot(linewidth=0.1, color="k", ax=ax)
-benue.plot(ax=ax, color="red", linewidth=1)
+adm2_a[adm2_a["ADM2_PCODE"].isin(BENUE_ADM2_PCODES)]
+```
 
+```python
+fig, ax = plt.subplots(dpi=300, figsize=(6, 6))
+adm2_a.merge(df_max_adm2).plot(column="SFED_AREA", cmap="Purples", ax=ax)
+adm2_a.boundary.plot(linewidth=0.1, color="k", ax=ax)
+adm2_a[adm2_a["ADM2_PCODE"].isin(BENUE_ADM2_PCODES)].boundary.plot(
+    linewidth=1,
+    color="red",
+    ax=ax,
+)
+benue.plot(ax=ax, color="dodgerblue", linewidth=1)
+ax.plot([12.767], [9.383], marker=".", color="blue", markersize=10)
+ax.set_title(
+    "Average flood extent by LGA\nBenue river with Wuroboki station in blue"
+)
 ax.axis("off")
+```
+
+```python
+
 ```
