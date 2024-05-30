@@ -82,6 +82,10 @@ ref_peaks["year"] = ref_peaks["time"].dt.year
 ```
 
 ```python
+ref_peaks
+```
+
+```python
 rea_peaks = rea.loc[rea.groupby(rea["time"].dt.year)["dis24"].idxmax()]
 q = rea_peaks["dis24"].quantile(1 - 1 / rp_a)
 rea_peaks["trigger"] = rea_peaks["dis24"] > q
@@ -92,23 +96,57 @@ rea_peaks["cerf"] = rea_peaks["year"].isin(CERF_YEARS)
 ```python
 rea_peaks["rank"] = rea_peaks["dis24"].rank(ascending=False)
 rea_peaks["rp"] = len(rea_peaks) / rea_peaks["rank"]
-rea_peaks.sort_values("rank")
+rea_peaks = rea_peaks.sort_values("rank", ascending=False)
+```
+
+```python
+rea_peaks
 ```
 
 ```python
 fig, ax = plt.subplots(dpi=300)
-rea_peaks.sort_values("rp").plot(x="rp", y="dis24", ax=ax, legend=False)
+rea_peaks.plot(x="rp", y="dis24", ax=ax, legend=False, color="dodgerblue")
+
+for year in rea_peaks.iloc[-8:]["year"]:
+    x, y = rea_peaks.set_index("year").loc[year][["rp", "dis24"]]
+    ax.plot(
+        x,
+        y,
+        marker=".",
+        color="grey",
+    )
+    ax.annotate(year, (x, y), ha="right", color="grey", fontsize=8)
+
+annotation_x = 13
+
+for rp in [1.5, 2, 3, 4]:
+    y = np.interp(
+        rp,
+        rea_peaks["rp"],
+        rea_peaks["dis24"],
+    )
+    ax.plot(
+        [rp, annotation_x],
+        [y, y],
+        color="crimson",
+        linestyle="--",
+        linewidth=1,
+    )
+    ax.annotate(
+        f"{rp}-year RP level = {y:,.0f} m^3 / s",
+        (annotation_x, y),
+        fontsize=8,
+        color="crimson",
+        va="center",
+    )
+
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
-ax.set_xlim(1, 10)
-ax.set_ylim(top=3500)
+ax.set_xlim(left=1)
+# ax.set_ylim(top=3500)
 ax.set_xlabel("Return period (years)")
 ax.set_ylabel("Maximum yearly flowrate (m^3 / s)")
 ax.set_title("Benue river at Wuroboki\nGloFAS reanalysis (2003-2022)")
-```
-
-```python
-compare
 ```
 
 ```python
@@ -194,6 +232,10 @@ ax.set_xlabel("Forecast (up to 7 day leadtime)")
 ax.set_ylim(top=5500)
 ax.set_xlim(right=5600)
 ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
+```
+
+```python
+compare_lt[compare["trigger_f"]]
 ```
 
 ```python

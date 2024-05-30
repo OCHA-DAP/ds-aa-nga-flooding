@@ -1,7 +1,7 @@
 ---
 jupyter:
   jupytext:
-    formats: ipynb,md
+    formats: md,ipynb
     text_representation:
       extension: .md
       format_name: markdown
@@ -38,7 +38,7 @@ from src.constants import *
 ```
 
 ```python
-floodscan.calculate_adm2_daily_rasterstats()
+# floodscan.calculate_adm2_daily_rasterstats()
 ```
 
 ```python
@@ -218,26 +218,9 @@ ax.axis("off")
 ```
 
 ```python
-metrics.sort_values("PPV")
-```
-
-```python
-for ch_roll, group in corr.groupby("ch_roll"):
-    fig, ax = plt.subplots(figsize=(8, 8))
-    adm.merge(group, on="ADM2_PCODE").plot(
-        column="corr",
-        vmin=0,
-        vmax=1,
-        legend=True,
-        cmap="Purples",
-        edgecolor="k",
-        linewidth=0.2,
-        ax=ax,
-    )
-    ax.axis("off")
-    ax.set_title(
-        f"Correlation of flood extent with {ch_roll}-day cumulative rainfall"
-    )
+for pcode in ALL_PRIORITY_ADM2_PCODES:
+    print(adm.groupby("ADM2_PCODE").first().loc[pcode, "ADM2_EN"])
+    print(metrics_year.set_index("ADM2_PCODE").loc[pcode])
 ```
 
 ```python
@@ -280,21 +263,39 @@ ax.axis("off")
 ```
 
 ```python
+for ch_roll, group in corr.groupby("ch_roll"):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    adm.merge(group, on="ADM2_PCODE").plot(
+        column="corr",
+        vmin=0,
+        vmax=1,
+        legend=True,
+        cmap="Purples",
+        edgecolor="k",
+        linewidth=0.2,
+        ax=ax,
+    )
+    ax.axis("off")
+    ax.set_title(
+        f"Correlation of flood extent with {ch_roll}-day cumulative rainfall"
+    )
+```
+
+```python
 
 ```
 
 ```python
-pcode = DIKWA
+pcode = NGALA
 admin2_name = adm[adm["ADM2_PCODE"] == pcode]["ADM2_EN"].iloc[0]
 roll_fs = 7
 roll_ch = 15
 fs_max = compare[compare["ADM2_PCODE"] == pcode][f"fs_roll{roll_fs}"].max()
 ch_max = compare[compare["ADM2_PCODE"] == pcode][f"ch_roll{roll_ch}"].max()
-ch_rp = 3
-fs_rp = 3
 
 
-for year in compare["time"].dt.year.unique():
+# for year in compare["time"].dt.year.unique():
+for year in [2022]:
     compare_f = compare[
         (compare["time"].dt.year == year) & (compare["ADM2_PCODE"] == pcode)
     ]
@@ -350,4 +351,8 @@ for year in compare["time"].dt.year.unique():
         ax.spines["right"].set_visible(False)
 
     axs[0].set_title(f"LGA: {admin2_name}, Year: {year}")
+```
+
+```python
+compare_f
 ```
