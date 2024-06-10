@@ -26,6 +26,7 @@ import os
 
 import xarray as xr
 import pandas as pd
+import matplotlib.pyplot as plt
 from tqdm.notebook import tqdm
 
 from src.utils import blob
@@ -46,8 +47,30 @@ ref["time"].dt.year.nunique()
 ```
 
 ```python
-rp_f = 2
-rp_a = 2
+rp_a = 3
+
+rea = glofas.load_reanalysis()
+rea = rea[rea["time"].dt.year.isin(ref["time"].dt.year.unique())]
+rea_peaks = rea.loc[rea.groupby(rea["time"].dt.year)["dis24"].idxmax()]
+q = rea_peaks["dis24"].quantile(1 - 1 / rp_a)
+rea_peaks["trigger"] = rea_peaks["dis24"] > q
+rea_peaks["year"] = rea_peaks["time"].dt.year
+rea_peaks["cerf"] = rea_peaks["year"].isin(CERF_YEARS)
+rea_peaks["rank"] = rea_peaks["dis24"].rank(ascending=False)
+rea_peaks["rp"] = len(rea_peaks) / rea_peaks["rank"]
+rea_peaks = rea_peaks.sort_values("rank", ascending=False)
+```
+
+```python
+rea_peaks
+```
+
+```python
+ref
+```
+
+```python
+rp_f = 3
 lt_min = 7
 
 val_col = "2yr_thresh"
@@ -71,33 +94,6 @@ ref_peaks["year"] = ref_peaks["time"].dt.year
 ```
 
 ```python
-[round(x / 51 * 100) for x in range(1, 52)]
-```
-
-```python
-for lt, group in ref_peaks.groupby("lt_max"):
-    print(lt)
-    print(group["leadtime"].mean())
-```
-
-```python
-rea = glofas.load_reanalysis()
-rea = rea[rea["time"].dt.year.isin(ref["time"].dt.year.unique())]
-rea_peaks = rea.loc[rea.groupby(rea["time"].dt.year)["dis24"].idxmax()]
-q = rea_peaks["dis24"].quantile(1 - 1 / rp_a)
-rea_peaks["trigger"] = rea_peaks["dis24"] > q
-rea_peaks["year"] = rea_peaks["time"].dt.year
-rea_peaks["cerf"] = rea_peaks["year"].isin(CERF_YEARS)
-rea_peaks["rank"] = rea_peaks["dis24"].rank(ascending=False)
-rea_peaks["rp"] = len(rea_peaks) / rea_peaks["rank"]
-rea_peaks = rea_peaks.sort_values("rank", ascending=False)
-```
-
-```python
-rea_peaks
-```
-
-```python
 compare = rea_peaks.merge(ref_peaks, on="year", suffixes=["_a", "_f"])
 for indicator in ["cerf", "trigger_a"]:
     compare[f"TP_{indicator}"] = compare[indicator] & compare["trigger_f"]
@@ -106,10 +102,6 @@ for indicator in ["cerf", "trigger_a"]:
     compare[f"FN_{indicator}"] = compare[indicator] & ~compare["trigger_f"]
 
 compare = compare.sort_values(["year", "lt_max"])
-```
-
-```python
-compare[compare["trigger_f"]].set_index("lt_max").loc[14]
 ```
 
 ```python
@@ -128,8 +120,107 @@ metrics
 ```
 
 ```python
+compare[compare["trigger_f"]].set_index("lt_max").loc[14]
+```
+
+```python
+# 3yr
+rp_a_3 = 2600
+# 2yr
+# rp_a_3 = 2364.7734
+rp_a_5 = 3109
+rp_f = 0.8 * 100
+compare_lt = compare[compare["lt_max"] == 14]
+compare_lt["percent"] = compare_lt[val_col] * 100
+fig, ax = plt.subplots(dpi=300)
+compare_lt.plot(
+    y="dis24",
+    x="percent",
+    ax=ax,
+    marker=".",
+    color="k",
+    linestyle="",
+    legend=False,
+)
+
+ax.axvline(x=rp_f, color="dodgerblue", linestyle="-", linewidth=0.3)
+ax.axvspan(
+    rp_f,
+    100,
+    ymin=0,
+    ymax=1,
+    color="dodgerblue",
+    alpha=0.1,
+)
+
+ax.axhline(y=rp_a_3, color="red", linestyle="-", linewidth=0.3)
+ax.axhspan(
+    rp_a_3,
+    6000,
+    color="red",
+    alpha=0.05,
+    linestyle="None",
+)
+
+ax.axhline(y=rp_a_5, color="red", linestyle="-", linewidth=0.3)
+ax.axhspan(
+    rp_a_5,
+    6000,
+    color="red",
+    alpha=0.05,
+    linestyle="None",
+)
+
+for year, row in compare_lt.set_index("year").iterrows():
+    flip_years = [2017, 2010]
+    ha = "right" if year in flip_years else "left"
+    ax.annotate(
+        f" {year} ",
+        (row["percent"], row["dis24"]),
+        color="k",
+        fontsize=8,
+        va="center",
+        ha=ha,
+    )
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.set_ylabel("Reanalysis (m$^3$/s)")
+ax.set_xlabel(f"Forecast (% above 2 yr RP, leadtime {lt_min}-14 days)")
+ax.set_ylim(top=5500)
+ax.set_xlim(right=100)
+ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
+```
+
+```python
+cols = ["year", "time_f", "leadtime"]
+compare_lt[compare_lt["trigger_f"]][cols].rename(
+    columns={
+        "year": "Year",
+        "time_f": "Trigger date",
+        "leadtime": "Leadtime (days)",
+    }
+)
+```
+
+```python
+dicts = []
 for lt_max, group in compare.groupby("lt_max"):
-    group.plot(x="dis24", y="3yr_thresh", marker=".", linestyle="")
+    corr_in = group.corr()
+    dicts.append(
+        {
+            "lt_max": lt_max,
+            "2yr_thresh": corr_in.loc["dis24", "2yr_thresh"],
+            "5yr_thresh": corr_in.loc["dis24", "5yr_thresh"],
+        }
+    )
+
+df_corr = pd.DataFrame(dicts)
+df_corr
+```
+
+```python
+df_corr.set_index("lt_max").plot()
 ```
 
 ```python

@@ -60,7 +60,7 @@ def download_reforecast_ensembles():
     )
     c = cdsapi.Client()
 
-    years = range(2003, 2024)
+    years = range(2003, 2023)
 
     leadtimes = [x * 24 for x in range(1, 47)]
     max_leadtime_chunk = 7
