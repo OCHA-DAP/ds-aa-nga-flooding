@@ -63,7 +63,11 @@ rea = rea[rea["time"].dt.year.isin(ref["time"].dt.year.unique())]
 ```
 
 ```python
-rp_f = 3
+ref
+```
+
+```python
+rp_f = 2
 rp_a = 5
 
 dfs = []
@@ -79,10 +83,6 @@ for lt in ref["leadtime"].unique():
 
 ref_peaks = pd.concat(dfs, ignore_index=True)
 ref_peaks["year"] = ref_peaks["time"].dt.year
-```
-
-```python
-ref_peaks
 ```
 
 ```python
@@ -153,14 +153,13 @@ ax.set_title("Benue river at Wuroboki\nGloFAS reanalysis (2003-2022)")
 compare = rea_peaks.merge(ref_peaks, on="year", suffixes=["_a", "_f"]).merge(
     fs_mean
 )
-```
-
-```python
 for indicator in ["cerf", "trigger_a"]:
     compare[f"TP_{indicator}"] = compare[indicator] & compare["trigger_f"]
     compare[f"FP_{indicator}"] = ~compare[indicator] & compare["trigger_f"]
     compare[f"TN_{indicator}"] = ~compare[indicator] & ~compare["trigger_f"]
     compare[f"FN_{indicator}"] = compare[indicator] & ~compare["trigger_f"]
+
+compare = compare.sort_values(["year", "lt_max"])
 ```
 
 ```python
@@ -235,7 +234,7 @@ ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
 ```
 
 ```python
-compare_lt[compare["trigger_f"]]
+compare_lt[compare_lt["trigger_f"]]
 ```
 
 ```python
@@ -300,11 +299,17 @@ rea[rea["time"].dt.year == 2014].plot(x="time", y="dis24")
 ```
 
 ```python
-ref[(ref["time"].dt.year == 2014) & (ref["leadtime"] == 1)].plot(
+ref[(ref["time"].dt.year == 2003) & (ref["leadtime"] == 1)].plot(
     x="time", y="dis24"
 )
 ```
 
 ```python
+rea[(rea["time"] >= "2022-07-01") & (rea["time"] < "2022-11-01")].plot(
+    x="time", y="dis24"
+)
+```
 
+```python
+rea.loc[rea["dis24"].idxmax()]
 ```
