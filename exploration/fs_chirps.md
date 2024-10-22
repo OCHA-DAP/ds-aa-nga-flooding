@@ -352,7 +352,3 @@ for year in [2022]:
 
     axs[0].set_title(f"LGA: {admin2_name}, Year: {year}")
 ```
-
-```python
-compare_f
-```

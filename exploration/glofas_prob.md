@@ -35,7 +35,7 @@ from src.constants import *
 ```
 
 ```python
-glofas.process_reforecast_frac()
+# glofas.process_reforecast_frac()
 ```
 
 ```python
@@ -45,6 +45,8 @@ ref = glofas.load_reforecast_frac()
 ```python
 ref["time"].dt.year.nunique()
 ```
+
+## Calculate reanalysis peaks
 
 ```python
 rp_a = 3
@@ -68,6 +70,10 @@ rea_peaks
 ```python
 ref
 ```
+
+## Calculate reforecast peaks
+
+Filtering by maximum leadtime
 
 ```python
 rp_f = 3
@@ -93,6 +99,10 @@ ref_peaks = pd.concat(dfs, ignore_index=True)
 ref_peaks["year"] = ref_peaks["time"].dt.year
 ```
 
+## Compare reanalysis to reforecast
+
+### Calcuate TP/FP/TN/FN
+
 ```python
 compare = rea_peaks.merge(ref_peaks, on="year", suffixes=["_a", "_f"])
 for indicator in ["cerf", "trigger_a"]:
@@ -103,6 +113,8 @@ for indicator in ["cerf", "trigger_a"]:
 
 compare = compare.sort_values(["year", "lt_max"])
 ```
+
+### Calculate TPR etc metrics
 
 ```python
 dicts = []
@@ -122,6 +134,10 @@ metrics
 ```python
 compare[compare["trigger_f"]].set_index("lt_max").loc[14]
 ```
+
+### Plot
+
+For chosen max leadtime and return period
 
 ```python
 # 3yr
