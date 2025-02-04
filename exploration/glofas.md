@@ -63,7 +63,11 @@ rea = rea[rea["time"].dt.year.isin(ref["time"].dt.year.unique())]
 ```
 
 ```python
-rp_f = 3
+ref
+```
+
+```python
+rp_f = 2
 rp_a = 5
 
 dfs = []
@@ -92,37 +96,70 @@ rea_peaks["cerf"] = rea_peaks["year"].isin(CERF_YEARS)
 ```python
 rea_peaks["rank"] = rea_peaks["dis24"].rank(ascending=False)
 rea_peaks["rp"] = len(rea_peaks) / rea_peaks["rank"]
-rea_peaks.sort_values("rank")
+rea_peaks = rea_peaks.sort_values("rank", ascending=False)
+```
+
+```python
+rea_peaks
 ```
 
 ```python
 fig, ax = plt.subplots(dpi=300)
-rea_peaks.sort_values("rp").plot(x="rp", y="dis24", ax=ax, legend=False)
+rea_peaks.plot(x="rp", y="dis24", ax=ax, legend=False, color="dodgerblue")
+
+for year in rea_peaks.iloc[-8:]["year"]:
+    x, y = rea_peaks.set_index("year").loc[year][["rp", "dis24"]]
+    ax.plot(
+        x,
+        y,
+        marker=".",
+        color="grey",
+    )
+    ax.annotate(year, (x, y), ha="right", color="grey", fontsize=8)
+
+annotation_x = 13
+
+for rp in [1.5, 2, 3, 4]:
+    y = np.interp(
+        rp,
+        rea_peaks["rp"],
+        rea_peaks["dis24"],
+    )
+    ax.plot(
+        [rp, annotation_x],
+        [y, y],
+        color="crimson",
+        linestyle="--",
+        linewidth=1,
+    )
+    ax.annotate(
+        f"{rp}-year RP level = {y:,.0f} m^3 / s",
+        (annotation_x, y),
+        fontsize=8,
+        color="crimson",
+        va="center",
+    )
+
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
-ax.set_xlim(1, 10)
-ax.set_ylim(top=3500)
+ax.set_xlim(left=1)
+# ax.set_ylim(top=3500)
 ax.set_xlabel("Return period (years)")
 ax.set_ylabel("Maximum yearly flowrate (m^3 / s)")
 ax.set_title("Benue river at Wuroboki\nGloFAS reanalysis (2003-2022)")
 ```
 
 ```python
-compare
-```
-
-```python
 compare = rea_peaks.merge(ref_peaks, on="year", suffixes=["_a", "_f"]).merge(
     fs_mean
 )
-```
-
-```python
 for indicator in ["cerf", "trigger_a"]:
     compare[f"TP_{indicator}"] = compare[indicator] & compare["trigger_f"]
     compare[f"FP_{indicator}"] = ~compare[indicator] & compare["trigger_f"]
     compare[f"TN_{indicator}"] = ~compare[indicator] & ~compare["trigger_f"]
     compare[f"FN_{indicator}"] = compare[indicator] & ~compare["trigger_f"]
+
+compare = compare.sort_values(["year", "lt_max"])
 ```
 
 ```python
@@ -197,6 +234,10 @@ ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
 ```
 
 ```python
+compare_lt[compare_lt["trigger_f"]]
+```
+
+```python
 rp_a_3 = 2600
 rp_a_5 = 3000
 rp_f = 2911.802066666667
@@ -258,11 +299,17 @@ rea[rea["time"].dt.year == 2014].plot(x="time", y="dis24")
 ```
 
 ```python
-ref[(ref["time"].dt.year == 2014) & (ref["leadtime"] == 1)].plot(
+ref[(ref["time"].dt.year == 2003) & (ref["leadtime"] == 1)].plot(
     x="time", y="dis24"
 )
 ```
 
 ```python
+rea[(rea["time"] >= "2022-07-01") & (rea["time"] < "2022-11-01")].plot(
+    x="time", y="dis24"
+)
+```
 
+```python
+rea.loc[rea["dis24"].idxmax()]
 ```
