@@ -111,3 +111,25 @@ def list_container_blobs(
             name_starts_with=name_starts_with
         )
     ]
+
+
+def upload_parquet_to_blob(
+    blob_name,
+    df,
+    prod_dev: Literal["prod", "dev"] = "dev",
+    **kwargs,
+):
+    upload_blob_data(
+        blob_name,
+        df.to_parquet(**kwargs, index=False),
+        prod_dev=prod_dev,
+    )
+
+
+def check_blob_exists(blob_name, prod_dev: Literal["prod", "dev"] = "dev"):
+    if prod_dev == "dev":
+        container_client = dev_container_client
+    else:
+        container_client = prod_container_client
+    blob_client = container_client.get_blob_client(blob_name)
+    return blob_client.exists()
