@@ -31,31 +31,53 @@ from src.datasources import nihsa, glofas
 ```
 
 ```python
-df_nihsa = nihsa.load_wuroboki()
-df_nihsa
+df_nh = nihsa.load_wuroboki()
+df_nh
 ```
 
 ```python
-df_nihsa.sort_values("level")
+df_nh.sort_values("level")
 ```
 
 ```python
-df.groupby(df["time"].dt.year)["level"].max().reset_index().sort_values(
+df_nh.groupby(df_nh["time"].dt.year)["level"].max().reset_index().sort_values(
     "level"
 )
 ```
 
 ```python
-df_plot = df[df["time"].dt.year >= 2000].copy()
+df_nh["level_change"] = df_nh["level"] - df_nh["level"].shift()
+```
+
+```python
+df_plot = df_nh[df_nh["time"].dt.year >= 1979].copy()
 df_plot["year"] = df_plot["time"].dt.year
 ```
 
 ```python
-ymax = df_plot["level"].max()
+n_years = df_plot["year"].nunique()
+```
+
+```python
+n_years
+```
+
+```python
+df_plot["level_change"].min()
+```
+
+```python
+plot_col = "level"
+
+ymax = df_plot[plot_col].max()
+ymin = min(0, df_plot[plot_col].min())
+
+ncols = 3
+nrows = round(n_years / ncols) + 1
 
 fig, axes = plt.subplots(
-    nrows=8, ncols=3, figsize=(15, 25)
-)  # Adjust rows to fit all 25 years
+    nrows=nrows, ncols=ncols, figsize=(ncols * 5, nrows * 3), dpi=200
+)
 axes = axes.flatten()  # Flatten axes array for easy indexing
 
 # Loop through each year and plot in corresponding subplot
@@ -64,13 +86,13 @@ for i, year in enumerate(df_plot["year"].unique()):
     year_data = df_plot[df_plot["year"] == year]
 
     # Plot the data
-    ax.plot(year_data["time"], year_data["level"])  # Adjust 'level' as needed
+    ax.plot(year_data["time"], year_data[plot_col])  # Adjust 'level' as needed
     ax.set_title(f"Year {year}")
     ax.set_xlabel("Time")
     ax.set_ylabel("Level")
 
     # Set the y-axis to range from 0 to the maximum value
-    ax.set_ylim(0, ymax)
+    ax.set_ylim(ymin, ymax)
 
     # Set x-axis to span from Jan 1 to Dec 31 for each year
     start_date = pd.Timestamp(f"{year}-01-01")
@@ -82,7 +104,7 @@ for i, year in enumerate(df_plot["year"].unique()):
         mdates.MonthLocator()
     )  # Show major ticks for each month
     ax.xaxis.set_major_formatter(
-        mdates.DateFormatter("%b-%d")
+        mdates.DateFormatter("%b")
     )  # Month and day format
 
 # Adjust layout and display
@@ -91,9 +113,13 @@ plt.show()
 ```
 
 ```python
-df[df["time"].dt.year == 2021].plot(x="time", y="level")
+df_nh
 ```
 
 ```python
-
+year = 2021
+months = range(7, 11)
+df_nh[
+    (df_nh["time"].dt.year == year) & (df_nh["time"].dt.month.isin(months))
+].plot(x="time", y="level_change")
 ```
