@@ -27,11 +27,13 @@ def download_codab_to_blob():
     blob.upload_blob_data(blob_name, response.content)
 
 
-def load_codab_from_blob(admin_level: int = 0):
+def load_codab_from_blob(admin_level: int = 0, aoi_only: bool = False):
     shapefile = f"nga_adm{admin_level}.shp"
     gdf = blob.load_gdf_from_blob(
         f"{blob.PROJECT_PREFIX}/raw/codab/nga.shp.zip",
         shapefile=shapefile,
         prod_dev="dev",
     )
+    if aoi_only:
+        gdf = gdf[gdf["ADM1_PCODE"].isin(AOI_ADM1_PCODES)]
     return gdf
