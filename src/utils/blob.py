@@ -7,23 +7,19 @@ from typing import Literal
 
 import geopandas as gpd
 import pandas as pd
-from azure.storage.blob import ContainerClient
-
-PROD_BLOB_SAS = os.getenv("PROD_BLOB_SAS")
-PROD_BLOB_BASE_URL = "https://imb0chd0prod.blob.core.windows.net/"
-PROD_BLOB_AA_BASE_URL = PROD_BLOB_BASE_URL + "aa-data"
-PROD_BLOB_AA_URL = PROD_BLOB_AA_BASE_URL + "?" + PROD_BLOB_SAS
-
-DEV_BLOB_SAS = os.getenv("DEV_BLOB_SAS")
-DEV_BLOB_BASE_URL = "https://imb0chd0dev.blob.core.windows.net/"
-DEV_BLOB_PROJ_BASE_URL = DEV_BLOB_BASE_URL + "projects"
-DEV_BLOB_PROJ_URL = DEV_BLOB_PROJ_BASE_URL + "?" + DEV_BLOB_SAS
+import ocha_stratus as stratus
 
 PROJECT_PREFIX = "ds-aa-nga-flooding"
 
+prod_container_client = stratus.get_container_client(container_name='aa-data', stage='prod')
+dev_container_client = stratus.get_container_client(container_name='projects', stage='dev')
 
-prod_container_client = ContainerClient.from_container_url(PROD_BLOB_AA_URL)
-dev_container_client = ContainerClient.from_container_url(DEV_BLOB_PROJ_URL)
+
+def load_excel_from_blob(
+    blob_name, prod_dev: Literal["prod", "dev"] = "dev", **kwargs
+):
+    blob_data = load_blob_data(blob_name, prod_dev=prod_dev)
+    return pd.read_excel(io.BytesIO(blob_data), **kwargs)
 
 
 def load_parquet_from_blob(

@@ -6,6 +6,10 @@ import requests
 
 from src.constants import AOI_ADM1_PCODES
 from src.utils import blob
+import ocha_stratus as stratus
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DATA_DIR = Path(os.getenv("AA_DATA_DIR"))
 CODAB_DIR = DATA_DIR / "public" / "raw" / "nga" / "cod_ab"
@@ -29,7 +33,7 @@ def download_codab_to_blob():
 
 def load_codab_from_blob(admin_level: int = 0):
     shapefile = f"nga_adm{admin_level}.shp"
-    gdf = blob.load_gdf_from_blob(
+    gdf = stratus.load_gdf_from_blob(
         f"{blob.PROJECT_PREFIX}/raw/codab/nga.shp.zip",
         shapefile=shapefile,
         prod_dev="dev",

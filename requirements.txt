@@ -1,0 +1,11 @@
+xarray
+numpy
+pandas
+zarr
+matplotlib
+fsspec
+gcsfs
+ocha-stratus
+folium
+cdsapi
+xlrd
