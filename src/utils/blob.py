@@ -6,13 +6,17 @@ import zipfile
 from typing import Literal
 
 import geopandas as gpd
-import pandas as pd
 import ocha_stratus as stratus
+import pandas as pd
 
 PROJECT_PREFIX = "ds-aa-nga-flooding"
 
-prod_container_client = stratus.get_container_client(container_name='aa-data', stage='prod')
-dev_container_client = stratus.get_container_client(container_name='projects', stage='dev')
+prod_container_client = stratus.get_container_client(
+    container_name="aa-data", stage="prod"
+)
+dev_container_client = stratus.get_container_client(
+    container_name="projects", stage="dev"
+)
 
 
 def load_excel_from_blob(
