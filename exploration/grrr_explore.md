@@ -7,9 +7,9 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.16.7
   kernelspec:
-    display_name: venv
+    display_name: nga-flooding
     language: python
-    name: python3
+    name: nga-flooding
 ---
 
 ```python
@@ -36,11 +36,13 @@ load_dotenv()
 
 HYBAS_ID = "hybas_1120842550"
 HYBAS_ID_ = "hybas_1120842990"  # Right at Wuro Boki, but lower confidence
-BENUE_ADM2_PCODES = ["NG002016", "NG002009", "NG002021", "NG002005"]
-TARGET_RP = 5
-
-gdf_benue = hydrosheds.load_benue_aoi()
-gdf_adm = codab.load_codab(1, aoi_only=True)
+SAPPHIRE = "#007ce0"
+TOMATO = "#f2645a"
+TOMATO_DARK = "#c25048"
+TOMATO_LIGHT = "#f7a29c"
+MINT = "#1ebfb3"
+GREY_DARK = "#888888"
+GREY_LIGHT = "#cccccc"
 ```
 
 ```python
@@ -65,36 +67,28 @@ outlets_path = os.path.join(
 ```
 
 ```python
-ds_reforecast_grrr = (
-    open_zarr(reforecast_path).sel(gauge_id=HYBAS_ID).compute()
-)
-ds_reanalysis_grrr = (
-    open_zarr(reanalysis_path).sel(gauge_id=HYBAS_ID).compute()
-)
-ds_outlet_location_grrr = (
-    open_zarr(outlets_path).sel(gauge_id=HYBAS_ID).compute()
-)
-ds_return_periods_grrr = (
+ds_rf = open_zarr(reforecast_path).sel(gauge_id=HYBAS_ID).compute()
+ds_ra = open_zarr(reanalysis_path).sel(gauge_id=HYBAS_ID).compute()
+ds_outlet_location = open_zarr(outlets_path).sel(gauge_id=HYBAS_ID).compute()
+ds_return_periods = (
     open_zarr(return_periods_path).sel(gauge_id=HYBAS_ID).compute()
 )
 ```
 
 ```python
 # Clean up reforecast and convert to dataframe
-df_reforecast_grrr = ds_reforecast_grrr.to_dataframe().reset_index()
+df_rf = ds_rf.to_dataframe().reset_index()
 
-df_reforecast_grrr["valid_time"] = df_reforecast_grrr.apply(
+df_rf["valid_time"] = df_rf.apply(
     lambda row: row["issue_time"] + row["lead_time"], axis=1
 )
-df_reforecast_grrr["leadtime"] = df_reforecast_grrr["lead_time"].apply(
-    lambda x: x.days
-)
-df_reforecast_grrr = df_reforecast_grrr.drop(columns=["lead_time", "gauge_id"])
+df_rf["leadtime"] = df_rf["lead_time"].apply(lambda x: x.days)
+df_rf = df_rf.drop(columns=["lead_time", "gauge_id"])
 
 # Clean up reanalysis and convert to dataframe
-df_reanalysis_grrr = ds_reanalysis_grrr.to_dataframe().reset_index()
-df_reanalysis_grrr = df_reanalysis_grrr.rename(
-    columns={"time": "valid_time", "streamflow": "sf_grrr_reanalysis"}
+df_ra = ds_ra.to_dataframe().reset_index()
+df_ra = df_ra.rename(
+    columns={"time": "valid_time", "streamflow": "streamflow_ra"}
 ).drop(columns=["gauge_id"])
 ```
 
@@ -106,14 +100,14 @@ Get the Google-derived return periods
 ```python
 return_periods_dict = {}
 
-for var_name in ds_return_periods_grrr.data_vars:
-    return_periods_dict[int(var_name.split("_")[-1])] = ds_return_periods_grrr[
+for var_name in ds_return_periods.data_vars:
+    return_periods_dict[int(var_name.split("_")[-1])] = ds_return_periods[
         var_name
     ].item()
 
-df_rp_grrr = pd.DataFrame([return_periods_dict])
-df_rp_grrr = (
-    df_rp_grrr.T.reset_index()
+df_rp = pd.DataFrame([return_periods_dict])
+df_rp = (
+    df_rp.T.reset_index()
     .rename(columns={"index": "return_period", 0: "streamflow"})
     .sort_values("return_period", ascending=True)
 )
@@ -122,11 +116,11 @@ df_rp_grrr = (
 Now estimate return periods directly from the reanalysis data
 
 ```python
-return_periods = df_rp_grrr["return_period"]
+return_periods = df_rp["return_period"]
 df_rp_calculated = rp_calc.estimate_return_periods(
-    df_reanalysis_grrr,
+    df_ra,
     date_col="valid_time",
-    val_col="sf_grrr_reanalysis",
+    val_col="streamflow_ra",
     target_rps=list(return_periods),
 )
 ```
@@ -135,15 +129,17 @@ Now plot both return periods
 
 ```python
 plt.plot(
-    df_rp_grrr["return_period"],
-    df_rp_grrr["streamflow"],
+    df_rp["return_period"],
+    df_rp["streamflow"],
     "o-",
+    c=TOMATO,
     label="Google Return Periods",
 )
 plt.plot(
     df_rp_calculated["return_period"],
     df_rp_calculated["value"],
     "o-",
+    c=SAPPHIRE,
     label="Calculated Return Periods from Reanalysis",
 )
 plt.xlabel("Return Period")
@@ -169,10 +165,10 @@ def percent_bias(obs, pred):
     return 100.0 * sum(pred - obs) / sum(obs)
 
 
-df_merged = df_reforecast_grrr.merge(df_reanalysis_grrr, how="left").rename(
+df_merged = df_rf.merge(df_ra, how="left").rename(
     columns={
-        "streamflow": "sf_reforecast",
-        "sf_grrr_reanalysis": "sf_reanalysis",
+        "streamflow": "streamflow_rf",
+        "streamflow_ra": "streamflow_ra",
     }
 )
 
@@ -184,27 +180,27 @@ for rp in [None, 2, 5, 7]:
             ].iloc[0]
         )
 
-        df_merged = df_merged[df_merged["sf_reforecast"] >= thresh]
+        df_merged = df_merged[df_merged["streamflow_rf"] >= thresh]
 
     df_bias = (
         df_merged.groupby("leadtime")
         .apply(
-            lambda x: percent_bias(x["sf_reanalysis"], x["sf_reforecast"]),
+            lambda x: percent_bias(x["streamflow_ra"], x["streamflow_rf"]),
             include_groups=False,
         )
         .reset_index(name="percent_bias")
     )
 
     dimension_cols = ["issue_time", "valid_time", "leadtime"]
-    data_vars = ["sf_reforecast", "sf_reanalysis"]
+    data_vars = ["streamflow_rf", "streamflow_ra"]
 
     indexed_df = df_merged.set_index(dimension_cols)
     ds = indexed_df[data_vars].to_xarray()
 
     df_skill = (
         ds.xs.mape(
-            "sf_reanalysis",
-            "sf_reforecast",
+            "streamflow_ra",
+            "streamflow_rf",
             dim=["issue_time", "valid_time"],
             skipna=True,
         )
@@ -249,18 +245,16 @@ fig2.savefig(
 ## Load in the observational NIHSA data
 
 ```python
-df_observational_nihsa = nihsa.load_wuroboki().rename(
-    columns={"time": "valid_time", "level": "level"}
-)
+df_nh = nihsa.load_wuroboki().rename(columns={"time": "valid_time"})
 ```
 
 How well is the GRRR reanalysis data correlated with observational water levels at Wuro Boki?
 
 ```python
 df_merged = (
-    df_observational_nihsa.merge(df_reanalysis_grrr, how="left")
+    df_nh.merge(df_ra, how="left")
     .dropna()
-    .rename(columns={"sf_grrr_reanalysis": "streamflow"})
+    .rename(columns={"streamflow_ra": "streamflow"})
 )
 ```
 
@@ -292,7 +286,7 @@ for j, year in enumerate(df_merged["valid_time"].dt.year.unique()):
     ax.plot(
         dff["valid_time"],
         dff["level"],
-        color="dodgerblue",
+        color=SAPPHIRE,
         label="NiHSA\n(mm, left axis)",
     )
     ax.set_ylim(bottom=0, top=level_max * 1.1)
@@ -300,7 +294,7 @@ for j, year in enumerate(df_merged["valid_time"].dt.year.unique()):
     ax2.plot(
         dff["valid_time"],
         dff["streamflow"],
-        color="darkorange",
+        color=TOMATO,
         label="GRRR\n(m$^{3}$/s, right axis)",
     )
 
@@ -355,7 +349,7 @@ print(f"\nOverall Pearson correlation: {pearson_corr:.4f}")
 print(f"Overall Spearman correlation: {spearman_corr:.4f}")
 
 plt.figure(figsize=(10, 6))
-plt.scatter(df_merged["streamflow"], df_merged["level"], alpha=0.1)
+plt.scatter(df_merged["streamflow"], df_merged["level"], alpha=0.1, c=SAPPHIRE)
 plt.title("Water Level vs Streamflow")
 plt.xlabel("Streamflow (m$^{3}$/s)")
 plt.ylabel("Water level")
@@ -371,16 +365,27 @@ plt.show()
 
 ## Return period exceedance
 
+Let's take a 5-year return period...
+
 ```python
 # First let's only take the observational data since 1980
-df_observational_nihsa = df_observational_nihsa[
-    df_observational_nihsa["valid_time"] > "1980-01-01"
-]
+# Since the water level seems to be generally increasing
+df_nh = df_nh[df_nh["valid_time"] > "1980-01-01"]
+
+# Also fill in all the date gaps with null values for better plotting
+date_range = pd.date_range(
+    start=df_nh["valid_time"].min(),
+    end=df_nh["valid_time"].max(),
+    freq="D",
+)
+
+df_nh_complete = pd.DataFrame({"valid_time": date_range})
+df_nh_complete = df_nh_complete.merge(df_nh, on="valid_time", how="left")
 ```
 
 ```python
-df_rp_calculated_nihsa = rp_calc.estimate_return_periods(
-    df_observational_nihsa,
+df_rp_calculated_nh = rp_calc.estimate_return_periods(
+    df_nh,
     date_col="valid_time",
     val_col="level",
     target_rps=list(return_periods),
@@ -390,161 +395,181 @@ df_rp_calculated_nihsa = rp_calc.estimate_return_periods(
 For the observational data
 
 ```python
-rp_2 = rp_calc.get_rp_val(df_rp_calculated_nihsa, 2)
-rp_5 = rp_calc.get_rp_val(df_rp_calculated_nihsa, 5)
-rp_7 = rp_calc.get_rp_val(df_rp_calculated_nihsa, 7)
+rp_2_nh = rp_calc.get_rp_val(df_rp_calculated_nh, 2)
+rp_5_nh = rp_calc.get_rp_val(df_rp_calculated_nh, 5)
+rp_7_nh = rp_calc.get_rp_val(df_rp_calculated_nh, 7)
 
 fig, ax = plt.subplots(figsize=(20, 6))
 
-df_observational_nihsa.plot(x="valid_time", y="level", ax=ax, c="black")
-ax.axhline(rp_2, c="blue", label="1 in 2 rp")
-ax.axhline(rp_5, c="orange", label="1 in 5 rp")
-ax.axhline(rp_7, c="red", label="1 in 7 rp")
+ax.plot(df_complete["valid_time"], df_complete["level"], c=GREY_DARK)
+ax.axhline(rp_2_nh, c=SAPPHIRE, label="1 in 2 rp")
+ax.axhline(rp_5_nh, c=MINT, label="1 in 5 rp")
+ax.axhline(rp_7_nh, c=TOMATO, label="1 in 7 rp")
 
-mask_rp2 = df_observational_nihsa["level"] >= rp_2
-mask_rp5 = df_observational_nihsa["level"] >= rp_5
-mask_rp7 = df_observational_nihsa["level"] >= rp_7
+mask_rp2 = df_nh["level"] >= rp_2_nh
+mask_rp5 = df_nh["level"] >= rp_5_nh
+mask_rp7 = df_nh["level"] >= rp_7_nh
 
 ax.scatter(
-    df_observational_nihsa.loc[mask_rp2 & ~mask_rp5, "valid_time"],
-    df_observational_nihsa.loc[mask_rp2 & ~mask_rp5, "level"],
-    c="blue",
+    df_nh.loc[mask_rp2 & ~mask_rp5, "valid_time"],
+    df_nh.loc[mask_rp2 & ~mask_rp5, "level"],
+    c=SAPPHIRE,
     s=30,
     label="Exceeds 1 in 2 rp",
 )
 ax.scatter(
-    df_observational_nihsa.loc[mask_rp5 & ~mask_rp7, "valid_time"],
-    df_observational_nihsa.loc[mask_rp5 & ~mask_rp7, "level"],
-    c="orange",
+    df_nh.loc[mask_rp5 & ~mask_rp7, "valid_time"],
+    df_nh.loc[mask_rp5 & ~mask_rp7, "level"],
+    c=MINT,
     s=30,
     label="Exceeds 1 in 5 rp",
 )
 ax.scatter(
-    df_observational_nihsa.loc[mask_rp7, "valid_time"],
-    df_observational_nihsa.loc[mask_rp7, "level"],
-    c="red",
+    df_nh.loc[mask_rp7, "valid_time"],
+    df_nh.loc[mask_rp7, "level"],
+    c=TOMATO,
     s=30,
     label="Exceeds 1 in 7 rp",
 )
+ax.set_ylabel("Water level")
+ax.set_title("Return period exceedance in NiHSA observations")
+plt.savefig(f"temp/nihsa_rp_exceedance.png", dpi=300, bbox_inches="tight")
 plt.legend()
-```
-
-```python
-# Get the date ranges when water level goes above a given rp
-df_rp5_mask = df_observational_nihsa[mask_rp5]
-```
-
-```python
-def find_date_ranges(df, date_column="valid_time"):
-    dates = (
-        pd.to_datetime(df[date_column]).sort_values().reset_index(drop=True)
-    )
-    breaks = np.where(np.diff(dates) > pd.Timedelta(days=1))[0]
-    indices = np.concatenate([[0], breaks + 1, [len(dates)]])
-    return [
-        dates[indices[i] : indices[i + 1]].tolist()
-        for i in range(len(indices) - 1)
-    ]
-```
-
-```python
-find_date_ranges(df_rp5_mask)
 ```
 
 For the reanalysis data
 
 ```python
-rp_2 = rp_calc.get_rp_val(df_rp_calculated, 2)
-rp_5 = rp_calc.get_rp_val(df_rp_calculated, 5)
-rp_7 = rp_calc.get_rp_val(df_rp_calculated, 7)
+rp_2_ra = rp_calc.get_rp_val(df_rp_calculated, 2)
+rp_5_ra = rp_calc.get_rp_val(df_rp_calculated, 5)
+rp_7_ra = rp_calc.get_rp_val(df_rp_calculated, 7)
 
 fig, ax = plt.subplots(figsize=(20, 6))
 
-df_reanalysis_grrr.plot(
-    x="valid_time", y="sf_grrr_reanalysis", ax=ax, c="black"
-)
-ax.axhline(rp_2, c="blue", label="1 in 2 rp")
-ax.axhline(rp_5, c="orange", label="1 in 5 rp")
-ax.axhline(rp_7, c="red", label="1 in 7 rp")
+ax.plot(df_ra["valid_time"], df_ra["streamflow_ra"], c=GREY_DARK)
+ax.axhline(rp_2_ra, c=SAPPHIRE, label="1 in 2 rp")
+ax.axhline(rp_5_ra, c=MINT, label="1 in 5 rp")
+ax.axhline(rp_7_ra, c=TOMATO, label="1 in 7 rp")
 
-mask_rp2 = df_reanalysis_grrr["sf_grrr_reanalysis"] >= rp_2
-mask_rp5 = df_reanalysis_grrr["sf_grrr_reanalysis"] >= rp_5
-mask_rp7 = df_reanalysis_grrr["sf_grrr_reanalysis"] >= rp_7
+mask_rp2 = df_ra["streamflow_ra"] >= rp_2_ra
+mask_rp5 = df_ra["streamflow_ra"] >= rp_5_ra
+mask_rp7 = df_ra["streamflow_ra"] >= rp_7_ra
 
 ax.scatter(
-    df_reanalysis_grrr.loc[mask_rp2 & ~mask_rp5, "valid_time"],
-    df_reanalysis_grrr.loc[mask_rp2 & ~mask_rp5, "sf_grrr_reanalysis"],
-    c="blue",
+    df_ra.loc[mask_rp2 & ~mask_rp5, "valid_time"],
+    df_ra.loc[mask_rp2 & ~mask_rp5, "streamflow_ra"],
+    c=SAPPHIRE,
     s=30,
     label="Exceeds 1 in 2 rp",
 )
 ax.scatter(
-    df_reanalysis_grrr.loc[mask_rp5 & ~mask_rp7, "valid_time"],
-    df_reanalysis_grrr.loc[mask_rp5 & ~mask_rp7, "sf_grrr_reanalysis"],
-    c="orange",
+    df_ra.loc[mask_rp5 & ~mask_rp7, "valid_time"],
+    df_ra.loc[mask_rp5 & ~mask_rp7, "streamflow_ra"],
+    c=MINT,
     s=30,
     label="Exceeds 1 in 5 rp",
 )
 ax.scatter(
-    df_reanalysis_grrr.loc[mask_rp7, "valid_time"],
-    df_reanalysis_grrr.loc[mask_rp7, "sf_grrr_reanalysis"],
-    c="red",
+    df_ra.loc[mask_rp7, "valid_time"].astype("datetime64[ns]"),
+    df_ra.loc[mask_rp7, "streamflow_ra"],
+    c=TOMATO,
     s=30,
     label="Exceeds 1 in 7 rp",
 )
+ax.set_ylabel("Streamflow (m$^3$/s)")
+ax.set_title("Return period exceedance in GRRR reforecast")
+plt.savefig(f"temp/{HYBAS_ID}_rp_exceedance.png", dpi=300, bbox_inches="tight")
 plt.legend()
 ```
 
+Now let's look at the yearly peaks
+
 ```python
-rp_2
+df_peaks = df_merged.groupby(
+    df_merged["valid_time"].dt.year.rename("year")
+).agg(
+    sf_max=("streamflow", "max"),
+    sf_max_date=(
+        "streamflow",
+        lambda x: df_merged.loc[x.idxmax(), "valid_time"],
+    ),
+    level_max=("level", "max"),
+    level_max_date=(
+        "level",
+        lambda x: (
+            df_merged.loc[x.idxmax(), "valid_time"]
+            if x.notna().any()
+            else pd.NaT
+        ),
+    ),
+)
 ```
 
-## Load in the GloFAS data
+```python
+fig, ax = plt.subplots()
+
+ax.scatter(df_peaks["sf_max"], df_peaks["level_max"], c="#007ce0")
+
+for year, row in df_peaks.iterrows():
+    ax.annotate(
+        year,
+        (row["sf_max"] + 60, row["level_max"]),
+        ha="center",
+        va="center",
+        fontsize=8,
+        c="#007ce0",
+    )
+
+ax.axvline(rp_5_ra, lw=0.5, c=TOMATO)
+ax.axhline(rp_5_nh, lw=0.5, c=TOMATO)
+
+ax.set_ylim(bottom=0, top=df_peaks["level_max"].max() * 1.1)
+ax.set_xlim(left=0, right=df_peaks["sf_max"].max() * 1.1)
+ax.set_xlabel("Reanalysis yearly peak (m$^{3}$/s)")
+ax.set_ylabel("Observational yearly peak")
+ax.set_title("Yearly peaks in reanalysis and observational data")
+plt.savefig(f"temp/{HYBAS_ID}_yearly_peaks.png", dpi=300, bbox_inches="tight")
+plt.tight_layout()
+```
 
 ```python
-df_reforecast_glofas = glofas.load_reforecast().rename(
-    columns={"time": "issued_time"}
-)
-df_reanalysis_glofas = glofas.load_reanalysis().rename(
-    columns={"time": "valid_time"}
+def determine_detection_type(row, rp_5_nh, rp_5_ra):
+    happened = row["level_max"] > rp_5_nh
+    detected = row["sf_max"] > rp_5_ra
+
+    if happened and detected:
+        return "TP"  # True Positive
+    elif not happened and detected:
+        return "FP"  # False Positive
+    elif not happened and not detected:
+        return "TN"  # True Negative
+    else:
+        return "FN"  # False Negative
+
+
+def get_more_stats(TP, FP, FN):
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+    f1 = 2 / ((1 / recall) + (1 / precision))
+    return precision, recall, f1
+
+
+df_peaks["detection_type"] = df_peaks.apply(
+    lambda row: determine_detection_type(row, rp_5_nh, rp_5_ra), axis=1
 )
 ```
 
-## Plot locations
+```python
+counts = df_peaks["detection_type"].value_counts().to_dict()
+```
 
 ```python
-grrr_lat = float(ds_outlet_location_grrr.latitude.values)
-grrr_lon = float(ds_outlet_location_grrr.longitude.values)
+if "TP" not in counts.keys():
+    counts["TP"] = 0
+```
 
-m = folium.Map(
-    location=[grrr_lat, grrr_lon], zoom_start=12, tiles="CartoDB positron"
-)
-locations = [
-    {"name": "GRRR HYBAS Location", "lat": grrr_lat, "lon": grrr_lon},
-    {
-        "name": "GLOFAS Wuroboki Point",
-        "lat": WUROBOKI_LAT,
-        "lon": WUROBOKI_LON,
-    },
-]
+Division by zero here... makes sense since there's no TPs...
 
-for loc in locations:
-    folium.Marker(
-        location=[loc["lat"], loc["lon"]],
-        popup=loc["name"],
-        tooltip=loc["name"],
-    ).add_to(m)
-
-folium.GeoJson(
-    gdf_benue,
-    name="Shapefile Layer",
-    style_function=lambda x: {
-        "fillColor": "#ffff00",
-        "color": "#000000",
-        "fillOpacity": 0.5,
-        "weight": 1.5,
-    },
-).add_to(m)
-
-m
+```python
+precision, recall, f1 = get_more_stats(counts["TP"], counts["FP"], counts["FN"])
 ```
