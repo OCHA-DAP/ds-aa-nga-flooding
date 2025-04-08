@@ -35,7 +35,7 @@ from src.constants import WUROBOKI_LAT, WUROBOKI_LON
 load_dotenv()
 
 HYBAS_ID = "hybas_1120842550"
-HYBAS_ID_ = "hybas_1120842990"  # Right at Wuro Boki, but lower confidence
+HYBAS_ID_ = "hybas_1120842990"  # Right at Wuro Bokki, but lower confidence
 SAPPHIRE = "#007ce0"
 TOMATO = "#f2645a"
 TOMATO_DARK = "#c25048"
@@ -43,6 +43,41 @@ TOMATO_LIGHT = "#f7a29c"
 MINT = "#1ebfb3"
 GREY_DARK = "#888888"
 GREY_LIGHT = "#cccccc"
+
+# All years that include (very roughly) the flood season
+NH_YEARS_PEAKS = [
+    1982,
+    1983,
+    1988,
+    1989,
+    1991,
+    1992,
+    1993,
+    2006,
+    2007,
+    2021,
+    2013,
+    2016,
+    2018,
+    2019,
+    2020,
+    2021,
+    2023,
+]
+
+# And only more recent years as there seems to be a trend in increasing water level
+NH_YEARS_RECENT_PEAKS = [
+    2006,
+    2007,
+    2021,
+    2013,
+    2016,
+    2018,
+    2019,
+    2020,
+    2021,
+    2023,
+]
 ```
 
 ```python
@@ -365,11 +400,11 @@ plt.show()
 
 ## Return period exceedance
 
-Let's take a 5-year return period...
+Let's start by calculating the yearly peaks
 
 ```python
 # First let's only take the observational data since 1980
-# Since the water level seems to be generally increasing
+# to match with the reanalysis
 df_nh = df_nh[df_nh["valid_time"] > "1980-01-01"]
 
 # Also fill in all the date gaps with null values for better plotting
@@ -384,53 +419,61 @@ df_nh_complete = df_nh_complete.merge(df_nh, on="valid_time", how="left")
 ```
 
 ```python
-df_rp_calculated_nh = rp_calc.estimate_return_periods(
-    df_nh,
-    date_col="valid_time",
-    val_col="level",
-    target_rps=list(return_periods),
+df_nh_peaks = (
+    df_nh.groupby(df_nh["valid_time"].dt.year.rename("year"))
+    .agg(
+        level_max=("level", "max"),
+        level_max_date=(
+            "level",
+            lambda x: df_nh.loc[x.idxmax(), "valid_time"],
+        ),
+    )
+    .reset_index()
 )
+
+df_nh_peaks_recent = df_nh_peaks[df_nh_peaks.year.isin(NH_YEARS_PEAKS)]
 ```
 
 For the observational data
 
 ```python
-rp_2_nh = rp_calc.get_rp_val(df_rp_calculated_nh, 2)
-rp_5_nh = rp_calc.get_rp_val(df_rp_calculated_nh, 5)
-rp_7_nh = rp_calc.get_rp_val(df_rp_calculated_nh, 7)
+rp_2_nh = df_nh_peaks_recent["level_max"].quantile(1 - 1 / 2)
+rp_5_nh = df_nh_peaks_recent["level_max"].quantile(1 - 1 / 5)
+rp_7_nh = df_nh_peaks_recent["level_max"].quantile(1 - 1 / 7)
 
-fig, ax = plt.subplots(figsize=(20, 6))
+fig, ax = plt.subplots(figsize=(25, 6))
 
-ax.plot(df_complete["valid_time"], df_complete["level"], c=GREY_DARK)
+ax.plot(df_nh_complete["valid_time"], df_nh_complete["level"], c=GREY_DARK)
 ax.axhline(rp_2_nh, c=SAPPHIRE, label="1 in 2 rp")
 ax.axhline(rp_5_nh, c=MINT, label="1 in 5 rp")
 ax.axhline(rp_7_nh, c=TOMATO, label="1 in 7 rp")
 
-mask_rp2 = df_nh["level"] >= rp_2_nh
-mask_rp5 = df_nh["level"] >= rp_5_nh
-mask_rp7 = df_nh["level"] >= rp_7_nh
+mask_rp2 = df_nh_peaks["level_max"] >= rp_2_nh
+mask_rp5 = df_nh_peaks["level_max"] >= rp_5_nh
+mask_rp7 = df_nh_peaks["level_max"] >= rp_7_nh
 
 ax.scatter(
-    df_nh.loc[mask_rp2 & ~mask_rp5, "valid_time"],
-    df_nh.loc[mask_rp2 & ~mask_rp5, "level"],
+    df_nh_peaks.loc[mask_rp2 & ~mask_rp5, "level_max_date"],
+    df_nh_peaks.loc[mask_rp2 & ~mask_rp5, "level_max"],
     c=SAPPHIRE,
-    s=30,
+    s=60,
     label="Exceeds 1 in 2 rp",
 )
 ax.scatter(
-    df_nh.loc[mask_rp5 & ~mask_rp7, "valid_time"],
-    df_nh.loc[mask_rp5 & ~mask_rp7, "level"],
+    df_nh_peaks.loc[mask_rp5 & ~mask_rp7, "level_max_date"],
+    df_nh_peaks.loc[mask_rp5 & ~mask_rp7, "level_max"],
     c=MINT,
-    s=30,
+    s=60,
     label="Exceeds 1 in 5 rp",
 )
 ax.scatter(
-    df_nh.loc[mask_rp7, "valid_time"],
-    df_nh.loc[mask_rp7, "level"],
+    df_nh_peaks.loc[mask_rp7, "level_max_date"],
+    df_nh_peaks.loc[mask_rp7, "level_max"],
     c=TOMATO,
-    s=30,
+    s=60,
     label="Exceeds 1 in 7 rp",
 )
+
 ax.set_ylabel("Water level")
 ax.set_title("Return period exceedance in NiHSA observations")
 plt.savefig(f"temp/nihsa_rp_exceedance.png", dpi=300, bbox_inches="tight")
@@ -440,38 +483,52 @@ plt.legend()
 For the reanalysis data
 
 ```python
-rp_2_ra = rp_calc.get_rp_val(df_rp_calculated, 2)
-rp_5_ra = rp_calc.get_rp_val(df_rp_calculated, 5)
-rp_7_ra = rp_calc.get_rp_val(df_rp_calculated, 7)
+df_ra_peaks = (
+    df_ra.groupby(df_ra["valid_time"].dt.year.rename("year"))
+    .agg(
+        sf_max=("streamflow_ra", "max"),
+        sf_max_date=(
+            "streamflow_ra",
+            lambda x: df_ra.loc[x.idxmax(), "valid_time"],
+        ),
+    )
+    .reset_index()
+)
+```
 
-fig, ax = plt.subplots(figsize=(20, 6))
+```python
+rp_2_ra = df_ra_peaks["sf_max"].quantile(1 - 1 / 2)
+rp_5_ra = df_ra_peaks["sf_max"].quantile(1 - 1 / 5)
+rp_7_ra = df_ra_peaks["sf_max"].quantile(1 - 1 / 7)
+
+fig, ax = plt.subplots(figsize=(25, 6))
 
 ax.plot(df_ra["valid_time"], df_ra["streamflow_ra"], c=GREY_DARK)
 ax.axhline(rp_2_ra, c=SAPPHIRE, label="1 in 2 rp")
 ax.axhline(rp_5_ra, c=MINT, label="1 in 5 rp")
 ax.axhline(rp_7_ra, c=TOMATO, label="1 in 7 rp")
 
-mask_rp2 = df_ra["streamflow_ra"] >= rp_2_ra
-mask_rp5 = df_ra["streamflow_ra"] >= rp_5_ra
-mask_rp7 = df_ra["streamflow_ra"] >= rp_7_ra
+mask_rp2 = df_ra_peaks["sf_max"] >= rp_2_ra
+mask_rp5 = df_ra_peaks["sf_max"] >= rp_5_ra
+mask_rp7 = df_ra_peaks["sf_max"] >= rp_7_ra
 
 ax.scatter(
-    df_ra.loc[mask_rp2 & ~mask_rp5, "valid_time"],
-    df_ra.loc[mask_rp2 & ~mask_rp5, "streamflow_ra"],
+    df_ra_peaks.loc[mask_rp2 & ~mask_rp5, "sf_max_date"],
+    df_ra_peaks.loc[mask_rp2 & ~mask_rp5, "sf_max"],
     c=SAPPHIRE,
     s=30,
     label="Exceeds 1 in 2 rp",
 )
 ax.scatter(
-    df_ra.loc[mask_rp5 & ~mask_rp7, "valid_time"],
-    df_ra.loc[mask_rp5 & ~mask_rp7, "streamflow_ra"],
+    df_ra_peaks.loc[mask_rp5 & ~mask_rp7, "sf_max_date"],
+    df_ra_peaks.loc[mask_rp5 & ~mask_rp7, "sf_max"],
     c=MINT,
     s=30,
     label="Exceeds 1 in 5 rp",
 )
 ax.scatter(
-    df_ra.loc[mask_rp7, "valid_time"].astype("datetime64[ns]"),
-    df_ra.loc[mask_rp7, "streamflow_ra"],
+    df_ra_peaks.loc[mask_rp7, "sf_max_date"],
+    df_ra_peaks.loc[mask_rp7, "sf_max"],
     c=TOMATO,
     s=30,
     label="Exceeds 1 in 7 rp",
@@ -485,34 +542,18 @@ plt.legend()
 Now let's look at the yearly peaks
 
 ```python
-df_peaks = df_merged.groupby(
-    df_merged["valid_time"].dt.year.rename("year")
-).agg(
-    sf_max=("streamflow", "max"),
-    sf_max_date=(
-        "streamflow",
-        lambda x: df_merged.loc[x.idxmax(), "valid_time"],
-    ),
-    level_max=("level", "max"),
-    level_max_date=(
-        "level",
-        lambda x: (
-            df_merged.loc[x.idxmax(), "valid_time"]
-            if x.notna().any()
-            else pd.NaT
-        ),
-    ),
-)
+df_all_peaks = df_nh_peaks.merge(df_ra_peaks, how="inner")
+df_all_peaks = df_all_peaks[df_all_peaks.year.isin(NH_YEARS_PEAKS)]
 ```
 
 ```python
 fig, ax = plt.subplots()
 
-ax.scatter(df_peaks["sf_max"], df_peaks["level_max"], c="#007ce0")
+ax.scatter(df_all_peaks["sf_max"], df_all_peaks["level_max"], c="#007ce0")
 
-for year, row in df_peaks.iterrows():
+for idx, row in df_all_peaks.iterrows():
     ax.annotate(
-        year,
+        row["year"],
         (row["sf_max"] + 60, row["level_max"]),
         ha="center",
         va="center",
@@ -523,8 +564,8 @@ for year, row in df_peaks.iterrows():
 ax.axvline(rp_5_ra, lw=0.5, c=TOMATO)
 ax.axhline(rp_5_nh, lw=0.5, c=TOMATO)
 
-ax.set_ylim(bottom=0, top=df_peaks["level_max"].max() * 1.1)
-ax.set_xlim(left=0, right=df_peaks["sf_max"].max() * 1.1)
+ax.set_ylim(bottom=0, top=df_all_peaks["level_max"].max() * 1.1)
+ax.set_xlim(left=0, right=df_all_peaks["sf_max"].max() * 1.1)
 ax.set_xlabel("Reanalysis yearly peak (m$^{3}$/s)")
 ax.set_ylabel("Observational yearly peak")
 ax.set_title("Yearly peaks in reanalysis and observational data")
@@ -554,13 +595,17 @@ def get_more_stats(TP, FP, FN):
     return precision, recall, f1
 
 
-df_peaks["detection_type"] = df_peaks.apply(
+df_all_peaks["detection_type"] = df_all_peaks.apply(
     lambda row: determine_detection_type(row, rp_5_nh, rp_5_ra), axis=1
 )
 ```
 
 ```python
-counts = df_peaks["detection_type"].value_counts().to_dict()
+counts = df_all_peaks["detection_type"].value_counts().to_dict()
+```
+
+```python
+counts
 ```
 
 ```python
