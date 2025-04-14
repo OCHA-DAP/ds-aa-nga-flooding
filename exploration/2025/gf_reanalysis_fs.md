@@ -267,6 +267,9 @@ ax.set_ylim(ylims)
 
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
+
+ax.set_xlabel("GloFAS reanalysis yearly peak")
+ax.set_ylabel("Floodscan yearly peak")
 ```
 
 ```python
@@ -334,9 +337,9 @@ for days_early in days_early_list:
     ax.annotate(
         annotation,
         (
-            pd.to_datetime("1900-06-20")
+            pd.to_datetime("1900-08-10")
             - pd.DateOffset(days=days_early / 2 + 5),
-            pd.to_datetime("1900-06-20") + pd.DateOffset(days=days_early / 2),
+            pd.to_datetime("1900-08-10") + pd.DateOffset(days=days_early / 2),
         ),
         rotation=45,
         ha="center",
@@ -375,6 +378,10 @@ ax.yaxis.set_major_formatter(mdates.DateFormatter("%d-%b"))
 
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
+```
+
+```python
+df_peaks
 ```
 
 ```python

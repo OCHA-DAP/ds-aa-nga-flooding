@@ -202,5 +202,9 @@ blob_name = f"{blob.PROJECT_PREFIX}/processed/floodscan/fs_benue_pixels_1998_202
 ```
 
 ```python
+blob_name
+```
+
+```python
 stratus.upload_parquet_to_blob(df_fs_combined, blob_name)
 ```

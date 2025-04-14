@@ -40,6 +40,10 @@ df_nh.sort_values("level")
 ```
 
 ```python
+df_nh.loc[df_nh[df_nh["time"].dt.year == 2022]["level"].idxmax()]
+```
+
+```python
 df_nh.groupby(df_nh["time"].dt.year)["level"].max().reset_index().sort_values(
     "level"
 )
