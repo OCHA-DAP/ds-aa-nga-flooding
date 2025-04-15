@@ -7,9 +7,9 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.16.7
   kernelspec:
-    display_name: nga-flooding
+    display_name: venv
     language: python
-    name: nga-flooding
+    name: python3
 ---
 
 ## GloFAS vs Google Forecast and Reanalysis Comparison
@@ -21,22 +21,17 @@ jupyter:
 ```
 
 ```python
-import os
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
 import pandas as pd
-import xarray as xr
 import ocha_stratus as stratus
-from datetime import timedelta
 import numpy as np
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.datasources import nihsa, glofas, grrr
-from src.utils import blob
+from src.datasources import glofas, grrr
 
 SAPPHIRE = "#007ce0"
 TOMATO = "#f2645a"

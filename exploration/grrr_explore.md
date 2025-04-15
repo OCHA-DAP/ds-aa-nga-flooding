@@ -7,9 +7,9 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.16.7
   kernelspec:
-    display_name: nga-flooding
+    display_name: venv
     language: python
-    name: nga-flooding
+    name: python3
 ---
 
 ```python
@@ -19,18 +19,13 @@ jupyter:
 ```
 
 ```python
-import os
 import pandas as pd
-import xarray as xr
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import xskillscore as xs
-import folium
-from src.datasources import hydrosheds, codab, glofas, nihsa, grrr
+from src.datasources import nihsa, grrr
 from src.utils import rp_calc
+import xskillscore as xs
 from dotenv import load_dotenv
-from src.constants import WUROBOKI_LAT, WUROBOKI_LON
 
 load_dotenv()
 
@@ -578,5 +573,7 @@ if "TP" not in counts.keys():
 Division by zero here... makes sense since there's no TPs...
 
 ```python
-precision, recall, f1 = get_more_stats(counts["TP"], counts["FP"], counts["FN"])
+precision, recall, f1 = get_more_stats(
+    counts["TP"], counts["FP"], counts["FN"]
+)
 ```
