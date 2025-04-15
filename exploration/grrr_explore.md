@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import xskillscore as xs
 import folium
-from src.datasources import hydrosheds, codab, glofas, nihsa
+from src.datasources import hydrosheds, codab, glofas, nihsa, grrr
 from src.utils import rp_calc
 from dotenv import load_dotenv
 from src.constants import WUROBOKI_LAT, WUROBOKI_LON
@@ -80,51 +80,16 @@ NH_YEARS_RECENT_PEAKS = [
 ]
 ```
 
-```python
-def open_zarr(path):
-    return xr.open_zarr(
-        store=path, chunks="auto", storage_options=dict(token="anon")
-    )
-```
-
 ## Load in the GRRR data
 
 ```python
-base_directory = (
-    "gs://flood-forecasting/hydrologic_predictions/model_id_8583a5c2_v0/"
-)
-reforecast_path = os.path.join(base_directory, "reforecast/streamflow.zarr/")
-reanalysis_path = os.path.join(base_directory, "reanalysis/streamflow.zarr/")
-return_periods_path = os.path.join(base_directory, "return_periods.zarr/")
-outlets_path = os.path.join(
-    base_directory, "hybas_outlet_locations_UNOFFICIAL.zarr/"
-)
-```
+ds_ra = grrr.load_reanalysis()
+df_ra = grrr.process_reanalysis(ds_ra)
 
-```python
-ds_rf = open_zarr(reforecast_path).sel(gauge_id=HYBAS_ID).compute()
-ds_ra = open_zarr(reanalysis_path).sel(gauge_id=HYBAS_ID).compute()
-ds_outlet_location = open_zarr(outlets_path).sel(gauge_id=HYBAS_ID).compute()
-ds_return_periods = (
-    open_zarr(return_periods_path).sel(gauge_id=HYBAS_ID).compute()
-)
-```
+ds_rf = grrr.load_reforecast()
+df_rf = grrr.process_reforecast(ds_rf)
 
-```python
-# Clean up reforecast and convert to dataframe
-df_rf = ds_rf.to_dataframe().reset_index()
-
-df_rf["valid_time"] = df_rf.apply(
-    lambda row: row["issue_time"] + row["lead_time"], axis=1
-)
-df_rf["leadtime"] = df_rf["lead_time"].apply(lambda x: x.days)
-df_rf = df_rf.drop(columns=["lead_time", "gauge_id"])
-
-# Clean up reanalysis and convert to dataframe
-df_ra = ds_ra.to_dataframe().reset_index()
-df_ra = df_ra.rename(
-    columns={"time": "valid_time", "streamflow": "streamflow_ra"}
-).drop(columns=["gauge_id"])
+ds_return_periods = grrr.load_return_periods()
 ```
 
 ### Return Periods
@@ -155,7 +120,7 @@ return_periods = df_rp["return_period"]
 df_rp_calculated = rp_calc.estimate_return_periods(
     df_ra,
     date_col="valid_time",
-    val_col="streamflow_ra",
+    val_col="streamflow",
     target_rps=list(return_periods),
 )
 ```
@@ -200,12 +165,9 @@ def percent_bias(obs, pred):
     return 100.0 * sum(pred - obs) / sum(obs)
 
 
-df_merged = df_rf.merge(df_ra, how="left").rename(
-    columns={
-        "streamflow": "streamflow_rf",
-        "streamflow_ra": "streamflow_ra",
-    }
-)
+df_ra = df_ra.rename(columns={"streamflow": "streamflow_ra"})
+df_rf = df_rf.rename(columns={"streamflow": "streamflow_rf"})
+df_merged = df_rf.merge(df_ra, how="left")
 
 for rp in [None, 2, 5, 7]:
     if rp:
