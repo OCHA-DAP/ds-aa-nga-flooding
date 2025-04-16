@@ -15,6 +15,10 @@ jupyter:
 
 # Adamawa LGAs
 
+<!-- markdownlint-disable MD013 -->
+
+Compare HNRP targeting and flood exposure for LGAs along Benue in Adamawa.
+
 ```python
 %load_ext jupyter_black
 %load_ext autoreload
@@ -31,9 +35,7 @@ from src.utils import blob
 from src.constants import *
 ```
 
-```python
-DEMSA2
-```
+## Load data
 
 ```python
 adm2 = codab.load_codab_from_blob(admin_level=2, aoi_only=True)
@@ -52,6 +54,10 @@ fs_mean = fs.groupby("ADM2_PCODE")["total_exposed"].mean().reset_index()
 ```python
 fs_mean[fs_mean["ADM2_PCODE"] == DEMSA2]
 ```
+
+## Plot
+
+### Basic plot with river
 
 ```python
 fig, ax = plt.subplots()
@@ -75,6 +81,10 @@ for name, row in adm2_benue.set_index("ADM2_EN").iterrows():
 ax.axis("off")
 ```
 
+## Load HNRP data
+
+CSV from HDX
+
 ```python
 blob_name = f"{blob.PROJECT_PREFIX}/raw/hnrp/hdx_hapi_humanitarian_needs_global_2025_adamawa_intersectoral_total.csv"
 ```
@@ -95,6 +105,10 @@ gdf_compare = adm2_benue.merge(
     how="left",
 ).merge(fs_mean)
 ```
+
+## More plots
+
+### Population targeted
 
 ```python
 fig, ax = plt.subplots(dpi=200)
@@ -134,6 +148,8 @@ ax.set_title("Population Targeted in 2025 HNRP")
 ax.axis("off")
 ```
 
+### Population exposed
+
 ```python
 fig, ax = plt.subplots(dpi=200)
 gdf_compare.plot(
@@ -172,14 +188,7 @@ ax.set_title("Average population exposed to flooding (Floodscan)")
 ax.axis("off")
 ```
 
-```python
-gdf_compare
-```
-
-```python
-for name, row in gdf_compare.set_index("ADM2_EN").iterrows():
-    print(name)
-```
+### Scatter plot comparison
 
 ```python
 fig, ax = plt.subplots(dpi=200, figsize=(7, 7))

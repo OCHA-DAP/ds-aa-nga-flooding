@@ -15,7 +15,7 @@ jupyter:
 
 # GloFAS reanalysis / Floodscan
 <!-- markdownlint-disable MD013 -->
-Validation of GloFAS reanalysis using Floodscan in relevant LGAs
+Validation of GloFAS reanalysis using Floodscan in relevant LGAs or pixels
 
 ```python
 %load_ext jupyter_black
@@ -35,6 +35,8 @@ from src.datasources import glofas, codab
 from src.constants import *
 from src.utils import blob
 ```
+
+## Load data
 
 ```python
 station_name = "wuroboki"
@@ -89,6 +91,10 @@ df_fs_pixels["pixel_id"] = (
 df_fs_pixels
 ```
 
+## Compare pixels
+
+See which pixels have the best correlation with GloFAS reanalysis
+
 ```python
 df_compare_pixels = df_ra.rename(columns={"time": "date"}).merge(df_fs_pixels)
 ```
@@ -127,6 +133,14 @@ top_x, top_y = df_corr_pixels.sort_values("corr", ascending=False).iloc[1][
 ]
 ```
 
+## Combine reanalysis with Floodscan
+
+There are a few different ways we can select with Floodscan pixels to use in the comparison.
+
+Run only the relevant cells to merge that Floodscan aggregation for comparison.
+
+### 1. Use admin2 Floodscan raster stats
+
 ```python
 df_compare = (
     df_ra.rename(columns={"time": "valid_date"})
@@ -142,6 +156,12 @@ for name, group in df_compare.groupby("ADM2_EN"):
 ```
 
 ```python
+df_compare_adm2 = df_compare[df_compare["ADM2_PCODE"] == NUMAN2].copy()
+```
+
+### 2. Use mean of pixels
+
+```python
 df_compare_adm2 = (
     df_compare_pixels.groupby("date")[["dis24", "SFED"]]
     .mean()
@@ -150,6 +170,8 @@ df_compare_adm2 = (
     .rename(columns={"date": "valid_date", "SFED": "mean"})
 )
 ```
+
+### 3. Use the best pixel
 
 ```python
 df_compare_adm2 = (
@@ -161,9 +183,7 @@ df_compare_adm2 = (
 )
 ```
 
-```python
-df_compare_adm2 = df_compare[df_compare["ADM2_PCODE"] == NUMAN2].copy()
-```
+## Further processing
 
 ```python
 df_compare_adm2["mean"] = (
@@ -172,6 +192,8 @@ df_compare_adm2["mean"] = (
 ```
 
 ```python
+df_compare_adm2["year"] = df_compare_adm2["valid_date"].dt.year
+
 df_compare_adm2 = df_compare_adm2[df_compare_adm2["year"] >= 2003]
 ```
 
@@ -188,9 +210,9 @@ df_plot.loc[df_plot["mean"].idxmax()]
 df_compare_adm2[df_compare_adm2["valid_date"].dt.year == 2022]
 ```
 
-```python
-df_compare_adm2["year"] = df_compare_adm2["valid_date"].dt.year
+### Calculate peaks
 
+```python
 # For dis24
 dis24_max_idx = df_compare_adm2.groupby("year")["dis24"].idxmax()
 dis24_max_df = df_compare_adm2.loc[
@@ -214,6 +236,10 @@ for x in ["rea", "fs"]:
     )
 df_peaks
 ```
+
+## Plotting
+
+### Peak accuracy
 
 ```python
 rea_color = "royalblue"
@@ -272,9 +298,7 @@ ax.set_xlabel("GloFAS reanalysis yearly peak")
 ax.set_ylabel("Floodscan yearly peak")
 ```
 
-```python
-[x for x in range(-50, 41, 10)]
-```
+### Peak timing
 
 ```python
 fig, ax = plt.subplots(dpi=200, figsize=(8, 8))
@@ -383,6 +407,8 @@ ax.spines["right"].set_visible(False)
 ```python
 df_peaks
 ```
+
+### Timeseries
 
 ```python
 dis_max, fs_max = df_compare_adm2[["dis24", "mean"]].max()

@@ -14,9 +14,15 @@ jupyter:
 ---
 
 # Impact comparison
-
-Comparison of historical impact from various sources
 <!-- markdownlint-disable MD013 -->
+Comparison of historical impact from various sources, each of which have their own notebook for basic processing:
+
+- NEMA flood risk
+- NiHSA flood record
+- UNICEF impact
+- IOM impact
+
+Also includes Floodscan exposure.
 
 ```python
 %load_ext jupyter_black

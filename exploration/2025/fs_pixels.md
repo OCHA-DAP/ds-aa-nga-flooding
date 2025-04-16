@@ -15,6 +15,10 @@ jupyter:
 
 # Floodscan pixels
 
+<!-- markdownlint-disable MD013 -->
+
+Grab Floodscan pixels along Benue in Adamawa.
+
 ```python
 %load_ext jupyter_black
 %load_ext autoreload
@@ -33,12 +37,12 @@ from src.datasources import floodscan, hydrosheds
 from src.utils import blob
 ```
 
-```python
-benue = hydrosheds.load_benue_aoi()
-```
+## Load data
+
+### Benue river
 
 ```python
-benue
+benue = hydrosheds.load_benue_aoi()
 ```
 
 ```python
@@ -52,6 +56,10 @@ benue_buffer = benue.to_crs(3857).buffer(10 * 1000).to_crs(4326)
 ```python
 benue_buffer.plot()
 ```
+
+### Floodscan
+
+#### Old `.nc` file
 
 ```python
 fs_old = floodscan.load_raw_nga_floodscan()
@@ -73,6 +81,8 @@ df_fs_old
 ```python
 df_fs_old.nunique()
 ```
+
+#### New COGs
 
 ```python
 blob_name_format = (
@@ -124,6 +134,8 @@ fs_new_clip.sel(date="2024-02-01").plot()
 benue.plot(ax=ax)
 ```
 
+### Merge old and new Floodscan
+
 ```python
 with ProgressBar():
     df_fs_new_raw = fs_new_clip.to_dataframe(name="SFED")
@@ -137,6 +149,8 @@ df_fs_new = df_fs_new_raw["SFED"].reset_index().dropna()
 df_fs_new
 ```
 
+Check if same pixels in each
+
 ```python
 df_fs_old.nunique()
 ```
@@ -148,6 +162,8 @@ df_fs_new.nunique()
 ```python
 df_fs_new["x"].round(4)
 ```
+
+Combine `df`s, and found pixel coords so they line up
 
 ```python
 df_fs_combined = pd.concat(
@@ -171,9 +187,13 @@ df_fs_combined["y"] = df_fs_combined["y"].round(4)
 df_fs_combined.groupby(["x", "y"]).size()
 ```
 
+Drop pixel that is missing
+
 ```python
 df_fs_combined = df_fs_combined[df_fs_combined["x"] != 12.9583]
 ```
+
+Double-check all pixels are there for all dates
 
 ```python
 df_fs_combined.groupby(["x", "y"]).size()
@@ -196,6 +216,8 @@ df_fs_combined.pivot(columns=["x", "y"], index="date").corr()
 ```python
 df_fs_combined.dtypes
 ```
+
+## Write to blob
 
 ```python
 blob_name = f"{blob.PROJECT_PREFIX}/processed/floodscan/fs_benue_pixels_1998_2024.parquet"
