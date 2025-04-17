@@ -6,11 +6,11 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.16.3
+      jupytext_version: 1.16.1
   kernelspec:
-    display_name: nga-flooding
+    display_name: ds-aa-nga-flooding
     language: python
-    name: nga-flooding
+    name: ds-aa-nga-flooding
 ---
 
 # GloFAS new reanalysis
@@ -26,10 +26,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 import xarray as xr
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 from src.datasources import nihsa, glofas
 from src.utils import blob
@@ -166,10 +162,6 @@ df_plot["dis24_max"].quantile(1 - 1 / rp)
 
 ```python
 df_peaks.loc[2000:]
-```
-
-```python
-
 ```
 
 ```python

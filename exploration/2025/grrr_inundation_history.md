@@ -22,7 +22,7 @@ jupyter:
 
 See [here](https://console.cloud.google.com/storage/browser/flood-forecasting/inundation_history;tab=objects?invt=AbuORQ&prefix=&forceOnObjectsSortingFiltering=false) for the bucket holding the data and documentation. Some notes from the README:
 
----- 
+----
 
 > This folder contains inundation history files created by Google's floods team based on the GLAD dataset. These files provide historical data on how often each 128-meter pixel in the world has been wet between 1999 and 2020, derived from satellite imagery.
 
@@ -33,7 +33,7 @@ See [here](https://console.cloud.google.com/storage/browser/flood-forecasting/in
 
 > Each layer contains a single Shapely MultiPolygon geometry. Areas not covered by any of the polygons were wet less than 0.5% of the time. Constant water bodies have been removed from all layers.
 
----- 
+----
 
 Let's imagine that we want to pull in all the data covering Nigeria...
 
