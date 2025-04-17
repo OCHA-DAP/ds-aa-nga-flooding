@@ -165,10 +165,6 @@ df_peaks.loc[2000:]
 ```
 
 ```python
-
-```
-
-```python
 # df_plot = df_peaks.loc[nihsa.WUROBOKI_COMPLETE_YEARS].copy()
 df_plot = df_peaks.loc[2013:]
 # df_plot = df_peaks.copy()
