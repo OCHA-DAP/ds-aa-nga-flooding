@@ -6,27 +6,17 @@ import zipfile
 from typing import Literal
 
 import geopandas as gpd
+import ocha_stratus as stratus
 import pandas as pd
-from azure.storage.blob import ContainerClient
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
-
-PROD_BLOB_SAS = os.getenv("PROD_BLOB_SAS")
-PROD_BLOB_BASE_URL = "https://imb0chd0prod.blob.core.windows.net/"
-PROD_BLOB_AA_BASE_URL = PROD_BLOB_BASE_URL + "aa-data"
-PROD_BLOB_AA_URL = PROD_BLOB_AA_BASE_URL + "?" + PROD_BLOB_SAS
-
-DEV_BLOB_SAS = os.getenv("DS_AZ_BLOB_DEV_SAS_WRITE")
-DEV_BLOB_BASE_URL = "https://imb0chd0dev.blob.core.windows.net/"
-DEV_BLOB_PROJ_BASE_URL = DEV_BLOB_BASE_URL + "projects"
-DEV_BLOB_PROJ_URL = DEV_BLOB_PROJ_BASE_URL + "?" + DEV_BLOB_SAS
 
 PROJECT_PREFIX = "ds-aa-nga-flooding"
 
-
-prod_container_client = ContainerClient.from_container_url(PROD_BLOB_AA_URL)
-dev_container_client = ContainerClient.from_container_url(DEV_BLOB_PROJ_URL)
+prod_container_client = stratus.get_container_client(
+    container_name="aa-data", stage="prod"
+)
+dev_container_client = stratus.get_container_client(
+    container_name="projects", stage="dev"
+)
 
 
 def load_csv_from_blob(

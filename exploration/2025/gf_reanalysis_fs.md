@@ -6,11 +6,11 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.16.1
+      jupytext_version: 1.16.3
   kernelspec:
-    display_name: ds-aa-nga-flooding
+    display_name: nga-flooding
     language: python
-    name: ds-aa-nga-flooding
+    name: nga-flooding
 ---
 
 # GloFAS reanalysis / Floodscan
