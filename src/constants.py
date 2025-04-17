@@ -2,6 +2,10 @@ CERF_YEARS = [2013, 2018, 2022]
 ADAMAWA = "NG002"
 WUROBOKI_LAT = 9.375
 WUROBOKI_LON = 12.78
+# new values for 2025 reanalysis
+WUROBOKI_LAT_NEW = 9.375
+WUROBOKI_LON_NEW = 12.775
+
 WUROBOKI_2YRPR = 2200
 WUROBOKI_3YRPR = 2669
 # this is a visual guess from the GloFAS plot

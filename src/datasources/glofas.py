@@ -1,10 +1,12 @@
 import os
 from pathlib import Path
+from typing import Literal
 
 import cdsapi
+import numpy as np
 import pandas as pd
 import xarray as xr
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from src.constants import (
     WUROBOKI_2YRPR,
@@ -13,6 +15,7 @@ from src.constants import (
     WUROBOKI_LAT,
     WUROBOKI_LON,
 )
+from src.utils import blob, cds_utils
 
 DATA_DIR = Path(os.getenv("AA_DATA_DIR"))
 GF_RAW_DIR = (
@@ -23,6 +26,27 @@ GF_REFORECAST_RAW_DIR = (
 )
 GF_TEST_DIR = DATA_DIR / "public" / "raw" / "nga" / "glofas" / "test"
 GF_PROC_DIR = DATA_DIR / "public" / "processed" / "nga" / "glofas"
+
+
+GF_STATIONS = {
+    "wuroboki": {
+        "lon": 12.767,
+        "lat": 9.383,
+    }
+}
+
+
+def get_blob_name(
+    data_type: Literal["raw", "processed"],
+    dataset: Literal["reanalysis", "reforecast", "forecast"],
+    station_name: str,
+    year: int = None,
+) -> str:
+    if year is None and data_type == "raw":
+        raise ValueError("Year must be provided for raw data")
+    if data_type == "raw":
+        return f"{blob.PROJECT_PREFIX}/{data_type}/glofas/{dataset}/glofas_{data_type}_{dataset}_{station_name}_{year}.grib"  # noqa
+    return f"{blob.PROJECT_PREFIX}/{data_type}/glofas/glofas_{dataset}_{station_name}.parquet"  # noqa
 
 
 def process_reanalysis():
@@ -267,3 +291,99 @@ def load_reforecast():
     return pd.read_csv(
         GF_PROC_DIR / filename, parse_dates=["time", "valid_time"]
     )
+
+
+def get_glofas_grid_coords(lon, lat):
+    grid_lat = np.arange(-90.025, 90, 0.05)
+    grid_lon = np.arange(-180.025, 180, 0.05)
+    nearest_lat_idx = (np.abs(grid_lat - lat)).argmin()
+    nearest_lon_idx = (np.abs(grid_lon - lon)).argmin()
+    return round(grid_lon[nearest_lon_idx], 3), round(
+        grid_lat[nearest_lat_idx], 3
+    )
+
+
+def download_glofas_reanalysis_year_to_blob(
+    year: int, station_name: str, pitch: float = 0.001, clobber: bool = False
+):
+    station = GF_STATIONS[station_name]
+    glofas_lon, glofas_lat = get_glofas_grid_coords(
+        station["lon"], station["lat"]
+    )
+    N = glofas_lat + pitch
+    S = glofas_lat
+    E = glofas_lon + pitch
+    W = glofas_lon
+    dataset = "cems-glofas-historical"
+    request = {
+        "system_version": ["version_4_0"],
+        "hydrological_model": ["lisflood"],
+        "product_type": ["consolidated"],
+        "variable": ["river_discharge_in_the_last_24_hours"],
+        "hyear": [f"{year}"],
+        "hmonth": [f"{x:02}" for x in range(1, 13)],
+        "hday": [f"{x:02}" for x in range(1, 32)],
+        "data_format": "grib2",
+        "download_format": "unarchived",
+        "area": [N, W, S, E],
+    }
+    blob_name = get_blob_name("raw", "reanalysis", station_name, year)
+    # check if blob exists
+    if not clobber and blob.check_blob_exists(blob_name):
+        print(f"{blob_name} already exists in blob storage")
+        return
+    return cds_utils.download_raw_cds_api_to_blob(dataset, request, blob_name)
+
+
+def load_glofas_reanalysis_year(
+    data_type: Literal["raw", "processed"], station_name: str, year: int
+):
+    blob_name = get_blob_name(data_type, "reanalysis", station_name, year)
+    if data_type == "raw":
+        local_filepath = "temp" / Path(blob_name)
+        if local_filepath.exists():
+            return xr.load_dataset(local_filepath)
+        else:
+            blob_data = blob.load_blob_data(blob_name)
+            print(f"Downloading {blob_name} to {local_filepath}")
+            if not local_filepath.parent.exists():
+                os.makedirs(local_filepath.parent)
+            with open(local_filepath, "wb") as file:
+                file.write(blob_data)
+            return xr.load_dataset(local_filepath)
+    elif data_type == "processed":
+        return blob.load_parquet_from_blob(blob_name)
+
+
+def process_glofas_reanalysis(station_name: str):
+    raw_blob_dir = "/".join(
+        get_blob_name("raw", "reanalysis", station_name, year=0).split("/")[
+            :-1
+        ]
+    )
+    blob_names = [
+        x
+        for x in blob.list_container_blobs(name_starts_with=raw_blob_dir)
+        if x.endswith(".grib")
+    ]
+    dfs = []
+    for blob_name in tqdm(blob_names):
+        year = int(blob_name.split(".")[0].split("_")[-1])
+        ds = load_glofas_reanalysis_year("raw", station_name, year)
+        da = ds["dis24"]
+        df_in = da.to_dataframe().reset_index()[["time", "dis24"]]
+        dfs.append(df_in)
+    df = pd.concat(dfs, ignore_index=True)
+    df = df.sort_values("time")
+    blob_name = get_blob_name("processed", "reanalysis", station_name)
+    blob.upload_parquet_to_blob(blob_name, df)
+
+
+def download_glofas_reanalysis_to_blob(station_name: str):
+    for year in tqdm(range(1979, 2025)):
+        download_glofas_reanalysis_year_to_blob(year, station_name)
+
+
+def load_glofas_reanalysis(station_name: str):
+    blob_name = get_blob_name("processed", "reanalysis", station_name)
+    return blob.load_parquet_from_blob(blob_name)
