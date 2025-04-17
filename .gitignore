@@ -136,7 +136,7 @@ dmypy.json
 .idea/
 
 # ignore .ipynb as per coding guidelines
-*.ipynb
+# *.ipynb
 
 # GDrive credentials
 credentials.json
