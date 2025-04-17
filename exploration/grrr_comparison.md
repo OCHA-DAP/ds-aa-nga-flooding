@@ -7,12 +7,14 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.16.7
   kernelspec:
-    display_name: venv
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
 
-## GloFAS vs Google Forecast and Reanalysis Comparison
+## GloFAS vs Google Reanalysis Comparison
+
+This notebook compares both Google and GloFAS reanalysis data against Floodscan, focusing particularly on how well they align in detecting 3-year exceedance events.
 
 ```python
 %load_ext jupyter_black

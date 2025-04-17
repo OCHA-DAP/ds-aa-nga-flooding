@@ -7,10 +7,14 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.16.7
   kernelspec:
-    display_name: venv
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
+
+## GRRR Forecast Skill and NiHSA Comparison
+
+This notebook investigates Google's forecast skill at Wuro Bokki, Nigeria, and compares the reanalysis data against observational water level data from NiHSA.
 
 ```python
 %load_ext jupyter_black
