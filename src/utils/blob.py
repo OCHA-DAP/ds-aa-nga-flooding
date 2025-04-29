@@ -9,8 +9,6 @@ import geopandas as gpd
 import ocha_stratus as stratus
 import pandas as pd
 
-PROJECT_PREFIX = "ds-aa-nga-flooding"
-
 prod_container_client = stratus.get_container_client(
     container_name="aa-data", stage="prod"
 )

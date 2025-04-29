@@ -220,7 +220,9 @@ df_fs_combined.dtypes
 ## Write to blob
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/processed/floodscan/fs_benue_pixels_1998_2024.parquet"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/processed/floodscan/fs_benue_pixels_1998_2024.parquet"
 ```
 
 ```python

@@ -24,7 +24,9 @@ def calculate_one_group_rp(group, col_name: str = "q", ascending: bool = True):
     pd.DataFrame
         The input group with the RP columns added.
     """
-    group[f"{col_name}_rank"] = group[col_name].rank(ascending=ascending)
+    group[f"{col_name}_rank"] = (
+        group[col_name].rank(ascending=ascending).astype(int)
+    )
     group[f"{col_name}_rp"] = (len(group) + 1) / group[f"{col_name}_rank"]
     return group
 

@@ -6,11 +6,11 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.16.3
+      jupytext_version: 1.16.1
   kernelspec:
-    display_name: nga-flooding
+    display_name: ds-aa-nga-flooding
     language: python
-    name: nga-flooding
+    name: ds-aa-nga-flooding
 ---
 
 # GloFAS reanalysis / Floodscan
@@ -77,7 +77,9 @@ df_sfed = df_fs[df_fs["band"] == "SFED"]
 ```
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/processed/floodscan/fs_benue_pixels_1998_2024.parquet"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/processed/floodscan/fs_benue_pixels_1998_2024.parquet"
 df_fs_pixels = stratus.load_parquet_from_blob(blob_name)
 ```
 
@@ -249,6 +251,10 @@ none_color = "grey"
 ```
 
 ```python
+(len(df_peaks) + 1) / 5
+```
+
+```python
 fig, ax = plt.subplots(dpi=200, figsize=(8, 8))
 
 xmin, ymin = df_peaks[["rea_max", "fs_max"]].min()
@@ -259,7 +265,7 @@ pad = 0.05
 xlims = (xmin - xrange * pad, xmax + xrange * pad)
 ylims = (ymin - yrange * pad, ymax + yrange * pad)
 
-rp = 3
+rp = 6
 
 rea_thresh = df_peaks["rea_max"].quantile(1 - 1 / rp)
 fs_thresh = df_peaks["fs_max"].quantile(1 - 1 / rp)
