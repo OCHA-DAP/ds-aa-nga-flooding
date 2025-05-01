@@ -196,10 +196,6 @@ np.seterr(divide="ignore", invalid="ignore")
 Iterate over all possible combinations of GloFAS and Google forecast thresholds. Also iterate over the target RPs.
 
 ```python
-dff_daily
-```
-
-```python
 total_years = len(df_yearly_max)
 ranks = range(total_years + 1)
 
@@ -471,10 +467,6 @@ plot_metrics_one_overallrp("f1")
 plot_metrics_one_overallrp("tpr")
 ```
 
-```python
-df_rps_acceptable
-```
-
 ## Specific combination
 
 Pick specification combination based on accuracy metrics. Looks like a balanced trigger (equal probability to activate with both) seems to provide decent combination of accuracy and leadtime. We can then look at the historical performance in more detail.
@@ -484,6 +476,7 @@ df_rps_acceptable[df_rps_acceptable["rel_prob_gr"] == 0]
 ```
 
 ```python
+# based on reading of above df, we want individual RPs 5.4 years
 df_selected_trigger = df_all_simulations[
     (df_all_simulations["rp_gf"] == 5.4) & (df_all_simulations["rp_gr"] == 5.4)
 ]
@@ -498,14 +491,6 @@ rp_target = 5
 ```
 
 ### True positives
-
-```python
-df_selected_trigger
-```
-
-```python
-df_selected_trigger.columns
-```
 
 ```python
 dff = df_selected_trigger[
@@ -555,4 +540,8 @@ dff = df_selected_trigger[
 for _, row in dff.iterrows():
     print(row)
     print()
+```
+
+```python
+
 ```
