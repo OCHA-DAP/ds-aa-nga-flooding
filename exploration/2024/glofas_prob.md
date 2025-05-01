@@ -49,7 +49,7 @@ ref["time"].dt.year.nunique()
 ## Calculate reanalysis peaks
 
 ```python
-rp_a = 3
+rp_a = 5
 
 rea = glofas.load_reanalysis()
 rea = rea[rea["time"].dt.year.isin(ref["time"].dt.year.unique())]
@@ -76,10 +76,10 @@ ref
 Filtering by maximum leadtime
 
 ```python
-rp_f = 3
+rp_f = 5
 lt_min = 7
 
-val_col = "2yr_thresh"
+val_col = "5yr_thresh"
 
 dfs = []
 
@@ -132,7 +132,7 @@ metrics
 ```
 
 ```python
-compare[compare["trigger_f"]].set_index("lt_max").loc[14]
+compare[compare["trigger_f"]].set_index("lt_max").loc[9]
 ```
 
 ### Plot
@@ -145,7 +145,7 @@ rp_a_3 = 2600
 # 2yr
 # rp_a_3 = 2364.7734
 rp_a_5 = 3109
-rp_f = 0.8 * 100
+rp_f = 0.1 * 100
 compare_lt = compare[compare["lt_max"] == 14]
 compare_lt["percent"] = compare_lt[val_col] * 100
 fig, ax = plt.subplots(dpi=300)
@@ -206,6 +206,10 @@ ax.set_xlabel(f"Forecast (% above 2 yr RP, leadtime {lt_min}-14 days)")
 ax.set_ylim(top=5500)
 ax.set_xlim(right=100)
 ax.set_title("Benue river at Wuroboki\nGloFAS yearly peaks (2003-2022)")
+```
+
+```python
+(len(compare_lt) + 1) / 6
 ```
 
 ```python

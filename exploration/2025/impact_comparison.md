@@ -62,8 +62,10 @@ adm2.plot()
 ### NiHSA flood record
 
 ```python
+import src.constants
+
 blob_name = (
-    f"{blob.PROJECT_PREFIX}/processed/nihsa/floodhistory_2013_2023.parquet"
+    f"{src.constants.PROJECT_PREFIX}/processed/nihsa/floodhistory_2013_2023.parquet"
 )
 df_nihsa_record = blob.load_parquet_from_blob(blob_name)
 ```
@@ -134,7 +136,9 @@ df_nihsa_record_sum.merge(
 ### NEMA flood risk
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/raw/AA-nigeria_data/NEMA/Flood Risk Excel Data 2.xlsx"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/raw/AA-nigeria_data/NEMA/Flood Risk Excel Data 2.xlsx"
 df_nema_risk = blob.load_excel_from_blob(blob_name)
 ```
 
@@ -268,7 +272,9 @@ fs_mean
 ### NEMA UNICEF impact
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/processed/nema/NEMA Copy of FLOOD DISASTER _DATA processed.csv"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/processed/nema/NEMA Copy of FLOOD DISASTER _DATA processed.csv"
 df_unicef = blob.load_csv_from_blob(blob_name)
 df_unicef = (
     df_unicef.melt(id_vars=[x for x in df_unicef.columns if "ADM" in x])
@@ -384,7 +390,9 @@ df_unicef_count[df_unicef_count["count_floods"] >= 4].merge(
 ### IOM rain season impact
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/processed/iom/rainseason_2021_2024.parquet"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/processed/iom/rainseason_2021_2024.parquet"
 df_iom = blob.load_parquet_from_blob(blob_name)
 ```
 

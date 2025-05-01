@@ -117,3 +117,4 @@ BENUE_ADM2_PCODES = [
     NUMAN2,
     LAMURDE2,
 ]
+PROJECT_PREFIX = "ds-aa-nga-flooding"

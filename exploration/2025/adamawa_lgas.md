@@ -86,7 +86,9 @@ ax.axis("off")
 CSV from HDX
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/raw/hnrp/hdx_hapi_humanitarian_needs_global_2025_adamawa_intersectoral_total.csv"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/raw/hnrp/hdx_hapi_humanitarian_needs_global_2025_adamawa_intersectoral_total.csv"
 ```
 
 ```python

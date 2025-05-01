@@ -39,7 +39,9 @@ adm2
 ```
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/raw/AA-nigeria_data/NiHSA/LGA_Flood_History 2013-2023.xlsx"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/raw/AA-nigeria_data/NiHSA/LGA_Flood_History 2013-2023.xlsx"
 dfs = blob.load_excel_from_blob(blob_name, sheet_name=None)
 ```
 
@@ -161,8 +163,10 @@ df_nihsa
 ```
 
 ```python
+import src.constants
+
 blob_name = (
-    f"{blob.PROJECT_PREFIX}/processed/nihsa/floodhistory_2013_2023.parquet"
+    f"{src.constants.PROJECT_PREFIX}/processed/nihsa/floodhistory_2013_2023.parquet"
 )
 ```
 
