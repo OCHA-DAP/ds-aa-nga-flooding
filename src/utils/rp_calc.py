@@ -29,6 +29,36 @@ def calculate_one_group_rp(group, col_name: str = "q", ascending: bool = True):
     return group
 
 
+def calculate_groups_rp(
+    df: pd.DataFrame, by: List, col_name: str = "mean", ascending: bool = True
+):
+    """Calculate the empirical RP for each group in a DataFrame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame for which to calculate the RP.
+    by : List
+        The columns by which to group the DataFrame.
+
+    Returns
+    -------
+    pd.DataFrame
+        The input DataFrame with the RP columns added.
+    """
+    return (
+        df.groupby(by)
+        .apply(
+            calculate_one_group_rp,
+            include_groups=False,
+            col_name=col_name,
+            ascending=ascending,
+        )
+        .reset_index()
+        .drop(columns=f"level_{len(by)}")
+    )
+
+
 def estimate_return_periods(
     df: pd.DataFrame,
     date_col: str,

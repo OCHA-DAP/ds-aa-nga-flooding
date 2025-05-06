@@ -33,10 +33,10 @@ def download_codab_to_blob():
 
 def load_codab_from_blob(admin_level: int = 0, aoi_only: bool = False):
     shapefile = f"nga_adm{admin_level}.shp"
-    gdf = stratus.load_gdf_from_blob(
+    gdf = stratus.load_shp_from_blob(
         f"{blob.PROJECT_PREFIX}/raw/codab/nga.shp.zip",
         shapefile=shapefile,
-        prod_dev="dev",
+        stage="dev",
     )
     if aoi_only:
         gdf = gdf[gdf["ADM1_PCODE"].isin(AOI_ADM1_PCODES)]
