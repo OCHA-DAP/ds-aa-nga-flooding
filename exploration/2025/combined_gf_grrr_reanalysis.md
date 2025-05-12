@@ -29,6 +29,7 @@ For simplicity, just doing now with reanalysis.
 import ocha_stratus as stratus
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import numpy as np
 from tqdm.auto import tqdm
 
@@ -490,6 +491,28 @@ df_selected_trigger = df_yearly_max.merge(df_selected_trigger, how="outer")
 rp_target = 5
 ```
 
+Get actual thresholds
+
+```python
+df_selected_trigger.sort_values("dis24", ascending=False)
+```
+
+```python
+df_selected_trigger.columns
+```
+
+```python
+df_selected_trigger.sort_values("streamflow", ascending=False)
+```
+
+```python
+for x in ["dis24", "streamflow"]:
+    thresh = df_selected_trigger[
+        ~df_selected_trigger[f"{x}_trig_date"].isnull()
+    ][x].min()
+    print(x, thresh)
+```
+
 ### True positives
 
 ```python
@@ -540,6 +563,205 @@ dff = df_selected_trigger[
 for _, row in dff.iterrows():
     print(row)
     print()
+```
+
+### Timeline
+
+Plot historical timing of trigger and flood extent severities.
+
+First check average leadtimes of specific indicators:
+
+```python
+df_selected_trigger["dis24_5yr_leadtime"] = (
+    df_selected_trigger["SFED_5yr_thresh_date"]
+    - df_selected_trigger["dis24_trig_date"]
+)
+```
+
+```python
+df_selected_trigger["dis24_5yr_leadtime"].mean()
+```
+
+```python
+df_selected_trigger["streamflow_5yr_leadtime"] = (
+    df_selected_trigger["SFED_5yr_thresh_date"]
+    - df_selected_trigger["streamflow_trig_date"]
+)
+```
+
+```python
+df_selected_trigger["streamflow_5yr_leadtime"].mean()
+```
+
+```python
+df_selected_trigger["leadtime_5yr_target"].mean()
+```
+
+Create plot showing when each year both triggers would have been met, and when flood extent reached 3-, 4-, and 5-yr RP severity, as well as yearly maximum.
+
+```python
+df_plot = df_selected_trigger.copy()
+```
+
+```python
+# Ensure datetime format
+date_cols = [
+    "trig_date",
+    "dis24_trig_date",
+    "streamflow_trig_date",
+    "SFED_3yr_thresh_date",
+    "SFED_4yr_thresh_date",
+    "SFED_5yr_thresh_date",
+    "SFED_maxdate",
+]
+# df_plot[date_cols] = df_plot[date_cols].apply(pd.to_datetime)
+
+
+# Normalize to fixed year for x-axis alignment
+def normalize_date(dt):
+    if pd.isnull(dt):
+        return None
+    return dt.replace(year=2000)
+
+
+for col in date_cols:
+    df_plot[f"{col}_norm"] = df_plot[col].apply(normalize_date)
+
+# Define full style config for each date column
+# Format: col_name -> (color, label, marker, size, zorder, annotate_above_line)
+date_styles = {
+    "trig_date_norm": ("black", "Overall trigger", "|", 100, -2, False),
+    "dis24_trig_date_norm": (
+        "dodgerblue",
+        "GloFAS trigger",
+        "|",
+        50,
+        5,
+        False,
+    ),
+    "streamflow_trig_date_norm": (
+        "green",
+        "Google trigger",
+        "|",
+        50,
+        5,
+        False,
+    ),
+    "SFED_maxdate_norm": ("k", "Max. flood extent", "o", 10, 4, True),
+    "SFED_3yr_thresh_date_norm": (
+        "darkorange",
+        "3-yr RP flood extent",
+        "o",
+        40,
+        4,
+        True,
+    ),
+    "SFED_4yr_thresh_date_norm": (
+        "crimson",
+        "4-yr RP flood extent",
+        "o",
+        70,
+        4,
+        True,
+    ),
+    "SFED_5yr_thresh_date_norm": (
+        "purple",
+        "5-yr RP flood extent",
+        "o",
+        100,
+        4,
+        True,
+    ),
+}
+
+# Setup plot
+fig, ax = plt.subplots(figsize=(12, 10), dpi=200)
+years_sorted = sorted(df_plot["year"].unique(), reverse=True)
+y_positions = {year: i for i, year in enumerate(years_sorted)}
+plotted_labels = set()
+
+# Draw timelines
+for _, row in df_plot.iterrows():
+    y = y_positions[row["year"]]
+
+    # Horizontal baseline
+    ax.hlines(
+        y,
+        pd.Timestamp("2000-08-01"),
+        pd.Timestamp("2000-11-01"),
+        color="lightgray",
+        linewidth=1,
+    )
+
+    # Plot and annotate each date
+    for col_norm, (
+        color,
+        label,
+        marker,
+        size,
+        zorder,
+        annotate_above,
+    ) in date_styles.items():
+        date_val = row.get(col_norm)
+        if pd.notnull(date_val):
+            # Plot marker
+            show_label = label if label not in plotted_labels else None
+            ax.scatter(
+                date_val,
+                y,
+                facecolor=color,
+                edgecolor="none",
+                s=size,
+                marker=marker,
+                zorder=zorder,
+                label=show_label,
+                alpha=0.5,
+            )
+            if show_label:
+                plotted_labels.add(label)
+
+            # Format label date
+            label_text = date_val.strftime("%b %d")
+            offset = 0.4 if annotate_above else -0.4
+            ax.annotate(
+                label_text,
+                (date_val, y + offset),
+                ha="center",
+                va="center",
+                fontsize=8,
+                color=color,
+                alpha=0.5,
+            )
+
+# Add vertical lines for month boundaries
+for month_start in pd.date_range("2000-08-01", "2000-11-01", freq="MS"):
+    ax.axvline(month_start, color="lightgray", linestyle=":", linewidth=0.8)
+
+# Axes formatting
+ax.set_yticks(list(y_positions.values()))
+ax.set_yticklabels(list(y_positions.keys()))
+ax.set_ylabel("Year")
+ax.set_xlabel("Date")
+ax.set_title("Historical trigger timing")
+ax.invert_yaxis()
+
+# X-axis date formatting
+ax.set_xlim(pd.Timestamp("2000-08-01"), pd.Timestamp("2000-11-01"))
+ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+# ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=7))
+
+# Legend
+handles, labels = ax.get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+ax.legend(
+    by_label.values(),
+    by_label.keys(),
+    loc="upper left",
+    bbox_to_anchor=(1, 1),
+)
+
+plt.tight_layout()
+plt.show()
 ```
 
 ```python
