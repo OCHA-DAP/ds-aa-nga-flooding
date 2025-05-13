@@ -1,7 +1,11 @@
 import os
 
 import xarray as xr
+from dotenv import load_dotenv
 
+load_dotenv()
+
+FLOODS_API_KEY = os.getenv("FLOODS_API_KEY")
 HYBAS_ID = "hybas_1120842550"
 BASE_DIRECTORY = (
     "gs://flood-forecasting/hydrologic_predictions/model_id_8583a5c2_v0/"
