@@ -7,7 +7,8 @@ app = marimo.App()
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="2025/assets/UNOCHA_logo_horizontal_blue_CMYK.png", height=100
+        src="exploration/2025/assets/UNOCHA_logo_horizontal_blue_CMYK.png",
+        height=100,
     ).center()
     return
 
@@ -46,18 +47,14 @@ def _():
     import ocha_stratus as stratus
     import pandas as pd
 
-    import src.constants as constants
     from src.datasources import codab
-    from src.utils import blob, rp_calc
+    from src.utils import rp_calc
 
     # Colors to be used in plots, etc.
     SAPPHIRE = "#007ce0"
     TOMATO = "#f2645a"
-    TOMATO_DARK = "#c25048"
-    TOMATO_LIGHT = "#f7a29c"
     MINT = "#1ebfb3"
     GREY_DARK = "#888888"
-    GREY_LIGHT = "#cccccc"
     return GREY_DARK, MINT, SAPPHIRE, TOMATO, codab, pd, plt, rp_calc, stratus
 
 
@@ -103,7 +100,7 @@ def _(GREY_DARK, SAPPHIRE, adm2, lgas, plt):
     adm2_pri.plot(ax=_ax, color=SAPPHIRE)
     _ax.set_axis_off()
     _ax
-    return
+    return (adm2_pri,)
 
 
 @app.cell
@@ -151,14 +148,24 @@ def _(df_fe):
     for _rp in rps:
         rp_vals[_rp] = {}
         for _pcode in df_fe_peaks.pcode.unique():
-            df_sel = df_fe_peaks[df_fe_peaks.pcode == _pcode]
-            rp_val = df_sel["fe_max"].quantile(1 - 1 / _rp)
-            rp_vals[_rp][_pcode] = rp_val
+            _df_sel = df_fe_peaks[df_fe_peaks.pcode == _pcode]
+            _rp_val = _df_sel["fe_max"].quantile(1 - 1 / _rp)
+            rp_vals[_rp][_pcode] = _rp_val
     return df_fe_peaks, rp_vals
 
 
 @app.cell
-def _(GREY_DARK, MINT, SAPPHIRE, TOMATO, df_fe, df_fe_peaks, plt, rp_vals):
+def _(
+    GREY_DARK,
+    MINT,
+    SAPPHIRE,
+    TOMATO,
+    adm2_pri,
+    df_fe,
+    df_fe_peaks,
+    plt,
+    rp_vals,
+):
     pcodes = df_fe["pcode"].unique()
     n_pcodes = len(pcodes)
 
@@ -176,14 +183,12 @@ def _(GREY_DARK, MINT, SAPPHIRE, TOMATO, df_fe, df_fe_peaks, plt, rp_vals):
         dff = df_fe[df_fe["pcode"] == _pcode].sort_values("valid_date")
         dff_fe_peaks = df_fe_peaks[df_fe_peaks["pcode"] == _pcode]
         axes[i].plot(dff["valid_date"], dff["sum"], c=GREY_DARK)
-        axes[i].set_title(_pcode)
+        axes[i].set_title(
+            adm2_pri[adm2_pri["ADM2_PCODE"] == _pcode]["ADM2_EN"].iloc[0]
+        )
         axes[i].set_ylabel("Flood exposed population")
         axes[i].tick_params(axis="x", rotation=45)
         axes[i].grid(True, linestyle="--", alpha=0.7)
-
-        mask_rp3 = df_fe_peaks["fe_max"] >= rp_vals[3][_pcode]
-        mask_rp4 = df_fe_peaks["fe_max"] >= rp_vals[4][_pcode]
-        mask_rp5 = df_fe_peaks["fe_max"] >= rp_vals[5][_pcode]
 
         for rp, c in rp_display.items():
             axes[i].axhline(rp_vals[rp][_pcode], c=c, label=f"1 in {rp} rp")
@@ -215,7 +220,6 @@ def _(GREY_DARK, MINT, SAPPHIRE, TOMATO, df_fe, df_fe_peaks, plt, rp_vals):
     _fig.text(0.5, 0.04, "Date", ha="center", va="center")
     plt.legend()
     plt.tight_layout()
-    # plt.savefig("fe_exceedance.png", dpi=300)
     _fig
     return
 
@@ -263,12 +267,34 @@ def _(mo):
 
 
 @app.cell
-def _(df_rps, plt):
+def _(df_rps, mo):
+    dropdown = mo.ui.dropdown(
+        options=sorted(list(df_rps["rp_combined"])),
+        label="Select a target combined return period:",
+    )
+    return (dropdown,)
+
+
+@app.cell
+def _(dropdown, mo):
+    mo.hstack([dropdown, mo.md(f"RP: {dropdown.value} years")])
+    return
+
+
+@app.cell
+def _(df_rps, dropdown, plt):
     _fig, _ax = plt.subplots(dpi=200, figsize=(12, 6))
 
     df_rps.sort_values("rp_ind").plot(
         x="rp_ind", y="rp_combined", legend=False, ax=_ax
     )
+
+    if dropdown.value:
+        _ = df_rps[df_rps["rp_combined"] == dropdown.value]
+        # If there are multiple, select the last one
+        _x = _["rp_ind"].iloc[-1]
+        _y = _["rp_combined"].iloc[-1]
+        _ax.scatter(_x, _y, color="red", s=100, zorder=5)
 
     _ax.set_xlabel("Individual LGA RP (years)")
     _ax.set_ylabel("Combined  RP (years)")
@@ -277,6 +303,53 @@ def _(df_rps, plt):
     _ax.spines["right"].set_visible(False)
     _ax.grid(True, linestyle="--", alpha=0.7)
     _fig
+    return
+
+
+@app.cell
+def _(df_rps, dropdown):
+    rp_ind = df_rps[df_rps["rp_combined"] == dropdown.value]["rp_ind"].iloc[-1]
+    return (rp_ind,)
+
+
+@app.cell
+def _(adm2_pri, df_fe, df_fe_peaks, pd, rp_ind):
+    _rps = {}
+    for _pcode in df_fe.pcode.unique():
+        _df_sel = df_fe_peaks[df_fe_peaks.pcode == _pcode]
+        _rp_val = _df_sel["fe_max"].quantile(1 - 1 / rp_ind)
+        _rps[_pcode] = _rp_val
+
+    df_thresholds = pd.DataFrame.from_dict(
+        _rps, orient="index", columns=["Threshold"]
+    )
+    df_thresholds.reset_index(inplace=True)
+    df_thresholds.rename(columns={"index": "Pcode"}, inplace=True)
+    df_thresholds = df_thresholds.merge(
+        adm2_pri[["ADM2_PCODE", "ADM2_EN"]],
+        left_on="Pcode",
+        right_on="ADM2_PCODE",
+        how="left",
+    )
+    df_thresholds["Return Period"] = rp_ind
+    df_thresholds = df_thresholds.rename(columns={"ADM2_EN": "Name"})
+    df_thresholds = df_thresholds[["Name", "Threshold", "Return Period"]]
+    df_thresholds["Threshold"] = round(df_thresholds["Threshold"], 2)
+
+    return (df_thresholds,)
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""See below for the thresholds for each LGA for the selected combined return period:"""
+    )
+    return
+
+
+@app.cell
+def _(df_thresholds):
+    df_thresholds
     return
 
 
