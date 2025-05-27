@@ -85,6 +85,10 @@ df_rf_peaks
 ```
 
 ```python
+df_rf_peaks = df_rf_peaks[df_rf_peaks["valid_year"] < 2023]
+```
+
+```python
 df_rf_peaks = calculate_groups_rp(
     df_rf_peaks, ["leadtime"], col_name="streamflow", ascending=False
 )
@@ -100,11 +104,26 @@ for lt, group in df_rf_peaks.groupby("leadtime"):
 df_compare = df_rf_peaks.merge(
     df_ra_peaks, on="valid_year", suffixes=("_f", "_a")
 )
-df_compare
 ```
 
 ```python
 for lt, group in df_compare.groupby("leadtime"):
     print(lt)
-    display(group.sort_values("streamflow_rank_f"))
+    display(group.sort_values("streamflow_rank_a"))
+```
+
+```python
+thresh_ra = 1212
+```
+
+```python
+df_rf["trig"] = df_rf["streamflow"] >= thresh_ra
+```
+
+```python
+df_rf[df_rf["trig"]]["valid_year"].unique()
+```
+
+```python
+df_rf.groupby("valid_year")
 ```

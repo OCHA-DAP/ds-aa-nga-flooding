@@ -69,6 +69,12 @@ df_fs = (
 ```
 
 ```python
+df_fs.groupby(df_fs["valid_time"].dt.year)[
+    "SFED"
+].max().reset_index().sort_values("SFED", ascending=False)
+```
+
+```python
 df_fs
 ```
 
