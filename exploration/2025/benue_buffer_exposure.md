@@ -32,6 +32,7 @@ import geopandas as gpd
 from rioxarray.exceptions import NoDataInBounds
 
 from src.datasources import codab, hydrosheds, worldpop
+from src.utils.raster import compute_density_from_grid
 from src.constants import *
 ```
 
@@ -51,10 +52,6 @@ da_wp.attrs["_FillValue"] = np.nan
 
 ```python
 da_wp_adm = da_wp.rio.clip(adm2.geometry)
-```
-
-```python
-da_wp_buffer = da_wp_adm.rio.clip(gdf_benue_buffer.geometry)
 ```
 
 ```python
@@ -108,22 +105,7 @@ stratus.upload_csv_to_blob(df_exp, blob_name)
 ```
 
 ```python
-def add_pop_density(da_pop):
-    lat = da_pop["y"]
-    area_km2 = xr.DataArray(
-        111.32 * 0.01 * 111.32 * 0.01 * np.cos(np.deg2rad(lat)),
-        coords={"y": lat},
-        dims="y",
-    )
-    # Expand to 2D if needed
-    area_2d = area_km2.broadcast_like(da_pop)
-    da_density = da_pop / area_2d
-    da_density.name = "population_density_km2"
-    return da_density
-```
-
-```python
-da_density = add_pop_density(da_wp_adm)
+da_density = compute_density_from_grid(da_wp_adm, lat_name="y", lon_name="x")
 ```
 
 ```python
@@ -167,6 +149,14 @@ ax.set_title(
     "with Benue river buffers at "
     f"{', '.join([str(x) for x in buffer_kms])} km"
 )
+```
+
+```python
+float(da_density.mean()) * 37000
+```
+
+```python
+float(da_wp_adm.sum())
 ```
 
 ```python
