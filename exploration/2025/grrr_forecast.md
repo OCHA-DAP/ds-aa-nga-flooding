@@ -113,6 +113,10 @@ for lt, group in df_compare.groupby("leadtime"):
 ```
 
 ```python
+df_compare.groupby("leadtime").mean()["streamflow_f"].plot()
+```
+
+```python
 thresh_ra = 1212
 ```
 
@@ -125,5 +129,9 @@ df_rf[df_rf["trig"]]["valid_year"].unique()
 ```
 
 ```python
-df_rf.groupby("valid_year")
+df_rf.groupby("leadtime").mean()["streamflow"].plot()
+```
+
+```python
+
 ```
