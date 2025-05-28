@@ -136,6 +136,34 @@ df_compare[
 ```
 
 ```python
+df_ref["issued_time"] = df_ref["valid_time"] - df_ref["leadtime"].apply(
+    lambda x: pd.Timedelta(days=x - 1)
+)
+```
+
+```python
+df_ref
+```
+
+```python
+df_ref_trig = df_ref[
+    (df_ref["dis24"] >= thresh_ref) & (df_ref["leadtime"] <= lt_max)
+]
+```
+
+```python
+df_ref_trig.sort_values(["issued_time", "valid_time"])
+```
+
+```python
+df_ref_trig.loc[
+    df_ref_trig.groupby(df_ref_trig["valid_time"].dt.year)[
+        "issued_time"
+    ].idxmin()
+]
+```
+
+```python
 dicts = []
 for lt_max in df_compare["leadtime"].unique():
     print(lt_max)
