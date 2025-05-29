@@ -9,3 +9,4 @@ ocha-stratus
 folium
 cdsapi
 xlrd
+marimo==0.13.11
