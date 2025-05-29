@@ -187,6 +187,7 @@ if __name__ == "__main__":
 
     # Combine and save to database...
     df_all = pd.concat([df_forecast, df_reanalysis, df_google])
+    df_all["updated"] = datetime.now()
     engine = stratus.get_engine(stage="dev", write=True)
     df_all.to_sql(
         "nga_cerf_flooding",
