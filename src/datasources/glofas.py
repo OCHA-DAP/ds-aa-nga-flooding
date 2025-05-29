@@ -17,7 +17,7 @@ from src.constants import (
 )
 from src.utils import blob, cds_utils
 
-DATA_DIR = Path(os.getenv("AA_DATA_DIR"))
+DATA_DIR = Path(os.getenv("AA_DATA_DIR", "."))
 GF_RAW_DIR = (
     DATA_DIR / "public" / "raw" / "nga" / "glofas" / "cems-glofas-historical"
 )

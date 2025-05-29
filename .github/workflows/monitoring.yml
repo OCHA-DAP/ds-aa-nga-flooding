@@ -1,4 +1,4 @@
-name: Run Python Monitoring Script
+name: Monitor flooding
 
 on:
   workflow_dispatch:
