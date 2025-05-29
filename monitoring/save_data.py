@@ -119,7 +119,6 @@ def get_google_forecast(hybas_id, issued_date):
             "issuedTimeStart": issued_date.strftime("%Y-%m-%d"),
         },
     ).json()
-    print(res)
 
     rows = []
 
