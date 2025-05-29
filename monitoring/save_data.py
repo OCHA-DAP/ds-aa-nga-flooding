@@ -173,9 +173,9 @@ if __name__ == "__main__":
     reanalysis_blob_name = get_blob_name("reanalysis", today)
 
     # --- 1. Saving raw GloFAS data...
-    get_glofas_forecast(forecast_blob_name, coords, today, overwrite=False)
+    get_glofas_forecast(forecast_blob_name, coords, today, overwrite=True)
     get_glofas_reanalysis(
-        reanalysis_blob_name, coords, two_days_ago, overwrite=False
+        reanalysis_blob_name, coords, two_days_ago, overwrite=True
     )
 
     # --- 2. Get the Glofas dataframes...
