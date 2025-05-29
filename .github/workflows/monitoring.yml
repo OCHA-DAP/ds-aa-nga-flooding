@@ -33,6 +33,8 @@ jobs:
         DSCI_AZ_DB_DEV_UID_WRITE: ${{ secrets.DSCI_AZ_DB_DEV_UID_WRITE }}
         DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST}}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
+        CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
+        CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
 
       run: |
         python monitoring/save_data.py
