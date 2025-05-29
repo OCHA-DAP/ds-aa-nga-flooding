@@ -174,28 +174,28 @@ if __name__ == "__main__":
     reanalysis_blob_name = get_blob_name("reanalysis", today)
 
     # --- 1. Saving raw GloFAS data...
-    # get_glofas_forecast(forecast_blob_name, coords, today, overwrite=True)
-    # get_glofas_reanalysis(
-    #     reanalysis_blob_name, coords, two_days_ago, overwrite=True
-    # )
+    get_glofas_forecast(forecast_blob_name, coords, today, overwrite=True)
+    get_glofas_reanalysis(
+        reanalysis_blob_name, coords, two_days_ago, overwrite=True
+    )
 
     # --- 2. Get the Glofas dataframes...
-    # df_forecast = process_glofas(forecast_blob_name, "glofas_forecast")
-    # df_reanalysis = process_glofas(reanalysis_blob_name, "glofas_reanalysis")
+    df_forecast = process_glofas(forecast_blob_name, "glofas_forecast")
+    df_reanalysis = process_glofas(reanalysis_blob_name, "glofas_reanalysis")
 
     # --- 3. Getting Google dataframe...
     df_google = get_google_forecast(grrr.HYBAS_ID, today)
 
     # --- 4. Combine and save to database...
-    # df_all = pd.concat([df_forecast, df_reanalysis, df_google])
-    # df_all["updated"] = datetime.now()
-    # engine = stratus.get_engine(stage="dev", write=True)
-    # df_all.to_sql(
-    #     "nga_cerf_flooding",
-    #     schema="monitoring",
-    #     con=engine,
-    #     if_exists="append",
-    #     index=False,
-    #     method=stratus.postgres_upsert,
-    # )
-    # print(f"{len(df_all)} rows saved to database!")
+    df_all = pd.concat([df_forecast, df_reanalysis, df_google])
+    df_all["updated"] = datetime.now()
+    engine = stratus.get_engine(stage="dev", write=True)
+    df_all.to_sql(
+        "nga_cerf_flooding",
+        schema="monitoring",
+        con=engine,
+        if_exists="append",
+        index=False,
+        method=stratus.postgres_upsert,
+    )
+    print(f"{len(df_all)} rows saved to database!")
