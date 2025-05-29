@@ -42,7 +42,7 @@ def get_glofas_forecast(
         container.get_blob_client(forecast_blob_name).exists()
         and not overwrite
     ):
-        print("File already exists. Skipping download")
+        print(f"File already exists: {forecast_blob_name}. Skipping download")
         return
     forecast_dataset = "cems-glofas-forecast"
     forecast_request = {
@@ -82,10 +82,12 @@ def get_glofas_reanalysis(
 ):
     container = stratus.get_container_client("projects", "dev")
     if (
-        container.get_blob_client(forecast_blob_name).exists()
+        container.get_blob_client(reanalysis_blob_name).exists()
         and not overwrite
     ):
-        print("File already exists. Skipping download")
+        print(
+            f"File already exists: {reanalysis_blob_name}. Skipping download"
+        )
         return
     reanalysis_dataset = "cems-glofas-historical"
     reanalysis_request = {
@@ -166,7 +168,9 @@ if __name__ == "__main__":
 
     coords = get_coords("wuroboki")
     forecast_blob_name = get_blob_name("forecast", today)
-    reanalysis_blob_name = get_blob_name("reanalysis", two_days_ago)
+    # NOTE that we're saving the reanalysis data based on the day it was
+    # MONITORED and NOT for the day that it is valid!
+    reanalysis_blob_name = get_blob_name("reanalysis", today)
 
     # Saving raw GloFAS data...
     get_glofas_forecast(forecast_blob_name, coords, today, overwrite=False)
@@ -192,3 +196,4 @@ if __name__ == "__main__":
         index=False,
         method=stratus.postgres_upsert,
     )
+    print(f"{len(df_all)} rows saved to database!")
