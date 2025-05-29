@@ -38,3 +38,4 @@ jobs:
 
       run: |
         python monitoring/save_data.py
+        python monitoring/check_flooding.py
