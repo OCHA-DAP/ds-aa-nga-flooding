@@ -114,7 +114,7 @@ def get_google_forecast(hybas_id, issued_date):
     res = requests.get(
         "https://floodforecasting.googleapis.com/v1/gauges:queryGaugeForecasts",  # noqa
         params={
-            "key": grrr.FLOODS_API_KEY,
+            "key": grrr.GOOGLE_API_KEY,
             "gaugeIds": hybas_id,
             "issuedTimeStart": issued_date.strftime("%Y-%m-%d"),
         },
