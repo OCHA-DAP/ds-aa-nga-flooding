@@ -20,7 +20,7 @@ def download_raw_cds_api_to_blob(
     response = c.retrieve(dataset, request)
     response.download(local_filepath)
     with open(local_filepath, "rb") as file:
-        stratus.upload_blob_data(blob_name, file, stage=prod_dev)
+        stratus.upload_blob_data(file, blob_name, stage=prod_dev)
     if not keep_local_copy:
         os.remove(local_filepath)
     return local_filepath if keep_local_copy else None
