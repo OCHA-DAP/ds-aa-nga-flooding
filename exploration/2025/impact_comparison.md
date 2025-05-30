@@ -64,9 +64,7 @@ adm2.plot()
 ```python
 import src.constants
 
-blob_name = (
-    f"{src.constants.PROJECT_PREFIX}/processed/nihsa/floodhistory_2013_2023.parquet"
-)
+blob_name = f"{src.constants.PROJECT_PREFIX}/processed/nihsa/floodhistory_2013_2023.parquet"
 df_nihsa_record = blob.load_parquet_from_blob(blob_name)
 ```
 
@@ -266,7 +264,27 @@ ax.set_title("Floodscan mean historical exposure (1998-2023)")
 ```
 
 ```python
-fs_mean
+fs_mean.merge(adm2[["ADM2_PCODE", "ADM2_EN", "ADM1_EN"]]).rename(
+    columns={
+        "ADM2_EN": "LGA",
+        "ADM1_EN": "State",
+        "total_exposed": "Total Exposed",
+    }
+)[["State", "LGA", "Total Exposed"]].sort_values(
+    "Total Exposed", ascending=False
+).astype(
+    int, errors="ignore"
+).iloc[
+    :20
+].style.background_gradient(
+    subset=["Total Exposed"], cmap="hot_r", vmin=0
+).format(
+    {"Total Exposed": "{:,}"}
+)
+```
+
+```python
+
 ```
 
 ### NEMA UNICEF impact
@@ -486,7 +504,13 @@ ax.set_title(
 gdf_plot["Total Exposed"] = gdf_plot["total_exposed"].astype(int)
 gdf_plot.sort_values("Total Exposed", ascending=False)[
     ["ADM1_EN", "ADM2_EN", "Total Exposed"]
-].rename(columns={"ADM2_EN": "LGA", "ADM1_EN": "State"})
+].rename(
+    columns={"ADM2_EN": "LGA", "ADM1_EN": "State"}
+).style.background_gradient(
+    subset=["Total Exposed"], cmap="hot_r", vmin=0
+).format(
+    {"Total Exposed": "{:,}"}
+)
 ```
 
 ```python
@@ -531,7 +555,13 @@ ax.set_title(
 gdf_plot["Total Exposed"] = gdf_plot["total_exposed"].astype(int)
 gdf_plot.sort_values("Total Exposed", ascending=False)[
     ["ADM1_EN", "ADM2_EN", "Total Exposed"]
-].rename(columns={"ADM2_EN": "LGA", "ADM1_EN": "State"})
+].rename(
+    columns={"ADM2_EN": "LGA", "ADM1_EN": "State"}
+).style.background_gradient(
+    subset=["Total Exposed"], cmap="hot_r", vmin=0
+).format(
+    {"Total Exposed": "{:,}"}
+)
 ```
 
 ```python
