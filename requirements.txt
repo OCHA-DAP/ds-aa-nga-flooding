@@ -9,3 +9,5 @@ ocha-stratus
 folium
 cdsapi
 xlrd
+python-dotenv
+cfgrib

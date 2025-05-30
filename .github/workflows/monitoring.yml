@@ -1,4 +1,4 @@
-name: Run Python Monitoring Script
+name: Monitor flooding
 
 on:
   workflow_dispatch:
@@ -42,3 +42,4 @@ jobs:
 
       run: |
         python monitoring/save_data.py
+        python monitoring/check_flooding.py
