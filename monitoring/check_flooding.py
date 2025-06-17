@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GLOFAS_THRESH = 3130
-GOOGLE_THRESH = 1212
+GLOFAS_THRESH = 3132
+GOOGLE_THRESH = 1195
 
 
 def forecast_subplot(
