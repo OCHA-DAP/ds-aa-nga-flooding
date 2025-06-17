@@ -11,3 +11,4 @@ cdsapi
 xlrd
 python-dotenv
 cfgrib
+marimo==0.13.11
