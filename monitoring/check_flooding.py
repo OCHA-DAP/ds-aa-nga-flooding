@@ -74,7 +74,7 @@ def forecast_subplot(
 
     title = f"{dataset} Monitoring: {date} | Triggers = {exceeds}"
 
-    ax.set_ylabel("Streamflow", fontsize=12)
+    ax.set_ylabel("Discharge, daily average (m$^3$ / s)", fontsize=12)
     ax.set_title(title, fontsize=12, fontweight="bold")
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
