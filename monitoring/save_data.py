@@ -12,12 +12,14 @@ from src.utils import cds_utils
 load_dotenv()
 
 
-def get_blob_name(data_type, date):
-    filename = f"glofas_{data_type}_{date.strftime('%Y-%m-%d')}.grib"
+def get_blob_name(data_type, station_name, date):
+    filename = (
+        f"glofas_{station_name}_{data_type}_{date.strftime('%Y-%m-%d')}.grib"
+    )
     return f"ds-aa-nga-flooding/raw/glofas/monitoring/{filename}"
 
 
-def get_coords(station_name="wurobokki"):
+def get_coords(station_name):
     station = glofas.GF_STATIONS[station_name]
     glofas_lon, glofas_lat = glofas.get_glofas_grid_coords(
         station["lon"], station["lat"]
@@ -131,7 +133,7 @@ def get_google_forecast(hybas_id, issued_date):
                 "issued_time": issued_time,
                 "valid_time": range_item["forecastStartTime"],
                 "value": range_item["value"],
-                "src": gauge_id,
+                "src": f"grrr_{gauge_id}",
             }
             rows.append(row)
 
@@ -142,7 +144,7 @@ def get_google_forecast(hybas_id, issued_date):
     return df
 
 
-def process_glofas(blob_name, data_type):
+def process_glofas(blob_name, data_type, station_name):
     ds = xr.open_dataset(
         f"temp/{blob_name}",
         engine="cfgrib",
@@ -157,7 +159,7 @@ def process_glofas(blob_name, data_type):
         .reset_index()
     )
     df["valid_time"] = pd.to_datetime(df["valid_time"])
-    df["src"] = data_type
+    df["src"] = f"{data_type}_{station_name}"
     df = df.rename(columns={"dis24": "value", "time": "issued_time"})
     return df[["issued_time", "valid_time", "value", "src"]]
 
@@ -165,12 +167,13 @@ def process_glofas(blob_name, data_type):
 if __name__ == "__main__":
     today = datetime.now()
     two_days_ago = today - timedelta(days=2)
+    station_name = "wuroboki"
 
-    coords = get_coords("wuroboki")
-    forecast_blob_name = get_blob_name("forecast", today)
+    coords = get_coords(station_name)
+    forecast_blob_name = get_blob_name("forecast", station_name, today)
     # NOTE that we're saving the reanalysis data based on the day it was
     # MONITORED and NOT for the day that it is valid!
-    reanalysis_blob_name = get_blob_name("reanalysis", today)
+    reanalysis_blob_name = get_blob_name("reanalysis", station_name, today)
 
     # --- 1. Saving raw GloFAS data...
     get_glofas_forecast(forecast_blob_name, coords, today, overwrite=True)
@@ -179,8 +182,12 @@ if __name__ == "__main__":
     )
 
     # --- 2. Get the Glofas dataframes...
-    df_forecast = process_glofas(forecast_blob_name, "glofas_forecast")
-    df_reanalysis = process_glofas(reanalysis_blob_name, "glofas_reanalysis")
+    df_forecast = process_glofas(
+        forecast_blob_name, "glofas_forecast", station_name
+    )
+    df_reanalysis = process_glofas(
+        reanalysis_blob_name, "glofas_reanalysis", station_name
+    )
 
     # --- 3. Getting Google dataframe...
     df_google = get_google_forecast(grrr.HYBAS_ID, today)
