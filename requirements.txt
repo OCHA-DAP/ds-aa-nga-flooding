@@ -9,5 +9,6 @@ ocha-stratus
 folium
 cdsapi
 xlrd
-marimo==0.13.11
 python-dotenv
+cfgrib
+marimo==0.13.11
