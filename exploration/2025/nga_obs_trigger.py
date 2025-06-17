@@ -46,10 +46,12 @@ def _():
     import matplotlib.pyplot as plt
     import ocha_stratus as stratus
     import pandas as pd
+    from dotenv import load_dotenv
 
     from src.datasources import codab
     from src.utils import rp_calc
 
+    load_dotenv()
     # Colors to be used in plots, etc.
     SAPPHIRE = "#007ce0"
     TOMATO = "#f2645a"
@@ -122,21 +124,57 @@ def _(mo):
     ## Flood exposure over time
 
     For each LGA, we can pull in daily average flood exposure estimates from 1998 to present. We'll calculate the 3-year, 4-year, and 5-year return period thresholds (in total population exposed to flooding) for each LGA. See the graph below for highlighted years that exceed each threshold.
+
+    You can also use the dropdown below to adjust the default rolling window used to average flood exposure data.
     """
     )
     return
 
 
 @app.cell
-def _(df_fe):
-    df_fe["year"] = df_fe.valid_date.dt.year
+def _(mo):
+    dropdown_rolling = mo.ui.dropdown(
+        options=range(1, 11),
+        label="Select a rolling window (in days):",
+        value=7,
+    )
+    return (dropdown_rolling,)
+
+
+@app.cell
+def _(df_fe, dropdown_rolling):
+    def calculate_rolling(group, window=7):
+        group["rolling_sum"] = group["sum"].rolling(window=window).mean()
+        return group
+
+    df_fe_rolling = (
+        df_fe.groupby("pcode")
+        .apply(
+            calculate_rolling,
+            window=dropdown_rolling.value,
+            include_groups=False,
+        )
+        .reset_index(level=0)
+    )
+    return (df_fe_rolling,)
+
+
+@app.cell
+def _(dropdown_rolling):
+    dropdown_rolling
+    return
+
+
+@app.cell
+def _(df_fe_rolling):
+    df_fe_rolling["year"] = df_fe_rolling.valid_date.dt.year
     df_fe_peaks = (
-        df_fe.groupby(["year", "pcode"])
+        df_fe_rolling.groupby(["year", "pcode"])
         .agg(
-            fe_max=("sum", "max"),
+            fe_max=("rolling_sum", "max"),
             fe_max_date=(
-                "sum",
-                lambda x: df_fe.loc[x.idxmax(), "valid_date"],
+                "rolling_sum",
+                lambda x: df_fe_rolling.loc[x.idxmax(), "valid_date"],
             ),
         )
         .reset_index()
@@ -161,12 +199,12 @@ def _(
     SAPPHIRE,
     TOMATO,
     adm2_pri,
-    df_fe,
     df_fe_peaks,
+    df_fe_rolling,
     plt,
     rp_vals,
 ):
-    pcodes = df_fe["pcode"].unique()
+    pcodes = df_fe_rolling["pcode"].unique()
     n_pcodes = len(pcodes)
 
     n_cols = 1
@@ -180,9 +218,11 @@ def _(
     axes = axes.flatten()
 
     for i, _pcode in enumerate(pcodes):
-        dff = df_fe[df_fe["pcode"] == _pcode].sort_values("valid_date")
+        dff = df_fe_rolling[df_fe_rolling["pcode"] == _pcode].sort_values(
+            "valid_date"
+        )
         dff_fe_peaks = df_fe_peaks[df_fe_peaks["pcode"] == _pcode]
-        axes[i].plot(dff["valid_date"], dff["sum"], c=GREY_DARK)
+        axes[i].plot(dff["valid_date"], dff["rolling_sum"], c=GREY_DARK)
         axes[i].set_title(
             adm2_pri[adm2_pri["ADM2_PCODE"] == _pcode]["ADM2_EN"].iloc[0]
         )
