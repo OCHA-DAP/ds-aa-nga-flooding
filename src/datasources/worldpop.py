@@ -6,7 +6,7 @@ import rioxarray as rxr
 
 from src.datasources import codab
 
-AA_DATA_DIR = Path(os.getenv("AA_DATA_DIR_NEW"))
+AA_DATA_DIR = Path(os.getenv("AA_DATA_DIR_NEW", "."))
 RAW_WP_PATH = (
     AA_DATA_DIR
     / "public"
