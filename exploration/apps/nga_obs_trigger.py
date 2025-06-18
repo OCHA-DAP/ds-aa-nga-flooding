@@ -20,7 +20,8 @@ app = marimo.App()
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="exploration/apps/public/UNOCHA_logo_horizontal_blue_CMYK.png",
+        src=mo.notebook_location()
+        / "public/UNOCHA_logo_horizontal_blue_CMYK.png",
         height=100,
     ).center()
     return
