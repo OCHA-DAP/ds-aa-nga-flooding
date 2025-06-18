@@ -1,3 +1,16 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "auto-mix-prep==0.2.0",
+#     "marimo",
+#     "matplotlib==3.10.3",
+#     "ocha-stratus==0.1.3",
+#     "pandas==2.3.0",
+#     "python-dotenv==1.1.0",
+#     "scipy==1.15.3",
+# ]
+# ///
+
 import marimo
 
 __generated_with = "0.13.6"
@@ -7,7 +20,7 @@ app = marimo.App()
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="exploration/2025/assets/UNOCHA_logo_horizontal_blue_CMYK.png",
+        src="exploration/apps/public/UNOCHA_logo_horizontal_blue_CMYK.png",
         height=100,
     ).center()
     return
@@ -48,8 +61,8 @@ def _():
     import pandas as pd
     from dotenv import load_dotenv
 
-    from src.datasources import codab
-    from src.utils import rp_calc
+    from datasources import codab
+    from utils import rp_calc
 
     load_dotenv()
     # Colors to be used in plots, etc.
@@ -308,9 +321,11 @@ def _(mo):
 
 @app.cell
 def _(df_rps, mo):
+    rp_options = sorted(list(df_rps["rp_combined"]))
     dropdown = mo.ui.dropdown(
-        options=sorted(list(df_rps["rp_combined"])),
+        options=rp_options,
         label="Select a target combined return period:",
+        value=rp_options[0],
     )
     return (dropdown,)
 
