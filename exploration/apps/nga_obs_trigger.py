@@ -60,12 +60,10 @@ def _():
     import matplotlib.pyplot as plt
     import ocha_stratus as stratus
     import pandas as pd
-    from dotenv import load_dotenv
 
     from datasources import codab
     from utils import rp_calc
 
-    load_dotenv()
     # Colors to be used in plots, etc.
     SAPPHIRE = "#007ce0"
     TOMATO = "#f2645a"
