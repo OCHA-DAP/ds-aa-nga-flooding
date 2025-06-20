@@ -13,13 +13,13 @@ def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
     assert df.updated.nunique() == 1
     update_date = df.updated.unique()[0].strftime("%Y-%m-%d %H:%M:%S")
 
-    df_forecast = df[df.src.str.contains("forecast")]
-    df_reanalysis = df[df.src.str.contains("reanalysis")]
-    df_google = df[df.src.str.contains("hybas")]
+    df_forecast = df[df.src.str.contains("glofas_forecast")].reset_index()
+    df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
+    df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
 
     # We're taking the forecast issue date for GloFAS (not the reanalysis)
-    glofas_update = df_forecast.issued_date[0].strftime("%Y-%m-%d %H:%M:%S")
-    google_update = df_google.issued_date[0].strftime("%Y-%m-%d %H:%M:%S")
+    glofas_update = df_forecast.issued_time[0].strftime("%Y-%m-%d %H:%M:%S")
+    google_update = df_google.issued_time[0].strftime("%Y-%m-%d %H:%M:%S")
 
     glofas_exceeds = (df_reanalysis.value.any() > glofas_thresh) | (
         df_forecast.value.any() > glofas_thresh
@@ -61,6 +61,7 @@ def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
             name=blob_name, data=buffer.getvalue(), overwrite=True
         )
         print(f"File saved on blob to {blob_name}!")
+        buffer.close()
 
 
 def forecast_subplot(
