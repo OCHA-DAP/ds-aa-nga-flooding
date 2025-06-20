@@ -9,6 +9,9 @@ from src.utils import cds_utils
 
 load_dotenv()
 
+DB_SCHEMA = "projects"
+DB_TABLE = "ds_aa_nga_flooding_monitoring"
+
 
 def get_blob_name(data_type, station_name, date):
     filename = (
@@ -147,3 +150,17 @@ def process_glofas(blob_name, data_type, station_name):
     df["src"] = f"{data_type}_{station_name}"
     df = df.rename(columns={"dis24": "value", "time": "issued_time"})
     return df[["issued_time", "valid_time", "value", "src"]]
+
+
+def get_latest_forecast():
+    engine = stratus.get_engine(stage="dev")
+    with engine.connect() as con:
+        df = pd.read_sql(
+            f"""
+            select * from {DB_SCHEMA}.{DB_TABLE}
+            where updated = (select max(updated) from
+            {DB_SCHEMA}.{DB_TABLE})
+            """,
+            con=con,
+        )
+    return df
