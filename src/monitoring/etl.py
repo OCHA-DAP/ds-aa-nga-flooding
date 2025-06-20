@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import ocha_stratus as stratus
 import pandas as pd
 import requests
@@ -108,6 +110,9 @@ def get_google_forecast(hybas_id, issued_date):
             "key": grrr.GOOGLE_API_KEY,
             "gaugeIds": hybas_id,
             "issuedTimeStart": issued_date.strftime("%Y-%m-%d"),
+            "issuedTimeEnd": (issued_date + timedelta(days=1)).strftime(
+                "%Y-%m-%d"
+            ),
         },
     ).json()
 
