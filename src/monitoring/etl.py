@@ -176,4 +176,6 @@ def get_database_forecast(monitoring_date):
             con=con,
             params={"monitoring_date": monitoring_date},
         )
+    if len(df) == 0:
+        raise Exception(f"No data saved for {monitoring_date}")
     return df
