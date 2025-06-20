@@ -1,0 +1,149 @@
+import ocha_stratus as stratus
+import pandas as pd
+import requests
+import xarray as xr
+from dotenv import load_dotenv
+
+from src.datasources import grrr
+from src.utils import cds_utils
+
+load_dotenv()
+
+
+def get_blob_name(data_type, station_name, date):
+    filename = (
+        f"glofas_{station_name}_{data_type}_{date.strftime('%Y-%m-%d')}.grib"
+    )
+    return f"ds-aa-nga-flooding/raw/glofas/monitoring/{filename}"
+
+
+def get_glofas_forecast(
+    forecast_blob_name,
+    coords,
+    issued_date,
+    keep_local_copy=True,
+    overwrite=False,
+):
+    container = stratus.get_container_client("projects", "dev")
+    if (
+        container.get_blob_client(forecast_blob_name).exists()
+        and not overwrite
+    ):
+        print(f"File already exists: {forecast_blob_name}. Skipping download")
+        return
+    forecast_dataset = "cems-glofas-forecast"
+    forecast_request = {
+        "system_version": ["operational"],
+        "hydrological_model": ["lisflood"],
+        "product_type": ["control_forecast"],
+        "variable": "river_discharge_in_the_last_24_hours",
+        "year": [str(issued_date.year)],
+        "month": [str(issued_date.month).zfill(2)],
+        "day": [str(issued_date.day).zfill(2)],
+        "leadtime_hour": [
+            "24",
+            "48",
+            "72",
+            "96",
+            "120",
+        ],
+        "data_format": "grib2",
+        "download_format": "unarchived",
+        "area": coords,
+    }
+
+    cds_utils.download_raw_cds_api_to_blob(
+        forecast_dataset,
+        forecast_request,
+        forecast_blob_name,
+        keep_local_copy=keep_local_copy,
+    )
+
+
+def get_glofas_reanalysis(
+    reanalysis_blob_name,
+    coords,
+    issued_date,
+    keep_local_copy=True,
+    overwrite=False,
+):
+    container = stratus.get_container_client("projects", "dev")
+    if (
+        container.get_blob_client(reanalysis_blob_name).exists()
+        and not overwrite
+    ):
+        print(
+            f"File already exists: {reanalysis_blob_name}. Skipping download"
+        )
+        return
+    reanalysis_dataset = "cems-glofas-historical"
+    reanalysis_request = {
+        "system_version": ["version_4_0"],
+        "hydrological_model": ["lisflood"],
+        "product_type": ["intermediate"],
+        "variable": ["river_discharge_in_the_last_24_hours"],
+        "hyear": [str(issued_date.year)],
+        "hmonth": [str(issued_date.month).zfill(2)],
+        "hday": [str(issued_date.day).zfill(2)],
+        "data_format": "grib2",
+        "download_format": "unarchived",
+        "area": coords,
+    }
+    cds_utils.download_raw_cds_api_to_blob(
+        reanalysis_dataset,
+        reanalysis_request,
+        reanalysis_blob_name,
+        keep_local_copy=keep_local_copy,
+    )
+
+
+def get_google_forecast(hybas_id, issued_date):
+    res = requests.get(
+        "https://floodforecasting.googleapis.com/v1/gauges:queryGaugeForecasts",  # noqa
+        params={
+            "key": grrr.GOOGLE_API_KEY,
+            "gaugeIds": hybas_id,
+            "issuedTimeStart": issued_date.strftime("%Y-%m-%d"),
+        },
+    ).json()
+
+    rows = []
+
+    for forecast in res["forecasts"][hybas_id]["forecasts"]:
+        issued_time = forecast["issuedTime"]
+        gauge_id = forecast["gaugeId"]
+
+        for range_item in forecast["forecastRanges"]:
+            row = {
+                "issued_time": issued_time,
+                "valid_time": range_item["forecastStartTime"],
+                "value": range_item["value"],
+                "src": f"grrr_{gauge_id}",
+            }
+            rows.append(row)
+
+    df = pd.DataFrame(rows)
+    # In case of multiple forecasts issued from the same day, we want to keep
+    # the one that was issued latest
+    df = df[df.issued_time == df.issued_time.max()]
+    return df
+
+
+def process_glofas(blob_name, data_type, station_name):
+    ds = xr.open_dataset(
+        f"tmp/{blob_name}",
+        engine="cfgrib",
+        decode_timedelta=True,
+        backend_kwargs={
+            "indexpath": "",
+        },
+    )
+    df = (
+        ds.assign_coords(valid_time=ds["valid_time"] - pd.Timedelta(hours=24))
+        .to_dataframe()
+        .reset_index()
+    )
+    df["valid_time"] = pd.to_datetime(df["valid_time"])
+    df["src"] = f"{data_type}_{station_name}"
+    df = df.rename(columns={"dis24": "value", "time": "issued_time"})
+    return df[["issued_time", "valid_time", "value", "src"]]
