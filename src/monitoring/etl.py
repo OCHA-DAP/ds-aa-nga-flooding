@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import xarray as xr
 from dotenv import load_dotenv
+from sqlalchemy import text
 
 from src.datasources import grrr
 from src.utils import cds_utils
@@ -157,15 +158,17 @@ def process_glofas(blob_name, data_type, station_name):
     return df[["issued_date", "valid_date", "value", "src"]]
 
 
-def get_latest_forecast():
+def get_database_forecast(monitoring_date):
     engine = stratus.get_engine(stage="dev")
     with engine.connect() as con:
         df = pd.read_sql(
-            f"""
+            text(
+                f"""
             select * from {DB_SCHEMA}.{DB_TABLE}
-            where updated = (select max(updated) from
-            {DB_SCHEMA}.{DB_TABLE})
-            """,
+            where monitoring_date = :monitoring_date
+            """
+            ),
             con=con,
+            params={"monitoring_date": monitoring_date},
         )
     return df

@@ -10,15 +10,15 @@ from src.utils.blob import PROJECT_PREFIX
 def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
 
-    assert df.updated.nunique() == 1
-    update_date = df.updated.unique()[0].strftime("%Y-%m-%d %H:%M:%S")
+    assert df.monitoring_date.nunique() == 1
+    update_date = df.monitoring_date.unique()[0].strftime("%Y-%m-%d")
 
     df_forecast = df[df.src.str.contains("glofas_forecast")].reset_index()
     df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
     df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
 
     # We're taking the forecast issue date for GloFAS (not the reanalysis)
-    glofas_update = df_forecast.issued_time[0].strftime("%Y-%m-%d %H:%M:%S")
+    glofas_update = df_forecast.issued_date[0].strftime("%Y-%m-%d")
     google_update = df_google.issued_time[0].strftime("%Y-%m-%d %H:%M:%S")
 
     glofas_exceeds = (df_reanalysis.value.any() > glofas_thresh) | (
@@ -68,7 +68,7 @@ def forecast_subplot(
     ax, df_forecast, df_reanalysis, exceeds, thresh, dataset, date
 ):
     ax.plot(
-        df_forecast["valid_time"],
+        df_forecast["valid_date"],
         df_forecast["value"],
         marker="o",
         linestyle="-",
@@ -82,7 +82,7 @@ def forecast_subplot(
     for _, row in df_forecast.iterrows():
         ax.annotate(
             f'{row["value"]:.1f}',  # noqa
-            (row["valid_time"], row["value"]),
+            (row["valid_date"], row["value"]),
             textcoords="offset points",
             xytext=(0, 10),
             ha="center",
@@ -102,7 +102,7 @@ def forecast_subplot(
 
     if isinstance(df_reanalysis, pd.DataFrame):
         ax.plot(
-            df_reanalysis["valid_time"],
+            df_reanalysis["valid_date"],
             df_reanalysis["value"],
             marker="s",
             linestyle="-",
@@ -117,7 +117,7 @@ def forecast_subplot(
         for _, row in df_reanalysis.iterrows():
             ax.annotate(
                 f'{row["value"]:.1f}',  # noqa
-                (row["valid_time"], row["value"]),
+                (row["valid_date"], row["value"]),
                 textcoords="offset points",
                 xytext=(0, 10),
                 ha="center",
