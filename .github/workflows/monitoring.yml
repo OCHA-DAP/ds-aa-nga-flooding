@@ -41,5 +41,5 @@ jobs:
         CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
 
       run: |
-        python monitoring/save_data.py
-        python monitoring/check_flooding.py
+        python pipelines/save_data.py
+        python pipelines/check_flooding.py
