@@ -129,6 +129,10 @@ def get_google_forecast(hybas_id, issued_date):
     # In case of multiple forecasts issued from the same day, we want to keep
     # the one that was issued latest
     df = df[df.issued_time == df.issued_time.max()]
+
+    # Make sure it's all in utc time
+    df["issued_time"] = pd.to_datetime(df["issued_time"], utc=True)
+    df["valid_time"] = pd.to_datetime(df["valid_time"], utc=True)
     return df
 
 
