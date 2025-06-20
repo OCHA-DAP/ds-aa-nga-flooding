@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="font-size:11px;padding: 6px 10px 6px 10px;background-color:#F0F0F0;color:#000000;font-style:italic">
+  <p style="margin:0;">
+    This email is purely advisory, and does not serve as an official notice for the anticipatory action framework. Official notices of activation are sent by a separate email.
+  </p>
+</div>
+<div>
+  <p>Dear colleagues,</p>
+  <img src="cid:{{ chart_cid }}" width="100"/>
+  <p>
+    Code and documentation to support this analysis is available <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding">here</a>.
+  </p>
+  <p>Best wishes,</p>
+  <p>OCHA Centre for Humanitarian Data</p>
+</div>
+{% endblock content %}
