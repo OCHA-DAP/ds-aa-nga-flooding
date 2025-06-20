@@ -119,7 +119,7 @@ def get_google_forecast(hybas_id, issued_date):
         for range_item in forecast["forecastRanges"]:
             row = {
                 "issued_time": issued_time,
-                "valid_time": range_item["forecastStartTime"],
+                "valid_date": range_item["forecastStartTime"],
                 "value": range_item["value"],
                 "src": f"grrr_{gauge_id}",
             }
@@ -132,7 +132,8 @@ def get_google_forecast(hybas_id, issued_date):
 
     # Make sure it's all in utc time
     df["issued_time"] = pd.to_datetime(df["issued_time"], utc=True)
-    df["valid_time"] = pd.to_datetime(df["valid_time"], utc=True)
+    df["issued_date"] = df["issued_time"]
+    df["valid_date"] = pd.to_datetime(df["valid_date"], utc=True)
     return df
 
 
@@ -150,10 +151,10 @@ def process_glofas(blob_name, data_type, station_name):
         .to_dataframe()
         .reset_index()
     )
-    df["valid_time"] = pd.to_datetime(df["valid_time"])
+    df["valid_date"] = pd.to_datetime(df["valid_time"])
     df["src"] = f"{data_type}_{station_name}"
-    df = df.rename(columns={"dis24": "value", "time": "issued_time"})
-    return df[["issued_time", "valid_time", "value", "src"]]
+    df = df.rename(columns={"dis24": "value", "time": "issued_date"})
+    return df[["issued_date", "valid_date", "value", "src"]]
 
 
 def get_latest_forecast():
