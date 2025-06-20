@@ -1,17 +1,22 @@
+import os
 from datetime import datetime, timedelta
 
 import ocha_stratus as stratus
 import pandas as pd
+from dotenv import load_dotenv
 
 from src.datasources import glofas, grrr
-from src.monitoring import etl, input
+from src.monitoring import etl
+
+load_dotenv()
 
 if __name__ == "__main__":
-    args = input.parse_args()
-    update_date_formatted = args.date
-    update_date = datetime.strptime(args.date, "%Y-%m-%d")
+    update_date_formatted = os.getenv(
+        "MONITORING_DATE", datetime.today().strftime("%Y-%m-%d")
+    )
+    update_date = datetime.strptime(update_date_formatted, "%Y-%m-%d")
 
-    print(f"Retrieving flood forecast for date: {args.date}")
+    print(f"Retrieving flood forecast for date: {update_date_formatted}")
     reanalysis_update = update_date - timedelta(days=2)
     station_name = "wuroboki"
     overwrite = False

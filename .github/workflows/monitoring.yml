@@ -2,6 +2,11 @@ name: Monitor flooding
 
 on:
   workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD format).'
+        required: false
+        type: string
   schedule:
     - cron: '0 20 * * *'
 
@@ -39,6 +44,7 @@ jobs:
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
         CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
         CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
+        MONITORING_DATE: ${{ inputs.date}}
 
       run: |
         python pipelines/save_data.py
