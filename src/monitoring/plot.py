@@ -10,6 +10,7 @@ from src.utils.blob import PROJECT_PREFIX
 def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
 
+    # TODO: Some duplication here from etl.check_results
     assert df.monitoring_date.nunique() == 1
     update_date = df.monitoring_date.unique()[0].strftime("%Y-%m-%d")
 

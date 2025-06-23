@@ -7,6 +7,7 @@ import xarray as xr
 from dotenv import load_dotenv
 from sqlalchemy import text
 
+from src.constants import GLOFAS_THRESH, GOOGLE_THRESH
 from src.datasources import grrr
 from src.utils import cds_utils
 
@@ -179,3 +180,18 @@ def get_database_forecast(monitoring_date):
     if len(df) == 0:
         raise Exception(f"No data saved for {monitoring_date}")
     return df
+
+
+def check_results(monitoring_date):
+    df = get_database_forecast(monitoring_date)
+    assert df.monitoring_date.nunique() == 1
+
+    df_forecast = df[df.src.str.contains("glofas_forecast")].reset_index()
+    df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
+    df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
+
+    glofas_exceeds = (df_reanalysis.value.any() > GLOFAS_THRESH) | (
+        df_forecast.value.any() > GLOFAS_THRESH
+    )
+    google_exceeds = df_google.value.any() > GOOGLE_THRESH
+    return {"google": google_exceeds, "glofas": glofas_exceeds}

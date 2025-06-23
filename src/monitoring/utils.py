@@ -55,10 +55,8 @@ def is_valid_email(email):
         return False
 
 
-def get_plot_blob_name(issue_time):
-    # TODO: Remove FALSE
-    formatted_time = issue_time.strftime("%Y-%m-%d %H:%M:%S")
-    return f"{PROJECT_PREFIX}/monitoring/{formatted_time}_False.png"
+def get_plot_blob_name(issue_time, trigger_status):
+    return f"{PROJECT_PREFIX}/monitoring/{issue_time}_{trigger_status}.png"
 
 
 def send_email(msg, to_list, cc_list):
@@ -71,3 +69,12 @@ def send_email(msg, to_list, cc_list):
             msg.as_string(),
         )
     print("Email sent!")
+
+
+def get_email_subject(trigger_status, test, monitoring_date):
+    test_text = "TEST" if test else ""
+    trigger_text = "ACTIVATED" if trigger_status else "NOT ACTIVATED"
+    return (
+        f"{test_text}: Nigeria Anticipatory Action"
+        f" - {trigger_text} {monitoring_date}"
+    )
