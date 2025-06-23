@@ -47,5 +47,5 @@ jobs:
         MONITORING_DATE: ${{ inputs.date}}
 
       run: |
-        python pipelines/save_data.py
-        python pipelines/check_flooding.py
+        python monitoring/check_forecasts.py
+        python monitoring/save_plots.py
