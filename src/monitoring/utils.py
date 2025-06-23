@@ -11,7 +11,6 @@ from src.utils.blob import PROJECT_PREFIX
 
 load_dotenv()
 
-TEST_LIST = os.getenv("TEST_LIST", True)
 EMAIL_HOST = os.getenv("DSCI_AWS_EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("DSCI_AWS_EMAIL_PORT"))
 EMAIL_PASSWORD = os.getenv("DSCI_AWS_EMAIL_PASSWORD")
@@ -19,7 +18,7 @@ EMAIL_USERNAME = os.getenv("DSCI_AWS_EMAIL_USERNAME")
 EMAIL_ADDRESS = os.getenv("DSCI_AWS_EMAIL_ADDRESS")
 
 
-def process_distribution_list(test_list=TEST_LIST):
+def process_distribution_list(test_list, email_type):
     distribution_list = get_distribution_list(test_list)
     valid_distribution_list = distribution_list[
         distribution_list["email"].apply(is_valid_email)
@@ -32,8 +31,12 @@ def process_distribution_list(test_list=TEST_LIST):
             f"Invalid emails found in distribution list: "
             f"{invalid_distribution_list['email'].tolist()}"
         )
-    to_list = valid_distribution_list[valid_distribution_list["info"] == "to"]
-    cc_list = valid_distribution_list[valid_distribution_list["info"] == "cc"]
+    to_list = valid_distribution_list[
+        valid_distribution_list[email_type] == "to"
+    ]
+    cc_list = valid_distribution_list[
+        valid_distribution_list[email_type] == "cc"
+    ]
     return {"to": to_list, "cc": cc_list}
 
 

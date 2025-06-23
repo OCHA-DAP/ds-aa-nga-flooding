@@ -42,7 +42,8 @@ if __name__ == "__main__":
     environment = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
     template = environment.get_template(f"{template_name}.html")
 
-    distribution = utils.process_distribution_list()
+    email_type = "info" if not overall_exceeds else "trigger"
+    distribution = utils.process_distribution_list(test, email_type)
 
     msg = EmailMessage()
     msg.set_charset("utf-8")
