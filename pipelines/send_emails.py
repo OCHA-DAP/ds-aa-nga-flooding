@@ -22,6 +22,9 @@ if __name__ == "__main__":
     monitoring_date = os.getenv(
         "MONITORING_DATE", datetime.today().strftime("%Y-%m-%d")
     )
+    date_obj = datetime.strptime(monitoring_date, "%Y-%m-%d")
+    formatted_date = date_obj.strftime("%b %d, %Y")
+
     test = os.getenv("TEST_EMAIL", True)
     print(f"Sending emails for date: {monitoring_date}")
     if test:
@@ -29,6 +32,7 @@ if __name__ == "__main__":
 
     results = etl.check_results(monitoring_date)
     overall_exceeds = results["google"] | results["glofas"]
+    trigger_status = "ACTIVATED" if overall_exceeds else "NOT ACTIVATED"
 
     chd_banner_cid = make_msgid(domain="humdata.org")
     ocha_logo_cid = make_msgid(domain="humdata.org")
@@ -43,7 +47,7 @@ if __name__ == "__main__":
     msg = EmailMessage()
     msg.set_charset("utf-8")
     msg["Subject"] = utils.get_email_subject(
-        overall_exceeds, test, monitoring_date
+        overall_exceeds, test, formatted_date
     )
     msg["From"] = Address(
         "OCHA Centre for Humanitarian Data",
@@ -64,12 +68,12 @@ if __name__ == "__main__":
     ]
 
     html_str = template.render(
-        pub_date=monitoring_date,
+        pub_date=formatted_date,
         chd_banner_cid=chd_banner_cid[1:-1],
         ocha_logo_cid=ocha_logo_cid[1:-1],
         chart_cid=chart_cid[1:-1],
         test_email=test,
-        trigger_status=overall_exceeds,
+        trigger_status=trigger_status,
     )
 
     text_str = html2text(html_str)
