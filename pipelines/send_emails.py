@@ -71,7 +71,7 @@ if __name__ == "__main__":
         pub_date=formatted_date,
         chd_banner_cid=chd_banner_cid[1:-1],
         ocha_logo_cid=ocha_logo_cid[1:-1],
-        chart_cid=chart_cid[1:-1],
+        chart_cid=chart_cid[1:-1],  # Don't need if triggering
         test_email=test,
         trigger_status=trigger_status,
     )
@@ -80,14 +80,15 @@ if __name__ == "__main__":
     msg.set_content(text_str)
     msg.add_alternative(html_str, subtype="html")
 
-    blob_name = utils.get_plot_blob_name(monitoring_date, overall_exceeds)
-    image_data = io.BytesIO()
-    blob_client = stratus.get_container_client().get_blob_client(blob_name)
-    blob_client.download_blob().download_to_stream(image_data)
-    image_data.seek(0)
-    msg.get_payload()[1].add_related(
-        image_data.read(), "image", "png", cid=chart_cid
-    )
+    if not overall_exceeds:
+        blob_name = utils.get_plot_blob_name(monitoring_date, overall_exceeds)
+        image_data = io.BytesIO()
+        blob_client = stratus.get_container_client().get_blob_client(blob_name)
+        blob_client.download_blob().download_to_stream(image_data)
+        image_data.seek(0)
+        msg.get_payload()[1].add_related(
+            image_data.read(), "image", "png", cid=chart_cid
+        )
 
     for filename, cid in zip(
         ["centre_banner.png", "ocha_logo_wide.png"],
