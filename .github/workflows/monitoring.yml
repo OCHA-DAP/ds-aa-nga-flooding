@@ -7,6 +7,14 @@ on:
         description: 'Date to process (YYYY-MM-DD format).'
         required: false
         type: string
+      stage:
+        description: Whether to run the monitoring in dev/test mode, or "for real"
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
+
   schedule:
     - cron: '0 20 * * *'
 
