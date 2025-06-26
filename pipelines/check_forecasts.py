@@ -19,7 +19,7 @@ if __name__ == "__main__":
     print(f"Retrieving flood forecast for date: {update_date_formatted}")
     reanalysis_update = update_date - timedelta(days=2)
     station_name = "wuroboki"
-    overwrite = False
+    overwrite = True
 
     coords = glofas.get_coords(station_name)
     forecast_blob_name = etl.get_blob_name(

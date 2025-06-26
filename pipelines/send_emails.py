@@ -25,7 +25,8 @@ if __name__ == "__main__":
     date_obj = datetime.strptime(monitoring_date, "%Y-%m-%d")
     formatted_date = date_obj.strftime("%b %d, %Y")
 
-    test = os.getenv("TEST_EMAIL", True)
+    stage = os.getenv("STAGE", "dev")
+    test = False if stage == "prod" else True
     print(f"Sending emails for date: {monitoring_date}")
     if test:
         print("This is a TEST email!")
