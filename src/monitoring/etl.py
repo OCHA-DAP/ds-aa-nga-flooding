@@ -1,15 +1,20 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import ocha_stratus as stratus
 import pandas as pd
 import requests
 import xarray as xr
 from dotenv import load_dotenv
+from sqlalchemy import text
 
-from src.datasources import glofas, grrr
+from src.constants import GLOFAS_THRESH, GOOGLE_THRESH
+from src.datasources import grrr
 from src.utils import cds_utils
 
 load_dotenv()
+
+DB_SCHEMA = "projects"
+DB_TABLE = "ds_aa_nga_flooding_monitoring"
 
 
 def get_blob_name(data_type, station_name, date):
@@ -17,19 +22,6 @@ def get_blob_name(data_type, station_name, date):
         f"glofas_{station_name}_{data_type}_{date.strftime('%Y-%m-%d')}.grib"
     )
     return f"ds-aa-nga-flooding/raw/glofas/monitoring/{filename}"
-
-
-def get_coords(station_name):
-    station = glofas.GF_STATIONS[station_name]
-    glofas_lon, glofas_lat = glofas.get_glofas_grid_coords(
-        station["lon"], station["lat"]
-    )
-    pitch = 0.001
-    N = glofas_lat + pitch
-    S = glofas_lat
-    E = glofas_lon + pitch
-    W = glofas_lon
-    return [N, W, S, E]
 
 
 def get_glofas_forecast(
@@ -119,6 +111,9 @@ def get_google_forecast(hybas_id, issued_date):
             "key": grrr.GOOGLE_API_KEY,
             "gaugeIds": hybas_id,
             "issuedTimeStart": issued_date.strftime("%Y-%m-%d"),
+            "issuedTimeEnd": (issued_date + timedelta(days=1)).strftime(
+                "%Y-%m-%d"
+            ),
         },
     ).json()
 
@@ -131,7 +126,7 @@ def get_google_forecast(hybas_id, issued_date):
         for range_item in forecast["forecastRanges"]:
             row = {
                 "issued_time": issued_time,
-                "valid_time": range_item["forecastStartTime"],
+                "valid_date": range_item["forecastStartTime"],
                 "value": range_item["value"],
                 "src": f"grrr_{gauge_id}",
             }
@@ -141,12 +136,17 @@ def get_google_forecast(hybas_id, issued_date):
     # In case of multiple forecasts issued from the same day, we want to keep
     # the one that was issued latest
     df = df[df.issued_time == df.issued_time.max()]
+
+    # Make sure it's all in utc time
+    df["issued_time"] = pd.to_datetime(df["issued_time"], utc=True)
+    df["issued_date"] = df["issued_time"]
+    df["valid_date"] = pd.to_datetime(df["valid_date"], utc=True)
     return df
 
 
 def process_glofas(blob_name, data_type, station_name):
     ds = xr.open_dataset(
-        f"temp/{blob_name}",
+        f"tmp/{blob_name}",
         engine="cfgrib",
         decode_timedelta=True,
         backend_kwargs={
@@ -158,50 +158,40 @@ def process_glofas(blob_name, data_type, station_name):
         .to_dataframe()
         .reset_index()
     )
-    df["valid_time"] = pd.to_datetime(df["valid_time"])
+    df["valid_date"] = pd.to_datetime(df["valid_time"])
     df["src"] = f"{data_type}_{station_name}"
-    df = df.rename(columns={"dis24": "value", "time": "issued_time"})
-    return df[["issued_time", "valid_time", "value", "src"]]
+    df = df.rename(columns={"dis24": "value", "time": "issued_date"})
+    return df[["issued_date", "valid_date", "value", "src"]]
 
 
-if __name__ == "__main__":
-    today = datetime.now()
-    two_days_ago = today - timedelta(days=2)
-    station_name = "wuroboki"
+def get_database_forecast(monitoring_date):
+    engine = stratus.get_engine(stage="dev")
+    with engine.connect() as con:
+        df = pd.read_sql(
+            text(
+                f"""
+            select * from {DB_SCHEMA}.{DB_TABLE}
+            where monitoring_date = :monitoring_date
+            """
+            ),
+            con=con,
+            params={"monitoring_date": monitoring_date},
+        )
+    if len(df) == 0:
+        raise Exception(f"No data saved for {monitoring_date}")
+    return df
 
-    coords = get_coords(station_name)
-    forecast_blob_name = get_blob_name("forecast", station_name, today)
-    # NOTE that we're saving the reanalysis data based on the day it was
-    # MONITORED and NOT for the day that it is valid!
-    reanalysis_blob_name = get_blob_name("reanalysis", station_name, today)
 
-    # --- 1. Saving raw GloFAS data...
-    get_glofas_forecast(forecast_blob_name, coords, today, overwrite=True)
-    get_glofas_reanalysis(
-        reanalysis_blob_name, coords, two_days_ago, overwrite=True
+def check_results(monitoring_date):
+    df = get_database_forecast(monitoring_date)
+    assert df.monitoring_date.nunique() == 1
+
+    df_forecast = df[df.src.str.contains("glofas_forecast")].reset_index()
+    df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
+    df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
+
+    glofas_exceeds = (df_reanalysis.value.any() > GLOFAS_THRESH) | (
+        df_forecast.value.any() > GLOFAS_THRESH
     )
-
-    # --- 2. Get the Glofas dataframes...
-    df_forecast = process_glofas(
-        forecast_blob_name, "glofas_forecast", station_name
-    )
-    df_reanalysis = process_glofas(
-        reanalysis_blob_name, "glofas_reanalysis", station_name
-    )
-
-    # --- 3. Getting Google dataframe...
-    df_google = get_google_forecast(grrr.HYBAS_ID, today)
-
-    # --- 4. Combine and save to database...
-    df_all = pd.concat([df_forecast, df_reanalysis, df_google])
-    df_all["updated"] = datetime.now()
-    engine = stratus.get_engine(stage="dev", write=True)
-    df_all.to_sql(
-        "nga_cerf_flooding",
-        schema="monitoring",
-        con=engine,
-        if_exists="append",
-        index=False,
-        method=stratus.postgres_upsert,
-    )
-    print(f"{len(df_all)} rows saved to database!")
+    google_exceeds = df_google.value.any() > GOOGLE_THRESH
+    return {"google": google_exceeds, "glofas": glofas_exceeds}

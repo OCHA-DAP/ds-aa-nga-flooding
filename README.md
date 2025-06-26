@@ -67,3 +67,25 @@ cleaner diffs (and thus easier code reviews) and will ensure that cell outputs
 aren't
 committed to the repo (which might be problematic if working with sensitive
 data).
+
+## Framework monitoring
+
+This repo also includes code for monitoring Google and
+GloFAS forecasts per the CERF AA framework thresholds.
+This monitoring includes:
+
+- Retrieving data from forecast sources and saving to a database
+- Saving output summary plots in Azure blob storage
+- Sending regular email updates. The recipients of these
+emails are configured in `.csv` files saved to Azure blob storage.
+
+The setup for this monitoring can be found in `.github/workflows/monitoring.yml`.
+
+### Configuration
+
+Configure monitoring runs using the following environment variables:
+
+- `STAGE`: (`dev` or `prod`) Determines whether the monitoring
+ emails are sent to the test distribution list, or to the 'production' distribution list.
+- `MONITORING_DATE`: (`yyyy-mm-dd`) The date for which to check forecast sources. Defaults to today if not set.
+Due to different data storage procedures for older data, the monitoring is currently only set up to run for 2024 onwards.

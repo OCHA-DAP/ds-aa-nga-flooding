@@ -151,5 +151,6 @@ outputs
 # DS Store
 .DS_Store
 
-temp*
+tmp*
 */temp/*
+sandbox.ipynb

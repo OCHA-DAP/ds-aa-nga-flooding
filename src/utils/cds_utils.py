@@ -13,7 +13,7 @@ def download_raw_cds_api_to_blob(
     prod_dev: Literal["prod", "dev"] = "dev",
     keep_local_copy: bool = True,
 ):
-    local_filepath = "temp" / Path(blob_name)
+    local_filepath = "tmp" / Path(blob_name)
     if not local_filepath.parent.exists():
         os.makedirs(local_filepath.parent)
     c = cdsapi.Client()
