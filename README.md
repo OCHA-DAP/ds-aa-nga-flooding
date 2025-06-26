@@ -70,13 +70,13 @@ data).
 
 ## Framework monitoring
 
-This repo also includes code for monitoring Google and 
+This repo also includes code for monitoring Google and
 GloFAS forecasts per the CERF AA framework thresholds.
 This monitoring includes:
 
 - Retrieving data from forecast sources and saving to a database
 - Saving output summary plots in Azure blob storage
-- Sending regular email updates. The recipients of these 
+- Sending regular email updates. The recipients of these
 emails are configured in `.csv` files saved to Azure blob storage.
 
 The setup for this monitoring can be found in `.github/workflows/monitoring.yml`.
