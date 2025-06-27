@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.13.6"
-app = marimo.App()
+app = marimo.App(app_title="NGA Observational Trigger")
 
 
 @app.cell(hide_code=True)
@@ -43,28 +43,76 @@ def _():
 
 @app.cell(hide_code=True)
 def _():
+    from typing import List
+
     import matplotlib.pyplot as plt
     import ocha_stratus as stratus
     import pandas as pd
     from dotenv import load_dotenv
 
-    from src.datasources import codab
-    from src.utils import rp_calc
+    def load_codab_from_blob(admin_level: int = 0, aoi_only: bool = False):
+        shapefile = f"nga_adm{admin_level}.shp"
+        gdf = stratus.load_shp_from_blob(
+            f"{PROJECT_PREFIX}/raw/codab/nga.shp.zip",
+            shapefile=shapefile,
+            stage="dev",
+        )
+        if aoi_only:
+            gdf = gdf[gdf["ADM1_PCODE"].isin(AOI_ADM1_PCODES)]
+        return gdf
+
+    def calculate_one_group_rp(
+        group, col_name: str = "q", ascending: bool = True
+    ):
+        group[f"{col_name}_rank"] = group[col_name].rank(ascending=ascending)
+        group[f"{col_name}_rp"] = (len(group) + 1) / group[f"{col_name}_rank"]
+        return group
+
+    def calculate_groups_rp(
+        df: pd.DataFrame,
+        by: List,
+        col_name: str = "mean",
+        ascending: bool = True,
+    ):
+        return (
+            df.groupby(by)
+            .apply(
+                calculate_one_group_rp,
+                include_groups=False,
+                col_name=col_name,
+                ascending=ascending,
+            )
+            .reset_index()
+            .drop(columns=f"level_{len(by)}")
+        )
 
     load_dotenv()
+
+    PROJECT_PREFIX = "ds-aa-nga-flooding"
+    AOI_ADM1_PCODES = ["NG008", "NG036", "NG002"]
     # Colors to be used in plots, etc.
     SAPPHIRE = "#007ce0"
     TOMATO = "#f2645a"
     MINT = "#1ebfb3"
     GREY_DARK = "#888888"
-    return GREY_DARK, MINT, SAPPHIRE, TOMATO, codab, pd, plt, rp_calc, stratus
+    return (
+        GREY_DARK,
+        MINT,
+        SAPPHIRE,
+        TOMATO,
+        calculate_groups_rp,
+        load_codab_from_blob,
+        pd,
+        plt,
+        stratus,
+    )
 
 
 @app.cell
-def _(codab, stratus):
+def _(load_codab_from_blob, stratus):
     # Define database engine and load in adm2 boundaries
     engine = stratus.get_engine(stage="prod")
-    adm2 = codab.load_codab_from_blob(aoi_only=True, admin_level=2)
+    adm2 = load_codab_from_blob(aoi_only=True, admin_level=2)
     return adm2, engine
 
 
@@ -265,8 +313,8 @@ def _(
 
 
 @app.cell
-def _(df_fe_peaks, rp_calc):
-    df_combined = rp_calc.calculate_groups_rp(
+def _(calculate_groups_rp, df_fe_peaks):
+    df_combined = calculate_groups_rp(
         df_fe_peaks, by=["pcode"], col_name="fe_max", ascending=False
     )
     return (df_combined,)
@@ -308,9 +356,11 @@ def _(mo):
 
 @app.cell
 def _(df_rps, mo):
+    rp_options = sorted(list(df_rps["rp_combined"]))
     dropdown = mo.ui.dropdown(
-        options=sorted(list(df_rps["rp_combined"])),
+        options=rp_options,
         label="Select a target combined return period:",
+        value=rp_options[0],
     )
     return (dropdown,)
 
