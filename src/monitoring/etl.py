@@ -146,7 +146,7 @@ def get_google_forecast(hybas_id, issued_date):
 
 def process_glofas(blob_name, data_type, station_name):
     ds = xr.open_dataset(
-        f"tmp/{blob_name}",
+        f"temp/{blob_name}",
         engine="cfgrib",
         decode_timedelta=True,
         backend_kwargs={
