@@ -50,7 +50,7 @@ jobs:
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
         CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
         CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
-        MONITORING_DATE: ${{ inputs.date}}
+        MONITORING_DATE: ${{ inputs.date || '' }}
 
       run: |
         python pipelines/check_forecasts.py
