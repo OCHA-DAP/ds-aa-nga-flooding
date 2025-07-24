@@ -120,7 +120,10 @@ def _(load_codab_from_blob, stratus):
 def _(adm2, mo):
     # Select LGAs for prioritization
     options = dict(zip(adm2["ADM2_EN"], adm2["ADM2_PCODE"]))
-    lgas = mo.ui.multiselect(options=options, value=["Bama", "Dikwa", "Ngala"])
+    lgas = mo.ui.multiselect(
+        options=options,
+        value=["Bama", "Bade", "Ngala", "Karasuwa", "Maiduguri", "Madagali"],
+    )
     return (lgas,)
 
 
@@ -138,7 +141,13 @@ def _(lgas):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""Selected LGAs within the BAY states""")
+    mo.md(r"""Selected LGAs within the BAY states:""")
+    return
+
+
+@app.cell
+def _(adm2_pri, mo):
+    mo.md(", ".join(list(adm2_pri.ADM2_EN)))
     return
 
 
@@ -148,6 +157,7 @@ def _(GREY_DARK, SAPPHIRE, adm2, lgas, plt):
     _fig, _ax = plt.subplots()
     adm2.boundary.plot(ax=_ax, edgecolor=GREY_DARK, linewidth=0.5)
     adm2_pri.plot(ax=_ax, color=SAPPHIRE)
+
     _ax.set_axis_off()
     _ax
     return (adm2_pri,)
@@ -184,7 +194,7 @@ def _(mo):
     dropdown_rolling = mo.ui.dropdown(
         options=range(1, 11),
         label="Select a rolling window (in days):",
-        value=7,
+        value=3,
     )
     return (dropdown_rolling,)
 
@@ -229,7 +239,7 @@ def _(df_fe_rolling):
     )
 
     rp_vals = {}
-    rps = [3, 3.5, 4, 4.5, 5]
+    rps = [3, 4, 5]
 
     for _rp in rps:
         rp_vals[_rp] = {}
