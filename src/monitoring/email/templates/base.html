@@ -1,0 +1,120 @@
+<!DOCTYPE html><html><head><!-- utf-8 works for most cases -->
+    <meta http-equiv="Content-Type" content="text/html; charset=us-ascii"><meta name="viewport" content="width=device-width"> <!-- Forcing initial-scale shouldn't be necessary -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Use the latest (edge) version of IE rendering engine -->
+    <meta name="x-apple-disable-message-reformatting">  <!-- Disable auto-scale in iOS 10 Mail entirely -->
+    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no"> <!-- Tell iOS not to automatically link certain text strings. -->
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <!-- What it does: Makes background images in 72ppi Outlook render at correct size. -->
+    <!--[if gte mso 9]>
+    <xml>
+    <o:OfficeDocumentSettings>
+    <o:AllowPNG/>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <title>email</title>
+    <style>
+    body {
+    font-family: Helvetica, sans-serif;
+    font-size: 14px;
+    }
+    .content {
+    background-color: white;
+    }
+    .content .message-block {
+    margin-bottom: 24px;
+    }
+    .header .message-block, .footer message-block {
+    margin-bottom: 12px;
+    }
+    img {
+    max-width: 100%;
+    }
+    @media only screen and (max-width: 767px) {
+    .container {
+    width: 100%;
+    }
+    .articles, .articles tr, .articles td {
+    display: block;
+    width: 100%;
+    }
+    .article {
+    margin-bottom: 24px;
+    }
+    }
+    </style>
+    </head>
+    <body style="background-color:#f6f6f6;font-family:Helvetica, sans-serif;color:#222;margin:0;padding:0;">
+    <table width="85%" align="center" class="container" style="max-width: 1000px;">
+    <tr>
+    <td style="padding:24px;">
+    <div class="header" style="font-family:Helvetica, sans-serif;color:#999999;font-size:12px;font-weight:normal;margin:0 0 24px 0;text-align:center;">
+    </div>
+    <table width="100%" class="content" style="background-color:white;">
+    <tr>
+    <td style="padding:12px;">
+    <style type="text/css">
+    h1, h2, h3 {
+    font-family: Arvo, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: normal
+    }
+    p {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif
+    }
+    </style>
+    {% if test_email %}
+      <div style="color:red">
+        <h1>THIS IS A TEST EMAIL</h1>
+      </div>
+    {% endif %}
+    <table width="100%" align="left">
+      <tr>
+        <td align="left">
+          <img src="cid:{{ chd_banner_cid }}" alt="Centre for Humanitarian Data banner" width="25%" style="width:25%;">
+        </td>
+      </tr>
+    </table>
+    <div id="monitoring" class="section level1">
+    <h1>Nigeria: Flood Monitoring</h1>
+    <div style="font-size:11px;padding: 6px 10px 6px 10px;background-color:#F0F0F0;color:#000000;font-style:italic">
+      <p style="margin:0;">
+        This is an automated email produced for monitoring the Nigeria Anticipatory Action framework for 2025.
+      </p>
+    </div>
+    <div id="anticipatory-action-trigger-status" class="section level2">
+    <h2>{{ trigger_status }} - {{ pub_date }}</h2>
+    {% block content %} {% endblock content %}
+    <hr>
+    </div>
+    <div id="contact" class="section level2">
+    <h2>Contact</h2>
+    <p>
+      Contact the OCHA Centre for Humanitarian Data via Tristan Downing, focal point for Nigeria Anticipatory Action at <a href="mailto:tristan.downing@un.org" class="email">tristan.downing@un.org</a> with any questions or feedback for this email notification system.
+    </p>
+    <hr>
+    <table width="100%" align="center">
+      <tr>
+        <td align="center">
+          <img src="cid:{{ ocha_logo_cid }}" alt="OCHA Logo" width="25%" style="width:25%;">
+        </td>
+      </tr>
+    </table>
+    <p>
+    <center>
+    <p><b>OCHA Centre for Humanitarian Data</b></p>
+    <p>Fluwelen Burgwal 58 | 2511 CJ The Hague | The Netherlands</p>
+    </center>
+    </p>
+    </div>
+    </div></td>
+    </tr>
+    </table>
+    <div class="footer" style="font-family:Helvetica, sans-serif;color:#999999;font-size:12px;font-weight:normal;margin:24px 0 0 0;">
+    </div>
+    </td>
+    </tr>
+    </table>
+    </body>
+    </html>
