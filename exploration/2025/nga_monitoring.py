@@ -35,7 +35,7 @@ def _(mo):
 @app.cell
 def _():
     import io
-    from datetime import timedelta
+    from datetime import datetime, timedelta
 
     import matplotlib.dates as mdates
     import matplotlib.pyplot as plt
@@ -66,18 +66,6 @@ def _(date):
     return
 
 
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(
-        r"""
-    ## Riverine Trigger
-
-    See the plot below for an overview of streamflow forecasts along the Benue river from both GloFAS and Google. The data behind these plots can be verified at Google's [Flood Hub](https://sites.research.google/floods/l/9.394871245232991/12.36785888671875/10/g/hybas_1120842550) and GloFAS's [flood monitoring interface](https://global-flood.emergency.copernicus.eu/glofas-forecasting/)
-    """
-    )
-    return
-
-
 @app.cell
 def _(date):
     monitoring_date = date.value.strftime("%Y-%m-%d")
@@ -97,7 +85,22 @@ def _(date, mo, monitoring_date, stratus):
     mo.stop(len(files) > 1, mo.md("**Unexpected number of files saved**"))
 
     file_name = files[0]
-    return (file_name,)
+    riverine_trigger = eval(file_name.split("_")[1].split(".")[0])
+    return file_name, riverine_trigger
+
+
+@app.cell
+def _(mo, riverine_trigger):
+    mo.md(f"""## Riverine Trigger: **{riverine_trigger}**""")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        """See the plot below for an overview of streamflow forecasts along the Benue river from both GloFAS and Google. The data behind these plots can be verified at Google's [Flood Hub](https://sites.research.google/floods/l/9.394871245232991/12.36785888671875/10/g/hybas_1120842550) and GloFAS's [flood monitoring interface](https://global-flood.emergency.copernicus.eu/glofas-forecasting/)"""
+    )
+    return
 
 
 @app.cell
@@ -110,18 +113,6 @@ def _(Image, file_name, io, stratus):
 @app.cell
 def _(image, mo):
     mo.image(image)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(
-        r"""
-    ## Flash Flooding Trigger (Observational)
-
-    This trigger is based on an analysis of Floodscan data -- the results of which can be see on [this application](https://chd-ds-floodexposure-monitoring.azurewebsites.net/).
-    """
-    )
     return
 
 
@@ -146,7 +137,7 @@ def _(STAGE, date, lga_config, pd, stratus, text, timedelta):
 
     # Convert list to tuple for SQL IN operator
     query = text(
-        """
+        f"""
     SELECT *
     FROM app.floodscan_exposure
     WHERE pcode IN :pcode_list
@@ -183,6 +174,45 @@ def _(ROLLING_WINDOW, date, df_exposure, mo):
         "sum"
     ].transform(lambda x: x.rolling(ROLLING_WINDOW).mean())
     return (df_exposure_rolling,)
+
+
+@app.cell
+def _(date, df_exposure_rolling):
+    df_monitoring_date = df_exposure_rolling[
+        df_exposure_rolling["valid_date"] == date.value
+    ]
+    return (df_monitoring_date,)
+
+
+@app.cell
+def _(df_monitoring_date, lga_config, pd):
+    df_monitoring_date_ = df_monitoring_date.merge(
+        pd.DataFrame.from_dict(lga_config).T.reset_index()
+    )
+    df_monitoring_date_["exceeds"] = (
+        df_monitoring_date_["rolling_avg"] >= df_monitoring_date_["threshold"]
+    )
+    return (df_monitoring_date_,)
+
+
+@app.cell
+def _(df_monitoring_date_):
+    flash_flood_trigger = bool(df_monitoring_date_["exceeds"].any())
+    return (flash_flood_trigger,)
+
+
+@app.cell
+def _(flash_flood_trigger, mo):
+    mo.md(f"""## Flash Flooding Trigger: **{flash_flood_trigger}**""")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        "This trigger is based on an analysis of Floodscan data -- the results of which can be seen on [this application](https://chd-ds-floodexposure-monitoring.azurewebsites.net/)."
+    )
+    return
 
 
 @app.cell
