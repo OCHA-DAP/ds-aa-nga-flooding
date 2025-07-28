@@ -13,3 +13,4 @@ python-dotenv
 cfgrib
 marimo==0.13.11
 eccodes==2.42.0
+html2text==2025.4.15
