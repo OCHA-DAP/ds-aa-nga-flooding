@@ -63,5 +63,6 @@ if __name__ == "__main__":
             index=False,
             method=stratus.postgres_upsert,
         )
+        conn.commit()
     print(f"{len(df_all)} rows saved to {etl.DB_SCHEMA}.{etl.DB_TABLE}!")
     print("Done checking forercasts!")
