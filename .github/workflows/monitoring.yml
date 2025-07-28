@@ -50,6 +50,11 @@ jobs:
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
         CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
         CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
+        DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST}}
+        DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME}}
+        DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD}}
+        DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS}}
+        DSCI_AWS_EMAIL_PORT: 465
         MONITORING_DATE: ${{ inputs.date || '' }}
 
       run: |
