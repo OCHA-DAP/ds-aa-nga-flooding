@@ -12,3 +12,4 @@ xlrd
 python-dotenv
 cfgrib==0.9.15.0
 marimo==0.13.11
+eccodes==2.42.0
