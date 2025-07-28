@@ -54,12 +54,14 @@ if __name__ == "__main__":
     df_all = pd.concat([df_forecast, df_reanalysis, df_google])
     df_all["monitoring_date"] = update_date
     engine = stratus.get_engine(stage="dev", write=True)
-    df_all.to_sql(
-        etl.DB_TABLE,  # This table was created manually
-        schema=etl.DB_SCHEMA,
-        con=engine,
-        if_exists="append",
-        index=False,
-        method=stratus.postgres_upsert,
-    )
+    with engine.connect() as conn:
+        df_all.to_sql(
+            etl.DB_TABLE,  # This table was created manually
+            schema=etl.DB_SCHEMA,
+            con=conn,
+            if_exists="append",
+            index=False,
+            method=stratus.postgres_upsert,
+        )
     print(f"{len(df_all)} rows saved to {etl.DB_SCHEMA}.{etl.DB_TABLE}!")
+    print("Done checking forercasts!")
