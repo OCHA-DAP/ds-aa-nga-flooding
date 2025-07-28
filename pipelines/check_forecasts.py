@@ -11,9 +11,9 @@ from src.monitoring import etl
 load_dotenv()
 
 if __name__ == "__main__":
-    update_date_formatted = os.getenv(
-        "MONITORING_DATE", datetime.today().strftime("%Y-%m-%d")
-    )
+    update_date_formatted = os.getenv("MONITORING_DATE", "")
+    if not update_date_formatted:
+        update_date_formatted = datetime.today().strftime("%Y-%m-%d")
     update_date = datetime.strptime(update_date_formatted, "%Y-%m-%d")
 
     print(f"Retrieving flood forecast for date: {update_date_formatted}")
