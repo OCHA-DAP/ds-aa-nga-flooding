@@ -32,19 +32,10 @@ def _(mo):
     return
 
 
-@app.cell(hide_code=True)
-def _(mo):
-    mo.callout(
-        "This notebook is still a work in progress, and meant for internal use. Please contact hannah.ker@un.org at the OCHA Centre for Humanitarian Data for any questions.",
-        kind="warn",
-    )
-    return
-
-
 @app.cell
 def _():
     import io
-    from datetime import datetime
+    from datetime import timedelta
 
     import matplotlib.dates as mdates
     import matplotlib.pyplot as plt
@@ -52,8 +43,9 @@ def _():
     import ocha_stratus as stratus
     import pandas as pd
     from PIL import Image
+    from sqlalchemy import text
 
-    return Image, io, mdates, pd, plt, stratus, ticker
+    return Image, io, mdates, pd, plt, stratus, text, ticker, timedelta
 
 
 @app.cell
@@ -80,10 +72,7 @@ def _(mo):
         r"""
     ## Riverine Trigger
 
-    See the plot below for an overview of streamflow forecasts along the Benue river from both GloFAS and Google. The data behind these plots can be verified at:
-
-    - Google's [Flood Hub](https://sites.research.google/floods/l/9.394871245232991/12.36785888671875/10/g/hybas_1120842550)
-    - GloFAS's [flood monitoring interface](https://global-flood.emergency.copernicus.eu/glofas-forecasting/)
+    See the plot below for an overview of streamflow forecasts along the Benue river from both GloFAS and Google. The data behind these plots can be verified at Google's [Flood Hub](https://sites.research.google/floods/l/9.394871245232991/12.36785888671875/10/g/hybas_1120842550) and GloFAS's [flood monitoring interface](https://global-flood.emergency.copernicus.eu/glofas-forecasting/)
     """
     )
     return
@@ -96,11 +85,17 @@ def _(date):
 
 
 @app.cell
-def _(monitoring_date, stratus):
+def _(date, mo, monitoring_date, stratus):
     files = stratus.list_container_blobs(
         name_starts_with=f"ds-aa-nga-flooding/monitoring/{monitoring_date}"
     )
-    assert len(files) == 1
+
+    mo.stop(
+        len(files) == 0,
+        mo.md(f"**No monitoring data available for {date.value}**"),
+    )
+    mo.stop(len(files) > 1, mo.md("**Unexpected number of files saved**"))
+
     file_name = files[0]
     return (file_name,)
 
@@ -146,24 +141,24 @@ def _():
 
 
 @app.cell
-def _(STAGE, lga_config, pd, stratus, text):
+def _(STAGE, date, lga_config, pd, stratus, text, timedelta):
     pcode_list = [value["pcode"] for _, value in lga_config.items()]
 
     # Convert list to tuple for SQL IN operator
     query = text(
-        f"""
+        """
     SELECT *
     FROM app.floodscan_exposure
     WHERE pcode IN :pcode_list
-    AND valid_date >= CURRENT_DATE - INTERVAL '21 days'
+    AND valid_date BETWEEN :start_date AND :input_date
     """
     )
 
     params = {
         "pcode_list": tuple(pcode_list),
+        "input_date": date.value,
+        "start_date": date.value - timedelta(days=21),
     }
-
-    # params = {"pcode_list": lgas}  # pcode_list is your list of pcodes
 
     # Rest of your code remains the same
     engine = stratus.get_engine(STAGE)
@@ -177,7 +172,12 @@ def _(STAGE, lga_config, pd, stratus, text):
 
 
 @app.cell
-def _(ROLLING_WINDOW, df_exposure):
+def _(ROLLING_WINDOW, date, df_exposure, mo):
+    mo.stop(
+        df_exposure.valid_date.max() != date.value,
+        mo.md(f"**No monitoring data available for {date.value}**"),
+    )
+
     df_exposure_rolling = df_exposure.sort_values(["pcode", "valid_date"])
     df_exposure_rolling["rolling_avg"] = df_exposure_rolling.groupby("pcode")[
         "sum"
@@ -186,8 +186,15 @@ def _(ROLLING_WINDOW, df_exposure):
 
 
 @app.cell
-def _(df_exposure_rolling, lga_config, mdates, plt, ticker):
-    today = df_exposure_rolling["valid_date"].max()
+def _(
+    df_exposure_rolling,
+    lga_config,
+    mdates,
+    monitoring_date,
+    plt,
+    ticker,
+    today,
+):
     fig, axes = plt.subplots(3, 2, figsize=(15, 10))
     fig.suptitle(
         "Flood Exposure Monitoring: 3-Day Rolling Averages", fontsize=16
@@ -208,7 +215,7 @@ def _(df_exposure_rolling, lga_config, mdates, plt, ticker):
 
         if len(lga_data) > 0:
             # Get today's data point
-            today_data = lga_data[lga_data["valid_date"] == today]
+            today_data = lga_data[lga_data["valid_date"] == monitoring_date]
 
             # Plot rolling average (muted)
             ax.plot(
@@ -224,10 +231,8 @@ def _(df_exposure_rolling, lga_config, mdates, plt, ticker):
 
             # Highlight today's points
             if len(today_data) > 0:
-                today_sum = today_data["sum"].iloc[0]
                 today_rolling = today_data["rolling_avg"].iloc[0]
 
-                # Today's rolling average (large, bright)
                 ax.plot(
                     today,
                     today_rolling,
@@ -254,7 +259,6 @@ def _(df_exposure_rolling, lga_config, mdates, plt, ticker):
                         zorder=11,
                     )
 
-            # Add threshold line (less prominent)
             ax.axhline(
                 y=threshold,
                 color="black",
@@ -264,17 +268,12 @@ def _(df_exposure_rolling, lga_config, mdates, plt, ticker):
                 label=f"Threshold ({threshold:,})",
             )
 
-        # Format plot
         ax.set_title(f"{lga_name}", fontweight="bold")
-
-        # Only show y-axis label on leftmost plots (column 0)
-        if i % 3 == 0:  # First column
+        if i % 3 == 0:
             ax.set_ylabel("Population exposed to flooding")
         else:
             ax.set_ylabel("")
-
-        # Only show x-axis label on bottom plots (row 1 for 2x3 grid)
-        if i >= 3:  # Bottom row
+        if i >= 3:
             ax.set_xlabel("Date")
         else:
             ax.set_xlabel("")
