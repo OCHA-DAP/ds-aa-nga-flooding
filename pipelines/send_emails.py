@@ -22,7 +22,6 @@ if __name__ == "__main__":
     monitoring_date = os.getenv("MONITORING_DATE", "")
     if not monitoring_date:
         monitoring_date = datetime.today().strftime("%Y-%m-%d")
-    monitoring_date = datetime.strptime(monitoring_date, "%Y-%m-%d")
     date_obj = datetime.strptime(monitoring_date, "%Y-%m-%d")
     formatted_date = date_obj.strftime("%b %d, %Y")
 
