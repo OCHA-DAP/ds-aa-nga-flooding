@@ -1,6 +1,11 @@
 import os
 
 import xarray as xr
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 HYBAS_ID = "hybas_1120842550"
 BASE_DIRECTORY = (

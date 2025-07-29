@@ -12,7 +12,7 @@ from src.utils import blob
 
 load_dotenv()
 
-DATA_DIR = Path(os.getenv("AA_DATA_DIR"))
+DATA_DIR = Path(os.getenv("AA_DATA_DIR", "."))
 CODAB_DIR = DATA_DIR / "public" / "raw" / "nga" / "cod_ab"
 
 

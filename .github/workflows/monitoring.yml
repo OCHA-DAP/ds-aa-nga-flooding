@@ -1,0 +1,64 @@
+name: Monitor flooding
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD format).'
+        required: false
+        type: string
+      stage:
+        description: Whether to run the monitoring in dev/test mode, or "for real"
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
+
+  schedule:
+    - cron: '0 20 * * *'
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11.4'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e .
+        python -m pip install -r requirements.txt
+
+    - name: Run script
+      env:
+        DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+        DSCI_AZ_BLOB_DEV_SAS_WRITE: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS_WRITE }}
+        DSCI_AZ_DB_DEV_PW_WRITE: ${{ secrets.DSCI_AZ_DB_DEV_PW_WRITE }}
+        DSCI_AZ_DB_DEV_UID_WRITE: ${{ secrets.DSCI_AZ_DB_DEV_UID_WRITE }}
+        DSCI_AZ_DB_DEV_PW: ${{ secrets.DSCI_AZ_DB_DEV_PW }}
+        DSCI_AZ_DB_DEV_UID: ${{ secrets.DSCI_AZ_DB_DEV_UID }}
+        DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST}}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
+        CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
+        CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
+        DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST}}
+        DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME}}
+        DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD}}
+        DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS}}
+        DSCI_AWS_EMAIL_PORT: 465
+        MONITORING_DATE: ${{ inputs.date || '' }}
+        STAGE: ${{ inputs.stage }}
+
+      run: |
+        python pipelines/check_forecasts.py
+        python pipelines/save_plots.py
+        python pipelines/send_emails.py

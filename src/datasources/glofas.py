@@ -18,7 +18,7 @@ from src.constants import (
 )
 from src.utils import blob, cds_utils
 
-DATA_DIR = Path(os.getenv("AA_DATA_DIR"))
+DATA_DIR = Path(os.getenv("AA_DATA_DIR", "."))
 GF_RAW_DIR = (
     DATA_DIR / "public" / "raw" / "nga" / "glofas" / "cems-glofas-historical"
 )
@@ -35,6 +35,19 @@ GF_STATIONS = {
         "lat": 9.383,
     }
 }
+
+
+def get_coords(station_name):
+    station = GF_STATIONS[station_name]
+    glofas_lon, glofas_lat = get_glofas_grid_coords(
+        station["lon"], station["lat"]
+    )
+    pitch = 0.001
+    N = glofas_lat + pitch
+    S = glofas_lat
+    E = glofas_lon + pitch
+    W = glofas_lon
+    return [N, W, S, E]
 
 
 def get_blob_name(
