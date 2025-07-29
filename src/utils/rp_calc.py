@@ -1,7 +1,38 @@
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from scipy import stats
+
+
+def calculate_groups_rp(
+    df: pd.DataFrame, by: List, col_name: str = "mean", ascending: bool = True
+):
+    """Calculate the empirical RP for each group in a DataFrame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame for which to calculate the RP.
+    by : List
+        The columns by which to group the DataFrame.
+
+    Returns
+    -------
+    pd.DataFrame
+        The input DataFrame with the RP columns added.
+    """
+    return (
+        df.groupby(by)
+        .apply(
+            calculate_one_group_rp,
+            col_name=col_name,
+            ascending=ascending,
+            include_groups=False,
+        )
+        .reset_index()
+        .drop(columns=f"level_{len(by)}")
+    )
 
 
 def calculate_one_group_rp(group, col_name: str = "q", ascending: bool = True):
@@ -24,7 +55,9 @@ def calculate_one_group_rp(group, col_name: str = "q", ascending: bool = True):
     pd.DataFrame
         The input group with the RP columns added.
     """
-    group[f"{col_name}_rank"] = group[col_name].rank(ascending=ascending)
+    group[f"{col_name}_rank"] = (
+        group[col_name].rank(ascending=ascending).astype(int)
+    )
     group[f"{col_name}_rp"] = (len(group) + 1) / group[f"{col_name}_rank"]
     return group
 
@@ -106,6 +139,92 @@ def estimate_return_periods(
     )
 
     return df_rp_calculated
+
+
+def estimate_return_periods_from_values(
+    df: pd.DataFrame,
+    date_col: str,
+    val_col: str,
+    values: Union[List[float], np.ndarray],
+) -> pd.DataFrame:
+    """
+    Estimate return periods for given values using a Gumbel distribution.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input dataframe containing time series data
+    date_col : str
+        Name of the column containing dates
+    val_col : str
+        Name of the column containing values (e.g., streamflow)
+    values : list or np.ndarray
+        The values for which to estimate the return periods
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with two columns:
+        - 'value': The input values
+        - 'return_period': The estimated return periods
+    """
+    df = df.copy()
+    df[date_col] = pd.to_datetime(df[date_col])
+    df["year"] = df[date_col].dt.year
+    df_annual_max = df.groupby("year")[val_col].max().reset_index()
+
+    # Fit Gumbel distribution to annual maxima
+    loc, scale = stats.gumbel_r.fit(df_annual_max[val_col])
+
+    # Compute exceedance probabilities
+    values = np.array(values)
+    exceedance_probs = 1 - stats.gumbel_r.cdf(values, loc=loc, scale=scale)
+
+    # Return periods are the inverse of exceedance probabilities
+    return_periods = 1 / exceedance_probs
+
+    return pd.DataFrame({"value": values, "return_period": return_periods})
+
+
+def interpolate_return_period(
+    df: pd.DataFrame, rp_col: str, val_col: str, target_vals: list
+) -> pd.DataFrame:
+    """
+    Interpolate return periods for given values using geometric (log-log)
+    interpolation.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing return period and value columns.
+    rp_col : str
+        Column name for return periods (must be > 0).
+    val_col : str
+        Column name for values corresponding to each return period
+        (must be > 0).
+    target_vals : list of float
+        List of values for which to interpolate the return period.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with 'value' and 'return_period' columns.
+    """
+    df = df.dropna(subset=[rp_col, val_col])
+    df = df[df[rp_col] > 0]
+    df = df[df[val_col] > 0]
+
+    # Sort by value
+    df = df.sort_values(by=val_col)
+
+    log_vals = np.log(df[val_col].values)
+    log_rps = np.log(df[rp_col].values)
+    log_target_vals = np.log(np.array(target_vals))
+
+    log_interp_rps = np.interp(log_target_vals, log_vals, log_rps)
+    interp_rps = np.exp(log_interp_rps)
+
+    return pd.DataFrame({"value": target_vals, "return_period": interp_rps})
 
 
 def get_rp_val(df, rp_val, rp_col="return_period", val_col="value"):

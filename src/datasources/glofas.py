@@ -8,6 +8,7 @@ import pandas as pd
 import xarray as xr
 from tqdm.auto import tqdm
 
+import src.constants
 from src.constants import (
     WUROBOKI_2YRPR,
     WUROBOKI_3YRPR,
@@ -58,8 +59,8 @@ def get_blob_name(
     if year is None and data_type == "raw":
         raise ValueError("Year must be provided for raw data")
     if data_type == "raw":
-        return f"{blob.PROJECT_PREFIX}/{data_type}/glofas/{dataset}/glofas_{data_type}_{dataset}_{station_name}_{year}.grib"  # noqa
-    return f"{blob.PROJECT_PREFIX}/{data_type}/glofas/glofas_{dataset}_{station_name}.parquet"  # noqa
+        return f"{src.constants.PROJECT_PREFIX}/{data_type}/glofas/{dataset}/glofas_{data_type}_{dataset}_{station_name}_{year}.grib"  # noqa
+    return f"{src.constants.PROJECT_PREFIX}/{data_type}/glofas/glofas_{dataset}_{station_name}.parquet"  # noqa
 
 
 def process_reanalysis():

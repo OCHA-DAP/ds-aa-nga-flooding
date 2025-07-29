@@ -37,7 +37,9 @@ adm2
 ```
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/raw/AA-nigeria_data/NEMA/Flood Risk Excel Data 2.xlsx"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/raw/AA-nigeria_data/NEMA/Flood Risk Excel Data 2.xlsx"
 ```
 
 ```python

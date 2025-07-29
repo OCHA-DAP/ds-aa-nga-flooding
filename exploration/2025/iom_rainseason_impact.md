@@ -42,8 +42,10 @@ adm2["ADM2_EN_lower"] = adm2["ADM2_EN"].str.lower()
 ```
 
 ```python
+import src.constants
+
 blob_name = (
-    f"{blob.PROJECT_PREFIX}/raw/impact/iom/Rain season historical data.xlsx"
+    f"{src.constants.PROJECT_PREFIX}/raw/impact/iom/Rain season historical data.xlsx"
 )
 ```
 
@@ -111,7 +113,9 @@ df_matched["INCIDENT DATE"].max()
 ```
 
 ```python
-blob_name = f"{blob.PROJECT_PREFIX}/processed/iom/rainseason_2021_2024.parquet"
+import src.constants
+
+blob_name = f"{src.constants.PROJECT_PREFIX}/processed/iom/rainseason_2021_2024.parquet"
 ```
 
 ```python
