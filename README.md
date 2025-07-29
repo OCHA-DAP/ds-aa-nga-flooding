@@ -2,22 +2,11 @@
 
 [![Generic badge](https://img.shields.io/badge/STATUS-UNDER%20DEVELOPMENT-%23007CE0)](https://shields.io/)
 
-## Directory structure
+This repository contains work in progress to support the OCHA Anticipatory Action Framework.
 
-The code in this repository is organized as follows:
-
-```shell
-
-├── analysis      # Main repository of analytical work for the AA pilot
-├── docs          # .Rmd files or other relevant documentation
-├── exploration   # Experimental work not intended to be replicated
-├── src           # Code to run any relevant data acquisition/processing pipelines
-|
-├── .gitignore
-├── README.md
-└── requirements.txt
-
-```
+Initial outputs include:
+- [Flood Exposure Return Periods](https://nga-floodexposure-marim-development-guc4dqhrguaxf3d9.eastus2-01.azurewebsites.net/)
+- [Monitoring Overview](https://nga-monitoring-marimo-development-d6fhc2fud0hqa3e6.eastus2-01.azurewebsites.net/)
 
 ## Reproducing this analysis
 
