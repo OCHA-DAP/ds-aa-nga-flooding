@@ -1,8 +1,10 @@
 import io
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import ocha_stratus as stratus
 import pandas as pd
+from matplotlib.ticker import FuncFormatter
 
 from src.utils.blob import PROJECT_PREFIX
 
@@ -20,7 +22,7 @@ def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
 
     # We're taking the forecast issue date for GloFAS (not the reanalysis)
     glofas_update = df_forecast.issued_date[0].strftime("%Y-%m-%d")
-    google_update = df_google.issued_time[0].strftime("%Y-%m-%d %H:%M:%S")
+    google_update = df_google.issued_time[0].strftime("%Y-%m-%d")
 
     glofas_exceeds = (df_reanalysis.value.any() > glofas_thresh) | (
         df_forecast.value.any() > glofas_thresh
@@ -126,6 +128,15 @@ def forecast_subplot(
                 color="red",
             )
 
+    # Format x-axis dates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%B %-d"))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+
+    # Format y-axis with comma separators
+    def format_thousands(x, pos):
+        return f"{x:,.0f}"  # noqa
+
+    ax.yaxis.set_major_formatter(FuncFormatter(format_thousands))
     title = f"{dataset} Monitoring: {date} | Triggers = {exceeds}"
     ax.set_ylim(0, None)
     ax.set_ylabel("Discharge, daily average (m$^3$ / s)", fontsize=12)
