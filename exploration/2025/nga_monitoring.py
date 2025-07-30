@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.13.6"
-app = marimo.App(width="medium")
+app = marimo.App(app_title="NGA Monitoring")
 
 
 @app.cell(hide_code=True)
@@ -13,22 +13,58 @@ def _():
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.image(
+    img1 = mo.image(
         src="exploration/2025/assets/UNOCHA_logo_horizontal_blue_CMYK.png",
         height=100,
     ).center()
+
+    img2 = mo.image(
+        src="exploration/2025/assets/centre_logo.png",
+        height=100,
+    ).center()
+
+    mo.hstack([img1, img2])
     return
+
+
+@app.cell
+def _(mo):
+    mo.center(mo.md("# 2025 Framework Monitoring"))
+    return
+
+
+@app.cell
+def _(mo):
+    mo.Html("<hr></hr>")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.callout(
+        "This notebook is still a work in progress, and meant for internal use. Please contact hannah.ker@un.org at the OCHA Centre for Humanitarian Data for any questions.",
+        kind="warn",
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    date = mo.ui.date(label="**Select a monitoring date:**")
+    return (date,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
-        r"""
-    # 2025 Framework Monitoring
-
-    This notebook can be used internally for monitoring the 2025 riverine trigger (from Google and GloFAS models) and the flash flooding observational trigger (from Floodscan flood exposure).
-    """
+        rf"""This notebook supports monitoring for the 2025 [OCHA Anticipatory Action](https://www.unocha.org/anticipatory-action) framework in Nigeria. It has been developed by the [Centre for Humanitarian Data](https://centre.humdata.org/). Select a monitoring date (defaults to today) and see below for daily updates from data sources to support the riverine trigger and observational flash flooding trigger."""
     )
+    return
+
+
+@app.cell
+def _(date, mo):
+    mo.center(date)
     return
 
 
@@ -49,21 +85,9 @@ def _():
 
 
 @app.cell
-def _(mo):
-    date = mo.ui.date(label="Select a monitoring date")
-    return (date,)
-
-
-@app.cell
 def _():
     STAGE = "prod"
     return (STAGE,)
-
-
-@app.cell
-def _(date):
-    date
-    return
 
 
 @app.cell(hide_code=True)
@@ -117,9 +141,9 @@ def _(image, mo):
 def _(mo):
     mo.md(
         r"""
-    ## Flash Flooding Trigger (Observational)
+    ## Flash Flooding Trigger
 
-    This trigger is based on an analysis of Floodscan data -- the results of which can be see on [this application](https://chd-ds-floodexposure-monitoring.azurewebsites.net/).
+    This trigger is based on an analysis of Floodscan data -- the results of which can be see on [this application](https://chd-ds-floodexposure-monitoring.azurewebsites.net/). Note that flood exposure estimates have an update lag of one day. Today's data will be available after 11pm UTC tomorrow.
     """
     )
     return
