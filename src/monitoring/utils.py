@@ -7,7 +7,7 @@ import ocha_stratus as stratus
 import pandas as pd
 from dotenv import load_dotenv
 
-from src.utils.blob import PROJECT_PREFIX
+from src.constants import PROJECT_PREFIX
 
 load_dotenv()
 

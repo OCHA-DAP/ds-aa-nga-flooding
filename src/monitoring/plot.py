@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import ocha_stratus as stratus
 import pandas as pd
 
-from src.utils.blob import PROJECT_PREFIX
+from src.constants import PROJECT_PREFIX
 
 
 def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
