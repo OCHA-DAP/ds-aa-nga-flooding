@@ -13,7 +13,7 @@ on:
         options:
           - dev
           - prod
-        default: dev
+        default: prod
 
   schedule:
     - cron: '0 20 * * *'
