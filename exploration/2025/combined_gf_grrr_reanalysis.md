@@ -74,10 +74,6 @@ df_fs.groupby(df_fs["valid_time"].dt.year)[
 ].max().reset_index().sort_values("SFED", ascending=False)
 ```
 
-```python
-df_fs
-```
-
 ### Google
 
 ```python
@@ -681,7 +677,7 @@ date_styles = {
 }
 
 # Setup plot
-fig, ax = plt.subplots(figsize=(12, 10), dpi=200)
+fig, ax = plt.subplots(figsize=(12, 10), dpi=300)
 years_sorted = sorted(df_plot["year"].unique(), reverse=True)
 y_positions = {year: i for i, year in enumerate(years_sorted)}
 plotted_labels = set()
@@ -768,6 +764,28 @@ ax.legend(
 
 plt.tight_layout()
 plt.show()
+```
+
+```python
+df_selected_trigger.columns
+```
+
+```python
+df_plot = df_selected_trigger.copy()
+```
+
+```python
+df_plot["leadtime_5yr_target_days"] = df_plot["leadtime_5yr_target"].dt.days
+df_plot["leadtime_4yr_target_days"] = df_plot["leadtime_4yr_target"].dt.days
+df_plot["leadtime_3yr_target_days"] = df_plot["leadtime_3yr_target"].dt.days
+```
+
+```python
+df_plot
+```
+
+```python
+df_plot.plot(x="SFED", y="leadtime_3yr_target_days", marker=".")
 ```
 
 ```python

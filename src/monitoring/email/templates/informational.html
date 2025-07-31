@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="font-size:11px;padding: 6px 10px 6px 10px;background-color:#F0F0F0;color:#000000;font-style:italic">
+  <p style="margin:0;">
+    This email is purely advisory, and does not serve as an official notice for the anticipatory action framework. Official notices of activation are sent by a separate email.
+  </p>
+</div>
+<div>
+  <p>Dear colleagues,</p>
+  <p>Please see the chart below for today's streamflow forecasts along the Benue River from both <a href="https://global-flood.emergency.copernicus.eu/">GloFAS</a> and <a href="https://sites.research.google/floods/l/9.393855090673839/12.368545532226562/11.59287499999999/g/hybas_1120842550">Google Flood Hub</a>.</p>
+  <p>
+    GloFAS Trigger: <b>3,132 m<sup>3</sup>/s</b><br>
+    Google Trigger: <b>1,195 m<sup>3</sup>/s</b>
+  </p>
+  <p>
+    The framework will be activated if either of these thresholds are met or exceeded.
+  </p>
+  <p>The plot below shows the forecast data retrieved for each source. Note that the GloFAS reanalysis (in red) may also be used for triggering.</p>
+  <img src="cid:{{ chart_cid }}" width="600"/>
+  <p>
+    Code and documentation to support this analysis is available <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding">here</a>.
+  </p>
+  <p>Best wishes,</p>
+  <p>OCHA Centre for Humanitarian Data</p>
+</div>
+{% endblock content %}

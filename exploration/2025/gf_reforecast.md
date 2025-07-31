@@ -23,6 +23,7 @@ jupyter:
 
 ```python
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from src.datasources import glofas
 from src.utils.rp_calc import calculate_groups_rp, calculate_one_group_rp
@@ -136,6 +137,38 @@ df_compare[
 ```
 
 ```python
+df_ref["issued_time"] = df_ref["valid_time"] - df_ref["leadtime"].apply(
+    lambda x: pd.Timedelta(days=x - 1)
+)
+```
+
+```python
+df_ref
+```
+
+```python
+df_ref_trig = df_ref[
+    (df_ref["dis24"] >= thresh_ref) & (df_ref["leadtime"] <= lt_max)
+]
+```
+
+```python
+df_ref["issued_time"].unique()
+```
+
+```python
+df_ref_trig.sort_values(["issued_time", "valid_time"])
+```
+
+```python
+df_ref_trig.loc[
+    df_ref_trig.groupby(df_ref_trig["valid_time"].dt.year)[
+        "issued_time"
+    ].idxmin()
+]
+```
+
+```python
 dicts = []
 for lt_max in df_compare["leadtime"].unique():
     print(lt_max)
@@ -166,6 +199,13 @@ df_threshs = pd.DataFrame(dicts)
 
 ```python
 df_threshs["margin"] = df_threshs["min_true"] - df_threshs["max_false"]
+df_threshs["mean"] = (df_threshs["min_true"] + df_threshs["max_false"]) / 2
+df_threshs["mean_round"] = df_threshs["mean"].apply(round)
+```
+
+```python
+df_threshs["min_true_round"] = df_threshs["min_true"].astype(int) + 1
+df_threshs["max_false_round"] = df_threshs["max_false"].astype(int)
 ```
 
 ```python
@@ -177,5 +217,28 @@ df_compare[df_compare["trig"]]["valid_time"].unique()
 ```
 
 ```python
-df_ref_peaks.groupby("leadtime")["dis24"].mean().plot()
+df_compare["rel_f_a"] = df_compare["dis24_f"] / df_compare["dis24_a"]
+```
+
+```python
+fig, ax = plt.subplots()
+df_compare.groupby("leadtime")["rel_f_a"].mean().plot(ax=ax)
+ax.set_ylabel("Forecast relative to reanalysis,\nmean of yearly peaks")
+```
+
+```python
+df_compare_daily = df_ref.merge(df_rea, on="valid_time", suffixes=("_f", "_a"))
+df_compare_daily
+```
+
+```python
+df_compare_daily["rel_f_a"] = (
+    df_compare_daily["dis24_f"] / df_compare_daily["dis24_a"]
+)
+```
+
+```python
+fig, ax = plt.subplots()
+df_compare_daily.groupby("leadtime")["rel_f_a"].mean().plot(ax=ax)
+ax.set_ylabel("Forecast relative to reanalysis,\nmean of all daily values")
 ```

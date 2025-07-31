@@ -113,6 +113,16 @@ for lt, group in df_compare.groupby("leadtime"):
 ```
 
 ```python
+for lt, group in df_compare.groupby("leadtime"):
+    print(lt)
+    display(group.sort_values("streamflow_rank_a"))
+```
+
+```python
+df_compare[~df_compare["trig"]]["streamflow_f"].max()
+```
+
+```python
 df_compare.groupby("leadtime").mean()["streamflow_f"].plot()
 ```
 
