@@ -172,6 +172,7 @@ def get_database_forecast(monitoring_date):
                 f"""
             select * from {DB_SCHEMA}.{DB_TABLE}
             where monitoring_date = :monitoring_date
+            order by valid_date
             """
             ),
             con=con,
