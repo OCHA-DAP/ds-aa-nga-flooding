@@ -7,7 +7,12 @@ import xarray as xr
 from dotenv import load_dotenv
 from sqlalchemy import text
 
-from src.constants import GLOFAS_THRESH, GOOGLE_THRESH
+from src.constants import (
+    GLOFAS_THRESH,
+    GLOFAS_WARNING_THRESH,
+    GOOGLE_THRESH,
+    GOOGLE_WARNING_THRESH,
+)
 from src.datasources import grrr
 from src.utils import cds_utils
 
@@ -183,7 +188,14 @@ def get_database_forecast(monitoring_date):
     return df
 
 
-def check_results(monitoring_date):
+def check_results(monitoring_date, activation=True):
+    if activation:
+        google_thresh = GOOGLE_THRESH
+        glofas_thresh = GLOFAS_THRESH
+    else:
+        google_thresh = GOOGLE_WARNING_THRESH
+        glofas_thresh = GLOFAS_WARNING_THRESH
+
     df = get_database_forecast(monitoring_date)
     assert df.monitoring_date.nunique() == 1
 
@@ -191,8 +203,9 @@ def check_results(monitoring_date):
     df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
     df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
 
-    glofas_exceeds = (df_reanalysis.value.any() > GLOFAS_THRESH) | (
-        df_forecast.value.any() > GLOFAS_THRESH
+    glofas_exceeds = (df_reanalysis.value.any() > glofas_thresh) | (
+        df_forecast.value.any() > glofas_thresh
     )
-    google_exceeds = df_google.value.any() > GOOGLE_THRESH
-    return {"google": google_exceeds, "glofas": glofas_exceeds}
+    google_exceeds = df_google.value.any() > google_thresh
+    overall_exceeds = glofas_exceeds | google_exceeds
+    return overall_exceeds

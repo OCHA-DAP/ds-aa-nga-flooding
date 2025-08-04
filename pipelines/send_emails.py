@@ -25,12 +25,12 @@ if __name__ == "__main__":
 
     monitoring_date_obj = datetime.strptime(monitoring_date, "%Y-%m-%d")
 
-    results = etl.check_results(monitoring_date)
-    overall_exceeds = results["google"] | results["glofas"]
-    trigger_status = "ACTIVATED" if overall_exceeds else "NOT ACTIVATED"
+    activation = etl.check_results(monitoring_date, activation=True)
+    warning = etl.check_results(monitoring_date, activation=False)
+    trigger_status = "ACTIVATED" if activation else "NOT ACTIVATED"
 
-    # Send emails if activated, or if it is a Monday
-    if trigger_status == "ACTIVATED" or monitoring_date_obj.weekday() == 0:
+    # Send emails if activated, if within warning threshold, or if it is a Monday
+    if activation or warning or monitoring_date_obj.weekday() == 0:
         print(f"Sending emails for date: {monitoring_date}")
         stage = os.getenv("STAGE", "dev")
         test = False if stage == "prod" else True
@@ -41,17 +41,17 @@ if __name__ == "__main__":
         ocha_logo_cid = make_msgid(domain="humdata.org")
         chart_cid = make_msgid(domain="humdata.org")
 
-        template_name = "informational" if not overall_exceeds else "action"
+        template_name = "action" if activation else "informational"
         environment = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = environment.get_template(f"{template_name}.html")
 
-        email_type = "info" if not overall_exceeds else "trigger"
+        email_type = "info" if not activation else "trigger"
         distribution = utils.process_distribution_list(test, email_type)
 
         msg = EmailMessage()
         msg.set_charset("utf-8")
         msg["Subject"] = utils.get_email_subject(
-            overall_exceeds, test, monitoring_date
+            activation, test, monitoring_date
         )
         msg["From"] = Address(
             "OCHA Centre for Humanitarian Data",
@@ -88,10 +88,8 @@ if __name__ == "__main__":
         msg.set_content(text_str)
         msg.add_alternative(html_str, subtype="html")
 
-        if not overall_exceeds:
-            blob_name = utils.get_plot_blob_name(
-                monitoring_date, overall_exceeds
-            )
+        if not activation:
+            blob_name = utils.get_plot_blob_name(monitoring_date, activation)
             image_data = io.BytesIO()
             blob_client = stratus.get_container_client().get_blob_client(
                 blob_name
