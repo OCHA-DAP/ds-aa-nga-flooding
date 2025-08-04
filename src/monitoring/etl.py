@@ -153,8 +153,9 @@ def process_glofas(blob_name, data_type, station_name):
             "indexpath": "",
         },
     )
-    # Take the ensemble mean
-    ds = ds["dis24"].mean(dim="number")
+    # Take the ensemble mean if forecast
+    if data_type == "glofas_forecast":
+        ds = ds["dis24"].mean(dim="number")
     df = (
         ds.assign_coords(valid_time=ds["valid_time"] - pd.Timedelta(hours=24))
         .to_dataframe()
