@@ -42,7 +42,7 @@ def get_glofas_forecast(
     forecast_request = {
         "system_version": ["operational"],
         "hydrological_model": ["lisflood"],
-        "product_type": ["control_forecast"],
+        "product_type": ["ensemble_perturbed_forecasts"],
         "variable": "river_discharge_in_the_last_24_hours",
         "year": [str(issued_date.year)],
         "month": [str(issued_date.month).zfill(2)],
@@ -153,6 +153,8 @@ def process_glofas(blob_name, data_type, station_name):
             "indexpath": "",
         },
     )
+    # Take the ensemble mean
+    ds = ds["dis24"].mean(dim="number")
     df = (
         ds.assign_coords(valid_time=ds["valid_time"] - pd.Timedelta(hours=24))
         .to_dataframe()
