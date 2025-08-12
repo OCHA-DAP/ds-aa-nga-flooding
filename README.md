@@ -1,6 +1,6 @@
 # Nigeria Anticipatory Action: flooding
 <!-- markdownlint-disable MD013 -->
-[![Generic badge](https://img.shields.io/badge/STATUS-UNDER%20DEVELOPMENT-%23007CE0)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/STATUS-ENDORSED-%231EBFB3)](https://shields.io/)
 
 This repository contains work in progress to support the OCHA Anticipatory Action Framework.
 
