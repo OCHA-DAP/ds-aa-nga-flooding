@@ -1,10 +1,11 @@
 # Nigeria Anticipatory Action: flooding
-
-[![Generic badge](https://img.shields.io/badge/STATUS-UNDER%20DEVELOPMENT-%23007CE0)](https://shields.io/)
+<!-- markdownlint-disable MD013 -->
+[![Generic badge](https://img.shields.io/badge/STATUS-ENDORSED-%231EBFB3)](https://shields.io/)
 
 This repository contains work in progress to support the OCHA Anticipatory Action Framework.
 
 Initial outputs include:
+
 - [Flood Exposure Return Periods](https://nga-floodexposure-marim-development-guc4dqhrguaxf3d9.eastus2-01.azurewebsites.net/)
 - [Monitoring Overview](https://nga-monitoring-marimo-development-d6fhc2fud0hqa3e6.eastus2-01.azurewebsites.net/)
 
@@ -74,7 +75,6 @@ The setup for this monitoring can be found in `.github/workflows/monitoring.yml`
 
 Configure monitoring runs using the following environment variables:
 
-- `STAGE`: (`dev` or `prod`) Determines whether the monitoring
- emails are sent to the test distribution list, or to the 'production' distribution list.
+- `STAGE`: (`dev` or `prod`) Determines whether the monitoring emails are sent to the test distribution list, or to the 'production' distribution list. Note that when running on the schedule, `STAGE` will fall back to the value in the GitHub Actions `STAGE` variable, and if this is not set, it will default to `dev`.
 - `MONITORING_DATE`: (`yyyy-mm-dd`) The date for which to check forecast sources. Defaults to today if not set.
 Due to different data storage procedures for older data, the monitoring is currently only set up to run for 2024 onwards.
