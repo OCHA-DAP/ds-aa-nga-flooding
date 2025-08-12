@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 import ocha_stratus as stratus
@@ -5,7 +6,7 @@ import pandas as pd
 import requests
 import xarray as xr
 from dotenv import load_dotenv
-from sqlalchemy import text
+from sqlalchemy import create_engine, text
 
 from src.constants import (
     GLOFAS_THRESH,
@@ -20,6 +21,8 @@ load_dotenv()
 
 DB_SCHEMA = "projects"
 DB_TABLE = "ds_aa_nga_flooding_monitoring"
+
+AZURE_DB_BASE_URL = "postgresql+psycopg2://{uid}:{pw}@{host}/postgres"
 
 
 def get_blob_name(data_type, station_name, date):
@@ -212,3 +215,19 @@ def check_results(monitoring_date, activation=True):
     google_exceeds = df_google.value.any() > google_thresh
     overall_exceeds = glofas_exceeds | google_exceeds
     return overall_exceeds
+
+
+def get_backup_db(write: bool = False):
+    if write:
+        url = AZURE_DB_BASE_URL.format(
+            uid=os.getenv("DSCI_AZ_DB_DEV_UID_WRITE"),
+            pw=os.getenv("DSCI_AZ_DB_DEV_PW_WRITE"),
+            host="chd-rasterstats-dev2.postgres.database.azure.com",
+        )
+    else:
+        url = AZURE_DB_BASE_URL.format(
+            uid=os.getenv("DSCI_AZ_DB_DEV_UID"),
+            pw=os.getenv("DSCI_AZ_DB_DEV_PW"),
+            host="chd-rasterstats-dev2.postgres.database.azure.com",
+        )
+    return create_engine(url)
