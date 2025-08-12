@@ -56,7 +56,7 @@ jobs:
         DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS}}
         DSCI_AWS_EMAIL_PORT: 465
         MONITORING_DATE: ${{ inputs.date || '' }}
-        STAGE: ${{ inputs.stage || 'dev'}}
+        STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
 
       run: |
         python pipelines/check_forecasts.py
