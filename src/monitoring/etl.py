@@ -206,9 +206,9 @@ def check_results(monitoring_date, activation=True):
     df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
     df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
 
-    glofas_exceeds = (df_reanalysis.value.any() > glofas_thresh) | (
-        df_forecast.value.any() > glofas_thresh
-    )
-    google_exceeds = df_google.value.any() > google_thresh
+    glofas_exceeds = (df_reanalysis.value > glofas_thresh).any() | (
+        df_forecast.value > glofas_thresh
+    ).any()
+    google_exceeds = (df_google.value > google_thresh).any()
     overall_exceeds = glofas_exceeds | google_exceeds
     return overall_exceeds

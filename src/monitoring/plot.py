@@ -24,10 +24,10 @@ def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
     glofas_update = df_forecast.issued_date[0].strftime("%Y-%m-%d")
     google_update = df_google.issued_time[0].strftime("%Y-%m-%d")
 
-    glofas_exceeds = (df_reanalysis.value.any() > glofas_thresh) | (
-        df_forecast.value.any() > glofas_thresh
-    )
-    google_exceeds = df_google.value.any() > google_thresh
+    glofas_exceeds = (df_reanalysis.value > glofas_thresh).any() | (
+        df_forecast.value > glofas_thresh
+    ).any()
+    google_exceeds = (df_google.value > google_thresh).any()
     overall_exceeds = glofas_exceeds | google_exceeds
 
     forecast_subplot(
