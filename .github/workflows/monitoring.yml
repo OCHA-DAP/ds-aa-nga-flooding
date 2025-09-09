@@ -61,4 +61,3 @@ jobs:
       run: |
         python pipelines/check_forecasts.py
         python pipelines/save_plots.py
-        python pipelines/send_emails.py
