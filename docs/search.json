@@ -4,39 +4,49 @@
     "href": "index.html",
     "title": "Anticipatory Action - Nigeria Flooding",
     "section": "",
-    "text": "Overview\nThis site documents the data processing, analysis, and monitoring for the 2025 OCHA Nigeria Anticipatory Action Framework.\nSee the framework document here.\nGet in touch with the OCHA Centre for Humanitarian Data (CHD) Data Science team at email: data.science@humdata.org.",
+    "text": "Overview\nThis site documents the data processing, analysis, and monitoring for the 2025 OCHA Nigeria Flooding Anticipatory Action Framework.\nSee the framework document here.\nGet in touch with the OCHA Centre for Humanitarian Data (CHD) Data Science team at: data.science@humdata.org.",
     "crumbs": [
       "Overview"
     ]
   },
   {
-    "objectID": "intro.html",
-    "href": "intro.html",
-    "title": "1  Introduction",
+    "objectID": "exploration/2025/adamawa_lgas.html",
+    "href": "exploration/2025/adamawa_lgas.html",
+    "title": "1  Adamawa LGAs",
     "section": "",
-    "text": "This is a book created from markdown and executable code.\nSee Knuth (1984) for additional discussion of literate programming.\n\n\n\n\nKnuth, Donald E. 1984. “Literate Programming.” Comput. J. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "text": "1.1 Load data\nCompare HNRP targeting and flood exposure for LGAs along Benue in Adamawa.\nCode\nadm2 = codab.load_codab_from_blob(admin_level=2, aoi_only=True)\nadm2_benue = adm2[adm2[\"ADM2_PCODE\"].isin(BENUE_ADM2_PCODES)]\nCode\nbenue = hydrosheds.load_benue_aoi()\nCode\nfs = floodscan.load_adm2_flood_exposures()\nfs_mean = fs.groupby(\"ADM2_PCODE\")[\"total_exposed\"].mean().reset_index()",
     "crumbs": [
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adamawa LGAs</span>"
     ]
   },
   {
-    "objectID": "summary.html",
-    "href": "summary.html",
-    "title": "2  Summary",
-    "section": "",
-    "text": "In summary, this book has no content whatsoever.",
+    "objectID": "exploration/2025/adamawa_lgas.html#plot",
+    "href": "exploration/2025/adamawa_lgas.html#plot",
+    "title": "1  Adamawa LGAs",
+    "section": "1.2 Plot",
+    "text": "1.2 Plot\n\n1.2.1 Basic plot with river\n\n\nCode\nfig, ax = plt.subplots()\nadm2_benue.boundary.plot(ax=ax, color=\"k\", linewidth=0.5)\nbenue.plot(ax=ax, color=\"dodgerblue\")\n\nfor name, row in adm2_benue.set_index(\"ADM2_EN\").iterrows():\n    y_shift = 0.05 if name == \"Yola South\" else 0\n    x_shift = 0.1 if name == \"Fufore\" else 0\n    ax.annotate(\n        \"\\n\".join(name.split(\" \")),\n        (\n            row[\"geometry\"].centroid.x + x_shift,\n            row[\"geometry\"].centroid.y + y_shift,\n        ),\n        fontsize=8,\n        ha=\"center\",\n        va=\"center\",\n    )\n\nax.axis(\"off\")",
     "crumbs": [
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Summary</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adamawa LGAs</span>"
     ]
   },
   {
-    "objectID": "references.html",
-    "href": "references.html",
-    "title": "References",
-    "section": "",
-    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "objectID": "exploration/2025/adamawa_lgas.html#load-hnrp-data",
+    "href": "exploration/2025/adamawa_lgas.html#load-hnrp-data",
+    "title": "1  Adamawa LGAs",
+    "section": "1.3 Load HNRP data",
+    "text": "1.3 Load HNRP data\nCSV from HDX\n\n\nCode\nimport src.constants\n\nblob_name = f\"{src.constants.PROJECT_PREFIX}/raw/hnrp/hdx_hapi_humanitarian_needs_global_2025_adamawa_intersectoral_total.csv\"\n\n\n\n\nCode\ndf_hnrp = stratus.load_csv_from_blob(blob_name)\n\n\n\n\nCode\npop_status = \"TGT\"\n\n\n\n\nCode\ngdf_compare = adm2_benue.merge(\n    df_hnrp[df_hnrp[\"population_status\"] == pop_status].rename(\n        columns={\"admin2_code\": \"ADM2_PCODE\"}\n    ),\n    how=\"left\",\n).merge(fs_mean)",
     "crumbs": [
-      "References"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adamawa LGAs</span>"
+    ]
+  },
+  {
+    "objectID": "exploration/2025/adamawa_lgas.html#more-plots",
+    "href": "exploration/2025/adamawa_lgas.html#more-plots",
+    "title": "1  Adamawa LGAs",
+    "section": "1.4 More plots",
+    "text": "1.4 More plots\n\n1.4.1 Population targeted\n\n\nCode\nfig, ax = plt.subplots(dpi=200)\ngdf_compare.plot(\n    column=\"population\",\n    ax=ax,\n    vmin=0,\n    cmap=\"hot_r\",\n    legend=True,\n    legend_kwds={\"label\": \"Total Population Targeted\", \"shrink\": 0.5},\n)\ngdf_compare.boundary.plot(ax=ax, color=\"k\", linewidth=0.5)\nbenue.plot(ax=ax, color=\"dodgerblue\")\n\nfor name, row in gdf_compare.set_index(\"ADM2_EN\").iterrows():\n    y_shift = 0.05 if name == \"Yola South\" else 0\n    x_shift = 0.1 if name == \"Fufore\" else 0\n    x_shift = -0.05 if name == \"Yola South\" else x_shift\n    name = \"Y.N.\" if name == \"Yola North\" else name\n    ax.annotate(\n        \"\\n\".join(name.split(\" \")),\n        (\n            row[\"geometry\"].centroid.x + x_shift,\n            row[\"geometry\"].centroid.y + y_shift,\n        ),\n        fontsize=6 if name == \"Y.N.\" else 8,\n        color=\"w\" if row[\"population\"] &gt; 0 else \"k\",\n        ha=\"center\",\n        va=\"center\",\n    )\n\ncbar = ax.get_figure().axes[-1]  # Get last axis (colorbar)\ncbar.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f\"{x:,.0f}\"))\n\nax.set_title(\"Population Targeted in 2025 HNRP\")\n\nax.axis(\"off\")\n\n\n\n\n\n\n\n\n\n\n\n1.4.2 Population exposed\n\n\nCode\nfig, ax = plt.subplots(dpi=200)\ngdf_compare.plot(\n    column=\"total_exposed\",\n    ax=ax,\n    vmin=0,\n    cmap=\"hot_r\",\n    legend=True,\n    legend_kwds={\"label\": \"Average Total Population Exposed\", \"shrink\": 0.5},\n)\ngdf_compare.boundary.plot(ax=ax, color=\"k\", linewidth=0.5)\nbenue.plot(ax=ax, color=\"dodgerblue\")\n\nfor name, row in gdf_compare.set_index(\"ADM2_EN\").iterrows():\n    y_shift = 0.05 if name == \"Yola South\" else 0\n    x_shift = 0.1 if name == \"Fufore\" else 0\n    x_shift = -0.05 if name == \"Yola South\" else x_shift\n    name = \"Y.N.\" if name == \"Yola North\" else name\n    ax.annotate(\n        \"\\n\".join(name.split(\" \")),\n        (\n            row[\"geometry\"].centroid.x + x_shift,\n            row[\"geometry\"].centroid.y + y_shift,\n        ),\n        fontsize=6 if name == \"Y.N.\" else 8,\n        color=\"w\" if row[\"total_exposed\"] &gt; 20000 else \"k\",\n        ha=\"center\",\n        va=\"center\",\n    )\n\ncbar = ax.get_figure().axes[-1]  # Get last axis (colorbar)\ncbar.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f\"{x:,.0f}\"))\n\nax.set_title(\"Average population exposed to flooding (Floodscan)\")\n\nax.axis(\"off\")\n\n\n\n\n\n\n\n\n\n\n\n1.4.3 Scatter plot comparison\n\n\nCode\nfig, ax = plt.subplots(dpi=200, figsize=(7, 7))\ngdf_compare.drop(columns=\"geometry\").plot(\n    x=\"population\", y=\"total_exposed\", ax=ax, linewidth=0, legend=False\n)\n\nfor name, row in gdf_compare.set_index(\"ADM2_EN\").iterrows():\n    pop = row[\"population\"] if row[\"population\"] &gt; 0 else 0\n    ax.annotate(\n        name,\n        (pop, row[\"total_exposed\"]),\n        ha=\"center\",\n        va=\"center\",\n    )\n\nax.set_xlim(left=0)\nax.set_ylim(bottom=0)\n\nax.set_xlabel(\"Total Population Targeted\")\nax.set_ylabel(\"Average Total Population Exposed\")\nax.set_title(\"Flood exposure vs. HNRP targeting\")\n\nax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f\"{x:,.0f}\"))\nax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: f\"{y:,.0f}\"))\n\nax.spines[\"top\"].set_visible(False)\nax.spines[\"right\"].set_visible(False)",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adamawa LGAs</span>"
     ]
   }
 ]

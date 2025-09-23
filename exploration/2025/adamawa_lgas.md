@@ -13,11 +13,13 @@ jupyter:
     name: ds-aa-nga-flooding
 ---
 
+<!-- #region editable=true slideshow={"slide_type": ""} -->
 # Adamawa LGAs
 
 <!-- markdownlint-disable MD013 -->
 
 Compare HNRP targeting and flood exposure for LGAs along Benue in Adamawa.
+<!-- #endregion -->
 
 ```python
 %load_ext jupyter_black
@@ -49,10 +51,6 @@ benue = hydrosheds.load_benue_aoi()
 ```python
 fs = floodscan.load_adm2_flood_exposures()
 fs_mean = fs.groupby("ADM2_PCODE")["total_exposed"].mean().reset_index()
-```
-
-```python
-fs_mean[fs_mean["ADM2_PCODE"] == DEMSA2]
 ```
 
 ## Plot

@@ -1,6 +1,8 @@
 project:
   type: book
-  output-dir: ../docs
+  output-dir: docs
+#  output-dir: ../docs
+
 
 book:
   title: "Anticipatory Action - Nigeria Flooding"
@@ -8,11 +10,9 @@ book:
   date: "2025-09-23"
   chapters:
     - index.qmd
-    - intro.qmd
-    - summary.qmd
-    - references.qmd
+    - exploration/2025/adamawa_lgas.ipynb
 
-bibliography: references.bib
+#bibliography: references.bib
 
 format:
   html:
@@ -24,7 +24,7 @@ format:
     self-contained: false # Avoid embedding all resources for faster builds
     embed-resources: false
     toc: true          # Enable table of contents for navigation
-    css: custom.css    # Apply the custom CSS globally
+    css: quarto_assets/custom.css    # Apply the custom CSS globally
     toc-depth: 3
     code-fold: true
     smooth-scroll: true
