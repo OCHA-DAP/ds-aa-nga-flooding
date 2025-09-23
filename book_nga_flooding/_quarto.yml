@@ -1,0 +1,20 @@
+project:
+  type: book
+
+book:
+  title: "book_nga_flooding"
+  author: "Norah Jones"
+  date: "9/23/2025"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
