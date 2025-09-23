@@ -1,10 +1,11 @@
 project:
   type: book
+  output-dir: docs
 
 book:
-  title: "book_nga_flooding"
-  author: "Norah Jones"
-  date: "9/23/2025"
+  title: "Anticipatory Action - Nigeria Flooding"
+  author: "OCHA Centre for Humanitarian Data"
+  date: "2025-09-23"
   chapters:
     - index.qmd
     - intro.qmd
@@ -16,5 +17,20 @@ bibliography: references.bib
 format:
   html:
     theme: cosmo
-  pdf:
-    documentclass: scrreprt
+    number-sections: true
+    number-depth: 3
+    fig-format: "png" # More efficient than SVG for most plots
+    fig-dpi: 96       # Lower DPI for faster rendering
+    self-contained: false # Avoid embedding all resources for faster builds
+    embed-resources: false
+    toc: true          # Enable table of contents for navigation
+    css: custom.css    # Apply the custom CSS globally
+    toc-depth: 3
+    code-fold: true
+    smooth-scroll: true
+
+execute:
+  freeze: auto        # Freeze execution to avoid re-running code chunks
+  cache: false         # Enable caching for faster re-renders
+
+editor: source
