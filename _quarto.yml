@@ -1,13 +1,14 @@
 project:
   type: book
   output-dir: docs
-#  output-dir: ../docs
 
 
 book:
   title: "Anticipatory Action - Nigeria Flooding"
   author: "OCHA Centre for Humanitarian Data"
   date: "2025-09-23"
+  sidebar:
+    logo: quarto_assets/images/centre_banner_greenbg.png
   chapters:
     - index.qmd
     - exploration/2025/adamawa_lgas.ipynb
