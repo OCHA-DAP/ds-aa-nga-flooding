@@ -212,3 +212,17 @@ code {
     color: black;
     /* Ensure section numbers are also black */
 }
+
+/*comment out below to remove watermark*/
+body::before {
+  content: "DRAFT";
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 8rem;
+  color: rgba(200, 0, 0, 0.15);
+  z-index: 9999;
+  pointer-events: none;
+  white-space: nowrap;
+}
