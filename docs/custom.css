@@ -1,0 +1,214 @@
+/* Custom CSS for Quarto Book */
+
+/* Define primary and secondary colors */
+:root {
+    --bs-primary: #55b284ff;
+    --bs-secondary: white;
+}
+
+/* Customize links */
+a {
+    color: var(--bs-primary);
+}
+
+a:hover {
+    color: var(--bs-secondary);
+}
+
+/* Customize buttons */
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: #3e8f6b;
+    border-color: #3e8f6b;
+}
+
+.btn-secondary {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+}
+
+.btn-secondary:hover {
+    background-color: #e6e6e6;
+    border-color: #e6e6e6;
+}
+
+/* Customize headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--bs-primary);
+}
+
+/* Customize blockquotes */
+blockquote {
+    border-left: 4px solid var(--bs-secondary);
+    color: var(--bs-secondary);
+    padding-left: 1em;
+}
+
+/* Customize code blocks */
+pre,
+code {
+    background-color: #f8f9fa;
+    border: 1px solid var(--bs-primary);
+    border-radius: 4px;
+    padding: 0.5em;
+}
+
+/* Customize inline code styling */
+code {
+    color: var(--bs-primary);
+    /* Change text color to dark blue */
+    background-color: #f8f9fa;
+    /* Keep the light background */
+    padding: 0.1em 0.3em;
+    /* Further reduce padding */
+    border-radius: 4px;
+    /* Keep rounded corners */
+}
+
+/* Customize Quarto sidebar */
+#quarto-sidebar {
+    background-color: var(--bs-primary);
+    color: var(--bs-secondary);
+    margin-left: 0;
+    /* Remove any left margin */
+    padding-left: 10px;
+    /* Add small padding to the left */
+    position: fixed;
+    /* Fix sidebar to the left */
+    left: 0;
+    /* Align to the left edge */
+    width: 100%;
+    /* Ensure it spans the full width */
+    max-width: 250px;
+    /* Optional: Set a max width for the sidebar */
+    height: 100vh;
+    /* Extend to full vertical height */
+    overflow-y: auto;
+    /* Enable scrolling if content overflows */
+}
+
+#quarto-sidebar a {
+    color: var(--bs-secondary);
+    /* Default color */
+}
+
+#quarto-sidebar a:hover {
+    color: #F0635C;
+    /* Hover color */
+}
+
+/* Style for right-side Table of Contents links */
+#quarto-sidebar-right .nav-link {
+    color: black;
+    /* Default black text */
+}
+
+#quarto-sidebar-right .nav-link:hover,
+#quarto-sidebar-right .nav-link:focus,
+#quarto-sidebar-right .nav-link.active {
+    color: #F0635C;
+    /* Red when hovered, focused, or active */
+}
+
+/* Explicitly override visited link color */
+#quarto-sidebar-right .nav-link:visited {
+    color: black;
+    /* Ensure visited links remain black */
+}
+
+#quarto-sidebar .menu-text {
+    color: var(--bs-secondary);
+}
+
+#quarto-sidebar .menu-text:hover {
+    color: var(--bs-primary);
+}
+
+/* Render chapter numbers as white */
+#quarto-sidebar .chapter-number {
+    color: var(--bs-secondary);
+}
+
+/* Style for sidebar header with logo */
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    /* Add spacing between logo and text */
+}
+
+.sidebar-header::before {
+    content: '';
+    display: inline-block;
+    background-image: url('./logo_white.png');
+    /* Ensure the path is correct */
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 100%;
+    /* Adjust width to ensure visibility */
+    height: 100px;
+    /* Set a fixed height */
+    margin-bottom: 10px;
+    /* Add spacing below the logo */
+    border: none;
+    /* Remove the border */
+    background-color: transparent;
+    /* Make the background transparent */
+}
+
+/* Style for chapter links in the left sidebar */
+#quarto-sidebar .chapter-title {
+    color: var(--bs-secondary);
+    /* White text */
+}
+
+#quarto-sidebar .chapter-title:hover {
+    color: #F0635C;
+    /* Red hover */
+}
+
+/* Ensure all chapter links behave consistently */
+#quarto-sidebar a {
+    color: var(--bs-secondary);
+    /* Default white text */
+}
+
+#quarto-sidebar a:hover {
+    color: #F0635C;
+    /* Red hover */
+}
+
+/* Style for Table of Contents links in the margin sidebar (right side) */
+#quarto-margin-sidebar .nav-link {
+    color: black;
+    /* Default black text */
+}
+
+#quarto-margin-sidebar .nav-link:hover,
+#quarto-margin-sidebar .nav-link.active {
+    color: #F0635C;
+    /* Red when hovered or active */
+}
+
+/* Explicitly override default blue active color */
+#quarto-margin-sidebar .nav-link:focus,
+#quarto-margin-sidebar .nav-link:visited {
+    color: black;
+    /* Ensure black color for focus and visited states */
+}
+
+#quarto-margin-sidebar .header-section-number {
+    color: black;
+    /* Ensure section numbers are also black */
+}
