@@ -226,3 +226,13 @@ body::before {
   pointer-events: none;
   white-space: nowrap;
 }
+
+/* One scrollable box for all outputs of a cell */
+.q-output-wrapper {
+  max-height: 800px;     /* adjust */
+  overflow: auto;
+  border: 1px solid var(--quarto-border-color, #ddd);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 0.4rem;
+}

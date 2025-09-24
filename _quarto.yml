@@ -48,6 +48,7 @@ format:
     toc-depth: 3
     code-fold: true
     smooth-scroll: true
+    include-after-body: quarto_assets/cell-output-wrapper.html
 
 execute:
   eval: false       # Disable code execution globally

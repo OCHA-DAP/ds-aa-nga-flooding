@@ -2035,6 +2035,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 
 </main> <!-- /main -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // For each code cell, group all output nodes into a single wrapper
+  // Quarto uses several output classes; target them all
+  const OUTPUT_SELECTOR =
+    '.cell-output, .cell-output-display, .cell-output-stdout, .cell-output-stderr, .cell-output-error';
+
+  document.querySelectorAll('.cell').forEach(cell => {
+    // Collect direct (or nested) output nodes within the cell
+    const outs = cell.querySelectorAll(OUTPUT_SELECTOR);
+    if (!outs.length) return;
+
+    // Skip if we've already wrapped this cell
+    if (cell.querySelector(':scope > .q-output-wrapper')) return;
+
+    // Create a wrapper and insert it before the first output
+    const wrapper = document.createElement('div');
+    wrapper.className = 'q-output-wrapper';
+
+    const firstOut = outs[0];
+    firstOut.parentNode.insertBefore(wrapper, firstOut);
+
+    // Move all outputs into the wrapper (preserves order)
+    outs.forEach(out => wrapper.appendChild(out));
+  });
+});
+</script>
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
