@@ -11,7 +11,26 @@ book:
     logo: quarto_assets/images/centre_banner_greenbg.png
   chapters:
     - index.qmd
-    - exploration/2025/adamawa_lgas.ipynb
+    - part: "Targeting"
+      chapters:
+        - exploration/2025/impact_comparison.ipynb
+        - exploration/2025/nhf_targeting.ipynb
+        - exploration/2025/adamawa_lgas.ipynb
+        - exploration/2025/benue_buffer_exposure.ipynb
+        - exploration/2025/flood_risk_exposure.ipynb
+    - part: "GloFAS processing"
+      chapters:
+          - exploration/2025/glofas_new_reanalysis.ipynb
+    - part: "Google processing"
+      chapters:
+          - exploration/2025/grrr_comparison.ipynb
+          - exploration/2025/grrr_explore.ipynb
+          - exploration/2025/grrr_forecast.ipynb
+          - exploration/2025/grrr_inundation_history.ipynb
+    - part: "Trigger setting"
+      chapters:
+          - exploration/2025/gf_reforecast.ipynb
+
 
 #bibliography: references.bib
 
@@ -31,6 +50,7 @@ format:
     smooth-scroll: true
 
 execute:
+  eval: false       # Disable code execution globally
   freeze: auto        # Freeze execution to avoid re-running code chunks
   cache: false         # Enable caching for faster re-renders
 

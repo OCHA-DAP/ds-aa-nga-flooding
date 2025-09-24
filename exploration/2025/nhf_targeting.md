@@ -13,7 +13,12 @@ jupyter:
     name: ds-aa-nga-flooding
 ---
 
-# NHF targeting
+# Targerted LGAs
+
+Produce map to show targeted LGAs:
+
+- Blue: riverine flooding (CERF and NHF)
+- Orange: flash flooding (NHF only)
 
 ```python
 %load_ext jupyter_black

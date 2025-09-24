@@ -53,9 +53,11 @@ fs = floodscan.load_adm2_flood_exposures()
 fs_mean = fs.groupby("ADM2_PCODE")["total_exposed"].mean().reset_index()
 ```
 
+<!-- #region editable=true slideshow={"slide_type": ""} -->
 ## Plot
 
 ### Basic plot with river
+<!-- #endregion -->
 
 ```python
 fig, ax = plt.subplots()
