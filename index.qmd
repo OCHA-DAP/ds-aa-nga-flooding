@@ -1,0 +1,7 @@
+# Overview {.unnumbered}
+
+This site documents the data processing, analysis, and monitoring for the 2025 OCHA Nigeria Flooding Anticipatory Action Framework.
+
+See the framework document [here](https://www.unocha.org/publications/report/nigeria/anticipatory-action-framework-nigeria-floods-29-july-2025).
+
+Get in touch with the OCHA Centre for Humanitarian Data (CHD) Data Science team at: [data.science@humdata.org](mailto:data.science@humdata.org).

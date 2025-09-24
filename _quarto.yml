@@ -1,0 +1,64 @@
+project:
+  type: book
+  output-dir: docs
+
+
+book:
+  title: "Anticipatory Action - Nigeria Flooding"
+  author: "OCHA Centre for Humanitarian Data"
+  sidebar:
+    logo: quarto_assets/centre_banner_greenbg.png
+  favicon: quarto_assets/favicon.ico
+  chapters:
+    - index.qmd
+    - part: "Targeting"
+      chapters:
+        - exploration/2025/impact_comparison.ipynb
+        - exploration/2025/nhf_targeting.ipynb
+        - exploration/2025/adamawa_lgas.ipynb
+        - exploration/2025/benue_buffer_exposure.ipynb
+        - exploration/2025/flood_risk_exposure.ipynb
+    - part: "GloFAS processing"
+      chapters:
+          - exploration/2025/glofas_new_reanalysis.ipynb
+    - part: "Google processing"
+      chapters:
+          - exploration/2025/grrr_comparison.ipynb
+          - exploration/2025/grrr_explore.ipynb
+          - exploration/2025/grrr_inundation_history.ipynb
+    - part: "Floodscan processing"
+      chapters:
+          - exploration/2025/fs_pixels.ipynb
+          - exploration/2025/floodscan_verify.ipynb
+    - part: "Trigger setting"
+      chapters:
+          - exploration/2025/combined_gf_grrr_reanalysis.ipynb
+          - exploration/2025/gf_reforecast.ipynb
+          - exploration/2025/grrr_forecast.ipynb
+          - exploration/2025/plot_trigger_years.ipynb
+
+
+#bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+    number-sections: true
+    number-depth: 3
+    fig-format: "png" # More efficient than SVG for most plots
+    fig-dpi: 96       # Lower DPI for faster rendering
+    self-contained: false # Avoid embedding all resources for faster builds
+    embed-resources: false
+    toc: true          # Enable table of contents for navigation
+    css: quarto_assets/custom.css    # Apply the custom CSS globally
+    toc-depth: 3
+    code-fold: true
+    smooth-scroll: true
+    include-after-body: quarto_assets/cell-output-wrapper.html
+
+execute:
+  eval: false       # Disable code execution globally
+  freeze: auto        # Freeze execution to avoid re-running code chunks
+  cache: false         # Enable caching for faster re-renders
+
+editor: source

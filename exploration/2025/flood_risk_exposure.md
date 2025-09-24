@@ -15,6 +15,8 @@ jupyter:
 
 # Flood risk exposure
 
+Calculating population in flood risk zones (from JRC)
+
 ```python
 %load_ext jupyter_black
 %load_ext autoreload
@@ -40,6 +42,8 @@ from src.utils.raster import (
 )
 ```
 
+## Load and process data
+
 ```python
 gdf_benue = hydrosheds.load_benue_aoi()
 ```
@@ -48,10 +52,6 @@ gdf_benue = hydrosheds.load_benue_aoi()
 adm2 = codab.load_codab_from_blob(admin_level=2, aoi_only=True)
 adm2 = adm2[adm2["ADM1_PCODE"] == ADAMAWA]
 adm2_aoi = adm2[adm2["ADM2_PCODE"].isin(BENUE_ADM2_PCODES)]
-```
-
-```python
-adm2_aoi.plot()
 ```
 
 ```python
@@ -84,10 +84,6 @@ da_reclass_aoi = da_reclass.rio.clip(adm2_aoi.geometry)
 ```
 
 ```python
-da_reclass_aoi
-```
-
-```python
 with ProgressBar():
     da_reclass_aoi_computed = da_reclass_aoi.compute()
 ```
@@ -96,6 +92,8 @@ with ProgressBar():
 with ProgressBar():
     da_depth_aoi_computed = da_depth_aoi.compute()
 ```
+
+## Test plotting
 
 ```python
 fig, ax = plt.subplots(dpi=200)
@@ -248,6 +246,8 @@ df_compare = df_exp.merge(df_exp_adm)
 ```python
 df_compare
 ```
+
+## Plots
 
 ```python
 df_plot = df_compare.copy()
