@@ -6,7 +6,6 @@ project:
 book:
   title: "Anticipatory Action - Nigeria Flooding"
   author: "OCHA Centre for Humanitarian Data"
-  date: "2025-09-23"
   sidebar:
     logo: quarto_assets/images/centre_banner_greenbg.png
   chapters:
