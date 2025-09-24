@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>9&nbsp; Google forecast – Anticipatory Action - Nigeria Flooding</title>
+<title>11&nbsp; Google forecast – Anticipatory Action - Nigeria Flooding</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../exploration/2025/grrr_inundation_history.html" rel="next">
-<link href="../../exploration/2025/grrr_explore.html" rel="prev">
+<link href="../../exploration/2025/gf_reforecast.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -120,7 +119,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../exploration/2025/grrr_comparison.html">Google processing</a></li><li class="breadcrumb-item"><a href="../../exploration/2025/grrr_forecast.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Google forecast</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../exploration/2025/gf_reforecast.html">Trigger setting</a></li><li class="breadcrumb-item"><a href="../../exploration/2025/grrr_forecast.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Google forecast</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -235,14 +234,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container">
-  <a href="../../exploration/2025/grrr_forecast.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Google forecast</span></span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container">
   <a href="../../exploration/2025/grrr_inundation_history.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Exploring Google’s Inundation History products</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Exploring Google’s Inundation History products</span></span></a>
   </div>
 </li>
       </ul>
@@ -259,7 +252,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container">
   <a href="../../exploration/2025/gf_reforecast.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">GloFAS reforecast threshold check</span></span></a>
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">GloFAS reforecast threshold check</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="../../exploration/2025/grrr_forecast.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Google forecast</span></span></a>
   </div>
 </li>
       </ul>
@@ -269,15 +268,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
 
+  <ul>
+  <li><a href="#load-and-process" id="toc-load-and-process" class="nav-link active" data-scroll-target="#load-and-process"><span class="header-section-number">11.1</span> Load and process</a></li>
+  <li><a href="#look-at-yearly-peaks" id="toc-look-at-yearly-peaks" class="nav-link" data-scroll-target="#look-at-yearly-peaks"><span class="header-section-number">11.2</span> Look at yearly peaks</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../exploration/2025/grrr_comparison.html">Google processing</a></li><li class="breadcrumb-item"><a href="../../exploration/2025/grrr_forecast.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Google forecast</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../exploration/2025/gf_reforecast.html">Trigger setting</a></li><li class="breadcrumb-item"><a href="../../exploration/2025/grrr_forecast.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Google forecast</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Google forecast</span></h1>
+<h1 class="title"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Google forecast</span></h1>
 </div>
 
 
@@ -294,6 +300,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<!-- markdownlint-disable MD013 -->
+<p>Check to see how many leadtimes of forecast we can include using the same threshold as for the reanalysis, without triggering for any different years.</p>
 <div id="69620e81-5410-464f-abb8-5f176d5c1512" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -328,6 +336,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> src.utils.rp_calc <span class="im">import</span> calculate_groups_rp, calculate_one_group_rp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<section id="load-and-process" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="load-and-process"><span class="header-section-number">11.1</span> Load and process</h2>
 <div id="7d15cb1d-7c2f-4441-b00c-908a96746e51" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
@@ -409,118 +419,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="1c6ef5e3-83ff-4bb9-8129-e6a81f5e8154" class="cell" data-execution_count="14">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_rf_peaks</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-display" data-execution_count="14">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">valid_year</th>
-<th data-quarto-table-cell-role="th">leadtime</th>
-<th data-quarto-table-cell-role="th">streamflow</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
-<td>2016</td>
-<td>0</td>
-<td>969.453369</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">1</td>
-<td>2016</td>
-<td>1</td>
-<td>946.359253</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>2016</td>
-<td>2</td>
-<td>943.099365</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>2016</td>
-<td>3</td>
-<td>935.715637</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>2016</td>
-<td>4</td>
-<td>924.824463</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">59</td>
-<td>2023</td>
-<td>3</td>
-<td>225.439713</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">60</td>
-<td>2023</td>
-<td>4</td>
-<td>234.527176</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">61</td>
-<td>2023</td>
-<td>5</td>
-<td>241.631729</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">62</td>
-<td>2023</td>
-<td>6</td>
-<td>249.221161</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">63</td>
-<td>2023</td>
-<td>7</td>
-<td>256.455109</td>
-</tr>
-</tbody>
-</table>
-
-<p>64 rows × 3 columns</p>
-</div>
-</div>
-</div>
+</section>
+<section id="look-at-yearly-peaks" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="look-at-yearly-peaks"><span class="header-section-number">11.2</span> Look at yearly peaks</h2>
 <div id="67c740e9-53cc-42b7-b8cc-a3b54971eef7" class="cell" data-execution_count="15">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df_rf_peaks <span class="op">=</span> df_rf_peaks[df_rf_peaks[<span class="st">"valid_year"</span>] <span class="op">&lt;</span> <span class="dv">2023</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_rf_peaks <span class="op">=</span> df_rf_peaks[df_rf_peaks[<span class="st">"valid_year"</span>] <span class="op">&lt;</span> <span class="dv">2023</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div id="8c91db0f-1c07-424a-88bc-de6b9d1c7a47" class="cell" data-execution_count="16">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>df_rf_peaks <span class="op">=</span> calculate_groups_rp(</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    df_rf_peaks, [<span class="st">"leadtime"</span>], col_name<span class="op">=</span><span class="st">"streamflow"</span>, ascending<span class="op">=</span><span class="va">False</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df_rf_peaks <span class="op">=</span> calculate_groups_rp(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    df_rf_peaks, [<span class="st">"leadtime"</span>], col_name<span class="op">=</span><span class="st">"streamflow"</span>, ascending<span class="op">=</span><span class="va">False</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>We can iterate over the leadtimes to see if the ranking of yearly peaks changes at all.</p>
 <div id="8ca4f8d6-f828-4f59-89c3-c75f613b6bc0" class="cell" data-scrolled="true" data-execution_count="17">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lt, group <span class="kw">in</span> df_rf_peaks.groupby(<span class="st">"leadtime"</span>):</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lt)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    display(group.sort_values(<span class="st">"streamflow_rank"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lt, group <span class="kw">in</span> df_rf_peaks.groupby(<span class="st">"leadtime"</span>):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lt)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    display(group.sort_values(<span class="st">"streamflow_rank"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>0</code></pre>
@@ -1163,20 +1085,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+<p>Looks like it doesn’t, nice. But we can just double-check against the reanalysis peaks.</p>
 <div id="38057909-70e8-4b2c-bb82-0e110967d3e1" class="cell" data-scrolled="true" data-execution_count="18">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df_compare <span class="op">=</span> df_rf_peaks.merge(</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    df_ra_peaks, on<span class="op">=</span><span class="st">"valid_year"</span>, suffixes<span class="op">=</span>(<span class="st">"_f"</span>, <span class="st">"_a"</span>)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df_compare <span class="op">=</span> df_rf_peaks.merge(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    df_ra_peaks, on<span class="op">=</span><span class="st">"valid_year"</span>, suffixes<span class="op">=</span>(<span class="st">"_f"</span>, <span class="st">"_a"</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div id="6af03c9f-5384-40ce-8cc0-b61a0198c043" class="cell" data-scrolled="true" data-execution_count="31">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lt, group <span class="kw">in</span> df_compare.groupby(<span class="st">"leadtime"</span>):</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lt)</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    display(group.sort_values(<span class="st">"streamflow_rank_a"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lt, group <span class="kw">in</span> df_compare.groupby(<span class="st">"leadtime"</span>):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lt)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    display(group.sort_values(<span class="st">"streamflow_rank_a"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>0</code></pre>
@@ -2075,72 +1998,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="40cc8d8d-0666-4e3a-92ec-3a88a1cf9cb9" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lt, group <span class="kw">in</span> df_compare.groupby(<span class="st">"leadtime"</span>):</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lt)</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    display(group.sort_values(<span class="st">"streamflow_rank_a"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
+<p>Looks like we’re good. Then we can check what the maximum non-trigger-year peak is. The threshold just needs to be above this.</p>
 <div id="615fe89a-2820-4a95-afdc-e671b218e5e8" class="cell" data-execution_count="35">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>df_compare[<span class="op">~</span>df_compare[<span class="st">"trig"</span>]][<span class="st">"streamflow_f"</span>].<span class="bu">max</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>df_compare[<span class="op">~</span>df_compare[<span class="st">"trig"</span>]][<span class="st">"streamflow_f"</span>].<span class="bu">max</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="35">
 <pre><code>1178.0593</code></pre>
 </div>
 </div>
-<div id="27d16bcf-facc-4ba3-a4f2-b698b2a14923" class="cell" data-execution_count="27">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>df_compare.groupby(<span class="st">"leadtime"</span>).mean()[<span class="st">"streamflow_f"</span>].plot()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="grrr_forecast_files/figure-html/cell-23-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
 <div id="fc91861e-8f99-4f4f-a6ba-b2739d7c9535" class="cell" data-execution_count="20">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>thresh_ra <span class="op">=</span> <span class="dv">1212</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>thresh_ra <span class="op">=</span> <span class="dv">1212</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>Looks like the old value is fine, so we can just triple-check that only 2019 and 2022 would’ve triggered with this value for the reforecast.</p>
 <div id="54467811-16be-460b-8eeb-a6ec6a0ba151" class="cell" data-execution_count="21">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>df_rf[<span class="st">"trig"</span>] <span class="op">=</span> df_rf[<span class="st">"streamflow"</span>] <span class="op">&gt;=</span> thresh_ra</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>df_rf[<span class="st">"trig"</span>] <span class="op">=</span> df_rf[<span class="st">"streamflow"</span>] <span class="op">&gt;=</span> thresh_ra</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div id="78db8a84-12c2-4554-b9fc-3731b25bfd94" class="cell" data-execution_count="22">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df_rf[df_rf[<span class="st">"trig"</span>]][<span class="st">"valid_year"</span>].unique()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>df_rf[df_rf[<span class="st">"trig"</span>]][<span class="st">"valid_year"</span>].unique()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="22">
 <pre><code>array([2019, 2022], dtype=int32)</code></pre>
 </div>
 </div>
-<div id="f29bf769-13c9-4161-b2d1-7608271b303e" class="cell" data-execution_count="30">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df_rf.groupby(<span class="st">"leadtime"</span>).mean()[<span class="st">"streamflow"</span>].plot()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="grrr_forecast_files/figure-html/cell-27-output-1.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -2562,14 +2454,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../exploration/2025/grrr_explore.html" class="pagination-link" aria-label="GRRR Forecast Skill and NiHSA Comparison">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">GRRR Forecast Skill and NiHSA Comparison</span></span>
+      <a href="../../exploration/2025/gf_reforecast.html" class="pagination-link" aria-label="GloFAS reforecast threshold check">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">GloFAS reforecast threshold check</span></span>
       </a>
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../exploration/2025/grrr_inundation_history.html" class="pagination-link" aria-label="Exploring Google's Inundation History products">
-        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Exploring Google’s Inundation History products</span></span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
