@@ -6,7 +6,7 @@
 :root {
   --bs-primary: #3BB580ff;   /* brand green (sidebar bg) */
   --bs-secondary: #ffffff;   /* white (sidebar text default) */
-  --accent-hover: #F0635C;   /* hover/active accent (red) */
+  --accent-hover: #74D6AD;   /* lighter pale green for hover/active */
 
   /* Neutral surfaces */
   --surface-0: #ffffff;
@@ -99,7 +99,7 @@ code {
   color: var(--bs-secondary);
 }
 
-/* Unified hover/focus/active states (fixes disappearing text) */
+/* Unified hover/focus/active states */
 #quarto-sidebar .nav-link:hover,
 #quarto-sidebar .nav-link:focus,
 #quarto-sidebar .nav-link.active,
@@ -109,7 +109,8 @@ code {
 #quarto-sidebar .menu-text:hover,
 #quarto-sidebar .chapter-title:hover,
 #quarto-sidebar .chapter-title:focus {
-  color: var(--accent-hover) !important;
+  text-decoration: underline;
+  /*text-decoration-thickness: 2px; !* a bit stronger *!*/
 }
 
 /* Chapter numbers stay white to keep structure visible */
@@ -119,7 +120,7 @@ code {
    RIGHT SIDEBAR (TOC / margin sidebar)
    ========================================================================== */
 
-/* Right-side TOC styles (margin sidebar / sidebar-right) */
+/* Right-side TOC styles */
 #quarto-sidebar-right .nav-link,
 #quarto-margin-sidebar .nav-link {
   color: #000; /* default black for readability */
