@@ -31,6 +31,8 @@ import os
 
 import requests
 import geopandas as gpd
+
+from src.datasources import worldpop
 ```
 
 ```python
@@ -43,6 +45,8 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_URL = "https://floodforecasting.googleapis.com/v1"
 ```
+
+## Get severe events
 
 ```python
 severe_events = []
@@ -71,6 +75,8 @@ severe_events[0]
 ```python
 len(severe_events[0]["gaugeIds"])
 ```
+
+### Get polygon
 
 ```python
 if not severe_events:
@@ -101,6 +107,58 @@ gdf
 gdf = gpd.read_file(io.BytesIO(kml_text.encode("utf-8")), driver="LIBKML")
 ax = gdf.boundary.plot(figsize=(7, 6))
 ```
+
+## Check exposure
+
+Let's just see how close their exposure numbers are to what we'd estimate with WorldPop
+
+```python
+worldpop.download_worldpop_to_blob(iso3="mli")
+```
+
+```python
+worldpop.download_worldpop_to_blob(iso3="gin")
+```
+
+```python
+wp_mli = worldpop.load_worldpop_from_blob(iso3="mli")
+```
+
+```python
+wp_gin = worldpop.load_worldpop_from_blob(iso3="gin")
+```
+
+```python
+wp_mli_clip = wp_mli.rio.clip(gdf.geometry)
+```
+
+```python
+mli_sum = float(wp_mli_clip.sum())
+```
+
+```python
+mli_sum
+```
+
+```python
+wp_gin_clip = wp_gin.rio.clip(gdf.geometry)
+```
+
+```python
+gin_sum = float(wp_gin_clip.sum())
+```
+
+```python
+gin_sum
+```
+
+```python
+gin_sum + mli_sum
+```
+
+## Check discovery
+
+Just to see if there are any other relevant resources or methods
 
 ```python
 def check_discovery():
