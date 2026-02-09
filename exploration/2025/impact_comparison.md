@@ -51,14 +51,6 @@ adm1 = codab.load_codab_from_blob(admin_level=1, aoi_only=True)
 adm2 = codab.load_codab_from_blob(admin_level=2, aoi_only=True)
 ```
 
-```python
-adm2
-```
-
-```python
-adm2.plot()
-```
-
 ### NiHSA flood record
 
 ```python
@@ -69,19 +61,9 @@ df_nihsa_record = blob.load_parquet_from_blob(blob_name)
 ```
 
 ```python
-df_nihsa_record[
-    df_nihsa_record.duplicated(subset=["ADM2_PCODE", "Year"], keep=False)
-]
-```
-
-```python
 df_nihsa_record_sum = (
     df_nihsa_record.groupby("ADM2_PCODE")["Flooded"].sum().reset_index()
 )
-```
-
-```python
-df_nihsa_record_sum.hist("Flooded")
 ```
 
 ```python
@@ -466,10 +448,6 @@ df_combined
 ```
 
 ```python
-df_combined.columns
-```
-
-```python
 benue = hydrosheds.load_benue_aoi()
 ```
 
@@ -511,10 +489,6 @@ gdf_plot.sort_values("Total Exposed", ascending=False)[
 ).format(
     {"Total Exposed": "{:,}"}
 )
-```
-
-```python
-df_combined
 ```
 
 ```python

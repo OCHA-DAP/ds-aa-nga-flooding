@@ -156,3 +156,5 @@ temp/*
 */temp/*
 sandbox.ipynb
 temp
+
+/.quarto/

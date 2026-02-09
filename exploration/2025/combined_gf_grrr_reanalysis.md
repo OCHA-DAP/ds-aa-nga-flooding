@@ -17,7 +17,7 @@ jupyter:
 <!-- markdownlint-disable MD013 -->
 Determine best balance of Google and GloFAS forecasts to maximize accuracy and leadtime.
 
-For simplicity, just doing now with reanalysis.
+For simplicity, just doing now with reanalysis. Later notebooks use the reanalysis-based thresholds and see how many leadtimes we can add before the accuracy drops off.
 
 ```python
 %load_ext jupyter_black
@@ -50,10 +50,6 @@ df_gf = glofas.load_glofas_reanalysis(station_name="wuroboki")
 df_gf = df_gf.rename(columns={"time": "valid_time"})
 ```
 
-```python
-df_gf
-```
-
 ### Floodscan
 
 ```python
@@ -68,21 +64,11 @@ df_fs = (
 )
 ```
 
-```python
-df_fs.groupby(df_fs["valid_time"].dt.year)[
-    "SFED"
-].max().reset_index().sort_values("SFED", ascending=False)
-```
-
 ### Google
 
 ```python
 ds_ra = grrr.load_reanalysis()
 df_grrr = grrr.process_reanalysis(ds_ra)
-```
-
-```python
-df_grrr
 ```
 
 ## Process
@@ -767,10 +753,6 @@ plt.show()
 ```
 
 ```python
-df_selected_trigger.columns
-```
-
-```python
 df_plot = df_selected_trigger.copy()
 ```
 
@@ -783,6 +765,10 @@ df_plot["leadtime_3yr_target_days"] = df_plot["leadtime_3yr_target"].dt.days
 ```python
 df_plot
 ```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+Have a look at how the leadtime varies with flood severity - doesn't seem to be much of a relationship.
+<!-- #endregion -->
 
 ```python
 df_plot.plot(x="SFED", y="leadtime_3yr_target_days", marker=".")

@@ -15,6 +15,8 @@ jupyter:
 
 # Benue buffer exposure
 
+Calculating population within buffers of Benue
+
 ```python
 %load_ext jupyter_black
 %load_ext autoreload

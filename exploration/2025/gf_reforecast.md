@@ -13,7 +13,11 @@ jupyter:
     name: ds-aa-nga-flooding
 ---
 
-# GloFAS reforecast
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+# GloFAS reforecast threshold check
+<!-- markdownlint-disable MD013 -->
+Check how long we can extend the leadtime using the same threshold as the reanalysis before the years we trigger on changes.
+<!-- #endregion -->
 
 ```python
 %load_ext jupyter_black
@@ -29,6 +33,8 @@ from src.datasources import glofas
 from src.utils.rp_calc import calculate_groups_rp, calculate_one_group_rp
 ```
 
+## Load data
+
 ```python
 df_ref_ens = pd.read_parquet(
     glofas.GF_PROC_DIR / "wuroboki_glofas_reforecast_ens.parquet"
@@ -42,6 +48,8 @@ df_ref = (
     .reset_index()
 )
 ```
+
+Plot one year and leadtime to check
 
 ```python
 df_ref[
@@ -58,17 +66,9 @@ df_ref_peaks = (
 ```
 
 ```python
-df_ref_peaks
-```
-
-```python
 df_ref_peaks = calculate_groups_rp(
     df_ref_peaks, by=["leadtime"], col_name="dis24", ascending=False
 )
-```
-
-```python
-df_ref_peaks
 ```
 
 ```python
@@ -78,6 +78,8 @@ df_rea = glofas.load_glofas_reanalysis(station_name="wuroboki")
 ```python
 df_rea = df_rea.rename(columns={"time": "valid_time"})
 ```
+
+Plot reanalysis year to quickly compare
 
 ```python
 df_rea[df_rea["valid_time"].dt.year == 2003].set_index("valid_time").plot()
@@ -89,6 +91,8 @@ df_rea_peaks = (
 )
 ```
 
+Plot yearly peaks
+
 ```python
 df_rea_peaks.plot(x="valid_time", y="dis24")
 ```
@@ -98,6 +102,10 @@ df_rea_peaks = calculate_one_group_rp(
     df_rea_peaks, col_name="dis24", ascending=False
 )
 ```
+
+## Check against reanalysis threshold
+
+We set the threshold to the value for the reanalysis (`3110`).
 
 ```python
 rp_ra = 5.4
@@ -113,20 +121,20 @@ df_rea_peaks["trig"] = df_rea_peaks["dis24"] >= thresh_ra
 ```
 
 ```python
-df_rea_peaks
-```
-
-```python
 df_compare = df_rea_peaks.merge(
     df_ref_peaks, suffixes=("_a", "_f"), on="valid_time"
 )
 ```
+
+Then we iterate over the leadtimes to see the yearly ranking per leadtime.
 
 ```python
 for lt, group in df_compare.groupby("leadtime"):
     print(lt)
     display(group.sort_values("dis24_rank_f"))
 ```
+
+Looks like we can go up to a leadtime of `5` before we have a year that would have triggered (i.e. is above `3110`) that is NOT on the list of years that would have triggered with the reanalysis. Let's just verify that:
 
 ```python
 lt_max = 5
@@ -140,10 +148,6 @@ df_compare[
 df_ref["issued_time"] = df_ref["valid_time"] - df_ref["leadtime"].apply(
     lambda x: pd.Timedelta(days=x - 1)
 )
-```
-
-```python
-df_ref
 ```
 
 ```python
@@ -167,6 +171,11 @@ df_ref_trig.loc[
     ].idxmin()
 ]
 ```
+
+Now we can actually do this more programatically. For each maximum leadtime, we can check what is:
+
+- the maximum possible value we can set the trigger to without excluding any years we should have triggered for (confusingly set as `min_true` in the code below)
+- the minimum possible value we can set the trigger to without falsely triggering for any years (confusingly set as `max_false` in the code below)
 
 ```python
 dicts = []
@@ -208,9 +217,15 @@ df_threshs["min_true_round"] = df_threshs["min_true"].astype(int) + 1
 df_threshs["max_false_round"] = df_threshs["max_false"].astype(int)
 ```
 
+We can see that above a leadtime of `5`, we have to set the trigger so high that we only trigger for one year. So we stick to a maximum leadtime of 5 days, and we can take the average of the min and max possible values as the trigger, which ends up being `3132`. We can round this to `3130` so it's nice.
+
 ```python
 df_threshs
 ```
+
+# Plot leadtime bias
+
+We can also plot the bias per leadtime just to illustrate how extreme it becomes.
 
 ```python
 df_compare[df_compare["trig"]]["valid_time"].unique()
