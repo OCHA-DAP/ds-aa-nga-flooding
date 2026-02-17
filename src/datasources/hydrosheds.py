@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 
 import geopandas as gpd
+import ocha_stratus as stratus
 
-from src.constants import ADAMAWA
+from src.constants import ADAMAWA, PROJECT_PREFIX
 from src.datasources import codab
 
-DATA_DIR = Path(os.getenv("AA_DATA_DIR_NEW"))
+DATA_DIR = Path(os.getenv("AA_DATA_DIR_NEW", ""))
 HS_RAW_DIR = DATA_DIR / "public" / "raw" / "glb" / "hydrosheds"
 RIVERS_DIR = HS_RAW_DIR / "HydroRIVERS_v10_af_shp" / "HydroRIVERS_v10_af_shp"
 HS_PROC_DIR = DATA_DIR / "public" / "processed" / "glb" / "hydrosheds"
@@ -49,3 +50,9 @@ def process_benue_aoi():
 def load_benue_aoi():
     filename = "benue_aoi"
     return gpd.read_file(HS_NGA_PROC_DIR / filename / f"{filename}.shp")
+
+
+def load_basins(level):
+    blob_name = f"{PROJECT_PREFIX}/processed/hydrosheds/hybas_af_lev{level:02d}_v1c.parquet"  # noqa
+    gdf = stratus.load_geoparquet_from_blob(blob_name)
+    return gdf
