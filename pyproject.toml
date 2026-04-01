@@ -20,6 +20,9 @@ dependencies = [
     "eccodes==2.42.0",
     "html2text==2025.4.15",
     "netcdf4>=1.7.4",
+    "rioxarray",
+    "pystac-client",
+    "exactextract",
 ]
 
 [build-system]
