@@ -160,3 +160,11 @@ temp
 # Temporary
 exploration/2026/quarto/*
 exploration/2026/figures/*
+
+*.tif
+*.png
+*.parquet
+*.nc
+*.grib
+*.idx
+exploration/2026/cerf/shapefiles/*

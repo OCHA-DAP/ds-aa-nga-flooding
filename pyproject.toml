@@ -23,6 +23,10 @@ dependencies = [
     "rioxarray",
     "pystac-client",
     "exactextract",
+    "planetary-computer>=1.0.0",
+    "stackstac>=0.5.0",
+    "earthkit-data>=0.19.4",
+    "scipy>=1.17.1",
 ]
 
 [build-system]
