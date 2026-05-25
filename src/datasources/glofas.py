@@ -4,8 +4,10 @@ from typing import Literal
 
 import cdsapi
 import numpy as np
+import ocha_stratus as stratus
 import pandas as pd
 import xarray as xr
+from dotenv import load_dotenv
 from tqdm.auto import tqdm
 
 import src.constants
@@ -18,6 +20,8 @@ from src.constants import (
 )
 from src.utils import blob, cds_utils
 
+load_dotenv()
+
 DATA_DIR = Path(os.getenv("AA_DATA_DIR", "."))
 GF_RAW_DIR = (
     DATA_DIR / "public" / "raw" / "nga" / "glofas" / "cems-glofas-historical"
@@ -28,13 +32,43 @@ GF_REFORECAST_RAW_DIR = (
 GF_TEST_DIR = DATA_DIR / "public" / "raw" / "nga" / "glofas" / "test"
 GF_PROC_DIR = DATA_DIR / "public" / "processed" / "nga" / "glofas"
 
-
 GF_STATIONS = {
-    "wuroboki": {
-        "lon": 12.767,
-        "lat": 9.383,
-    }
+    "wuroboki": {"lon": 12.767, "lat": 9.383},
+    "ibi": {"lon": 9.725, "lat": 8.175},
+    "makurdi": {"lon": 8.525, "lat": 7.775},
+    "umaisha": {"lon": 7.175, "lat": 7.975},
+    "lokoja": {"lon": 6.775, "lat": 7.775},
+    "baro": {"lon": 6.425, "lat": 8.575},
+    "wuya": {"lon": 5.825, "lat": 9.075},
+    "jebba": {"lon": 4.875, "lat": 9.175},
+    "onitsha": {"lon": 6.725, "lat": 6.225},
+    "yidere bode": {"lon": 4.125, "lat": 11.375},
+    "kende": {"lon": 4.225, "lat": 11.475},
 }
+
+RAINY_SEASON_MONTHS = [
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+]
+ALL_MONTHS = [
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+]
 
 
 def get_coords(station_name):
@@ -134,15 +168,10 @@ def download_reforecast_ensembles():
                             "october",
                             "september",
                         ],
-                        "hday": [f"{x:02}" for x in range(1, 32)],
+                        "hday": [f"{x:02}" for x in range(1, 32)],  # noqa
                         "leadtime_hour": [str(x) for x in leadtime_chunk],
                         "format": "grib",
-                        "area": [
-                            N,
-                            W,
-                            S,
-                            E,
-                        ],
+                        "area": [N, W, S, E],
                     },
                     save_path,
                 )
@@ -189,7 +218,7 @@ def download_reforecast(clobber: bool = False):
                         "october",
                         "september",
                     ],
-                    "hday": [f"{x:02}" for x in range(1, 32)],
+                    "hday": [f"{x:02}" for x in range(1, 32)],  # noqa
                     "leadtime_hour": [
                         "24",
                         "48",
@@ -200,12 +229,7 @@ def download_reforecast(clobber: bool = False):
                         "168",
                     ],
                     "format": "grib",
-                    "area": [
-                        N,
-                        W,
-                        S,
-                        E,
-                    ],
+                    "area": [N, W, S, E],
                 },
                 save_path,
             )
@@ -335,14 +359,13 @@ def download_glofas_reanalysis_year_to_blob(
         "product_type": ["consolidated"],
         "variable": ["river_discharge_in_the_last_24_hours"],
         "hyear": [f"{year}"],
-        "hmonth": [f"{x:02}" for x in range(1, 13)],
-        "hday": [f"{x:02}" for x in range(1, 32)],
+        "hmonth": [f"{x:02}" for x in range(1, 13)],  # noqa
+        "hday": [f"{x:02}" for x in range(1, 32)],  # noqa
         "data_format": "grib2",
         "download_format": "unarchived",
         "area": [N, W, S, E],
     }
     blob_name = get_blob_name("raw", "reanalysis", station_name, year)
-    # check if blob exists
     if not clobber and blob.check_blob_exists(blob_name):
         print(f"{blob_name} already exists in blob storage")
         return
@@ -370,27 +393,23 @@ def load_glofas_reanalysis_year(
 
 
 def process_glofas_reanalysis(station_name: str):
-    raw_blob_dir = "/".join(
-        get_blob_name("raw", "reanalysis", station_name, year=0).split("/")[
-            :-1
-        ]
-    )
+    sample_blob = get_blob_name("raw", "reanalysis", station_name, year=0)
+    raw_blob_prefix = sample_blob[: -len("0.grib")]
     blob_names = [
         x
-        for x in blob.list_container_blobs(name_starts_with=raw_blob_dir)
+        for x in blob.list_container_blobs(name_starts_with=raw_blob_prefix)
         if x.endswith(".grib")
     ]
     dfs = []
     for blob_name in tqdm(blob_names):
         year = int(blob_name.split(".")[0].split("_")[-1])
         ds = load_glofas_reanalysis_year("raw", station_name, year)
-        da = ds["dis24"]
-        df_in = da.to_dataframe().reset_index()[["time", "dis24"]]
+        df_in = ds["dis24"].to_dataframe().reset_index()[["time", "dis24"]]
         dfs.append(df_in)
     df = pd.concat(dfs, ignore_index=True)
     df = df.sort_values("time")
     blob_name = get_blob_name("processed", "reanalysis", station_name)
-    blob.upload_parquet_to_blob(blob_name, df)
+    stratus.upload_parquet_to_blob(df, blob_name)
 
 
 def download_glofas_reanalysis_to_blob(station_name: str):
@@ -398,6 +417,165 @@ def download_glofas_reanalysis_to_blob(station_name: str):
         download_glofas_reanalysis_year_to_blob(year, station_name)
 
 
+def download_reforecast_all_stations_year(
+    year: int,
+    product_type: Literal["ensemble", "control"],
+    max_leadtime_days: int = 46,
+    max_leadtime_chunk: int = 7,
+    rainy_season_only: bool = False,
+    clobber: bool = False,
+):
+    """Download reforecast data for all GF_STATIONS for a single year.
+
+    Uses a single bounding box covering all stations. Requests are split by
+    leadtime chunk to keep CDS API payloads small. Files are saved to blob
+    storage as grib2.
+    """
+    lons = [s["lon"] for s in GF_STATIONS.values()]
+    lats = [s["lat"] for s in GF_STATIONS.values()]
+    pitch = 0.001
+    N = round(max(lats) + pitch, 3)
+    S = round(min(lats), 3)
+    E = round(max(lons) + pitch, 3)
+    W = round(min(lons), 3)
+
+    product_type_str = (
+        "ensemble_perturbed_reforecasts"
+        if product_type == "ensemble"
+        else "control_reforecast"
+    )
+    months = RAINY_SEASON_MONTHS if rainy_season_only else ALL_MONTHS
+
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+
+    dataset = "cems-glofas-reforecast"
+
+    for lt_chunk in tqdm(leadtime_chunks, desc=f"leadtime chunks ({year})"):
+        lt_str = f"{lt_chunk[0]}-{lt_chunk[-1]}"
+        blob_name = (
+            f"{src.constants.PROJECT_PREFIX}/raw/glofas/reforecast_all/"
+            f"glofas_raw_reforecast_all_{product_type}_{year}_lt{lt_str}.grib"
+        )
+        if not clobber and blob.check_blob_exists(blob_name):
+            print(f"{blob_name} already exists, skipping")
+            continue
+        request = {
+            "system_version": ["version_4_0"],
+            "hydrological_model": ["lisflood"],
+            "product_type": [product_type_str],
+            "variable": ["river_discharge_in_the_last_24_hours"],
+            "hyear": [f"{year}"],
+            "hmonth": months,
+            "hday": [f"{x:02}" for x in range(1, 32)],  # noqa
+            "leadtime_hour": [str(x) for x in lt_chunk],
+            "data_format": "grib2",
+            "download_format": "unarchived",
+            "area": [N, W, S, E],
+        }
+        try:
+            cds_utils.download_raw_cds_api_to_blob(dataset, request, blob_name)
+        except Exception as e:
+            print(f"Failed for year={year} lt={lt_str}: {e}")
+
+
+def download_reforecast_all_stations(
+    product_type: Literal["ensemble", "control"],
+    years: range = range(2003, 2025),
+    max_leadtime_days: int = 46,
+    max_leadtime_chunk: int = 7,
+    rainy_season_only: bool = False,
+    clobber: bool = False,
+):
+    """Download reforecast data for all GF_STATIONS across multiple years."""
+    for year in tqdm(years, desc="years"):
+        download_reforecast_all_stations_year(
+            year=year,
+            product_type=product_type,
+            max_leadtime_days=max_leadtime_days,
+            max_leadtime_chunk=max_leadtime_chunk,
+            rainy_season_only=rainy_season_only,
+            clobber=clobber,
+        )
+
+
 def load_glofas_reanalysis(station_name: str):
     blob_name = get_blob_name("processed", "reanalysis", station_name)
+    return blob.load_parquet_from_blob(blob_name)
+
+
+def process_glofas_reforecast(
+    station_name: str,
+    product_type: Literal["ensemble", "control"] = "ensemble",
+):
+    """Process all raw reforecast GRIBs for a station into a single parquet.
+
+    Blob pattern (from download_glofas_reforecast.ipynb):
+      raw/glofas/reforecast/glofas_raw_reforecast_{station}_{product}_{year}_lt{lt}.grib
+    """
+    raw_prefix = (
+        f"{src.constants.PROJECT_PREFIX}/raw/glofas/reforecast/"
+        f"glofas_raw_reforecast_{station_name}_{product_type}_"
+    )
+    blob_names = sorted(
+        x
+        for x in blob.list_container_blobs(name_starts_with=raw_prefix)
+        if x.endswith(".grib")
+    )
+    station = GF_STATIONS[station_name]
+    glofas_lon, glofas_lat = get_glofas_grid_coords(
+        station["lon"], station["lat"]
+    )
+
+    dfs = []
+    for blob_name in tqdm(blob_names):
+        local_path = Path("temp") / Path(blob_name)
+        if not local_path.exists():
+            blob_data = blob.load_blob_data(blob_name)
+            if not local_path.parent.exists():
+                os.makedirs(local_path.parent)
+            with open(local_path, "wb") as f:
+                f.write(blob_data)
+        try:
+            ds = xr.open_dataset(
+                local_path, engine="cfgrib", backend_kwargs={"indexpath": ""}
+            )
+        except Exception as e:
+            print(f"Warning: skipping {blob_name}: {e}")
+            continue
+        da = ds["dis24"].sel(
+            latitude=glofas_lat, longitude=glofas_lon, method="nearest"
+        )
+        df_in = da.to_dataframe().reset_index()
+        keep = [
+            c
+            for c in ["number", "time", "step", "valid_time", "dis24"]
+            if c in df_in.columns
+        ]
+        df_in = df_in[keep]
+        df_in["leadtime"] = df_in["step"].dt.days
+        df_in = df_in.drop(columns=["step"])
+        dfs.append(df_in)
+
+    df = pd.concat(dfs, ignore_index=True)
+    sort_cols = [c for c in ["time", "leadtime", "number"] if c in df.columns]
+    df = df.sort_values(sort_cols).reset_index(drop=True)
+    out_blob = (
+        f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+        f"glofas_reforecast_{station_name}_{product_type}.parquet"
+    )
+    stratus.upload_parquet_to_blob(df, out_blob, write=True)
+
+
+def load_glofas_reforecast(
+    station_name: str,
+    product_type: Literal["ensemble", "control"] = "ensemble",
+):
+    blob_name = (
+        f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+        f"glofas_reforecast_{station_name}_{product_type}.parquet"
+    )
     return blob.load_parquet_from_blob(blob_name)
