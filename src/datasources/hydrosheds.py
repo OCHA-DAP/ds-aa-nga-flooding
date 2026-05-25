@@ -18,6 +18,12 @@ def load_all_rivers():
     return gpd.read_file(RIVERS_DIR)
 
 
+def load_selected_rivers():
+    return stratus.load_geoparquet_from_blob(
+        "ds-aa-nga-flooding/processed/selected_river_network.parquet"
+    )
+
+
 def load_niger_river():
     filename = "niger_river"
     return gpd.read_file(HS_PROC_DIR / filename)
