@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CERF Nigeria Flooding — Working Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.css" />
+
+  <style>
+    body { background: #f6f8fa; }
+    .markdown-body { max-width: 900px; margin: 40px auto; padding: 24px 32px;
+                     background: white; border-radius: 8px;
+                     box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+    .markdown-body nav { font-size: 0.88em; color: #57606a; margin-bottom: 1.5em;
+                         padding-bottom: 0.75em; border-bottom: 1px solid #d0d7de; }
+    .markdown-body nav a { color: #0969da; text-decoration: none; margin-right: 1em; }
+    .markdown-body nav a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class='markdown-body'>
+<nav><a href="index.html">← Index</a> / Context &amp; Background</nav>
+<h1 id="context-background">Context &amp; Background</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="analysis">2025 analysis</h2>
+<h3 id="approach">Approach</h3>
+<p>The 2025 analysis combined multiple forecasting and observational
+data sources to develop a flood trigger for the <strong>Wuroboki
+station</strong> (Adamawa state):</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Source</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GloFAS reanalysis (1998–2024)</td>
+<td>Primary discharge signal (<code>dis24</code>)</td>
+</tr>
+<tr>
+<td>Google GRRR reanalysis &amp; reforecast</td>
+<td>Complementary streamflow signal</td>
+</tr>
+<tr>
+<td>Floodscan SFED</td>
+<td>Observational ground truth (satellite flood extent)</td>
+</tr>
+<tr>
+<td>NiHSA water levels</td>
+<td>Observational records at Wuroboki</td>
+</tr>
+</tbody>
+</table>
+<h3 id="trigger-definition">Trigger definition</h3>
+<p>A <strong>dual-source OR trigger</strong> was found to give the best
+balance of detection accuracy and lead time:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Threshold</th>
+<th>Approx. RP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GloFAS</td>
+<td>3,132 m³/s</td>
+<td>~5.4 yr</td>
+</tr>
+<tr>
+<td>Google GRRR</td>
+<td>1,195 m³/s</td>
+<td>~5.4 yr</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Logic:</strong> trigger activates when <em>either</em> GloFAS
+or Google GRRR exceeds its threshold. The combined activation frequency
+gives an overall ~4.5-year RP, targeting 5-year RP flooding events (as
+required by CERF).</p>
+<p>Floodscan wet-season (Jul–Nov) annual maxima were used as
+observational ground truth for return period calibration.</p>
+<h3 id="key-findings">Key findings</h3>
+<ul>
+<li>GloFAS peaks typically <strong>10–20+ days</strong> ahead of
+observed flooding; Google GRRR provides <strong>15–25 days</strong> lead
+time</li>
+<li>The OR-logic trigger maximised F1 score while maintaining 20+ days
+average lead time</li>
+<li>Mean pixel aggregation (rather than admin-level aggregation) was
+selected for Floodscan</li>
+<li>Analysis was based on reanalysis throughout; operational reforecasts
+showed lower but acceptable performance</li>
+</ul>
+<hr />
+<h2 id="stations">Stations</h2>
+<table>
+<thead>
+<tr>
+<th>Station</th>
+<th>River</th>
+<th>State</th>
+<th>GloFAS key</th>
+<th>Google HYBAS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wuroboki</td>
+<td>Benue</td>
+<td>Adamawa</td>
+<td><code>wuroboki</code></td>
+<td><code>hybas_1120842550</code></td>
+</tr>
+<tr>
+<td>Makurdi</td>
+<td>Benue</td>
+<td>Benue</td>
+<td><code>makurdi</code></td>
+<td><code>hybas_1120911340</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="data-sources">Data sources</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Path / location</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GloFAS reanalysis</td>
+<td>Azure blob</td>
+<td>Via <code>src.datasources.glofas</code></td>
+</tr>
+<tr>
+<td>Google GRRR reanalysis</td>
+<td><code>gs://flood-forecasting/…/reanalysis/streamflow.zarr/</code></td>
+<td>Via <code>src.datasources.grrr</code></td>
+</tr>
+<tr>
+<td>Google GRRR reforecast</td>
+<td><code>gs://flood-forecasting/…/reforecast/streamflow.zarr/</code></td>
+<td>Via <code>src.datasources.grrr</code></td>
+</tr>
+<tr>
+<td>Google HYBAS locations</td>
+<td><code>gs://flood-forecasting/…/hybas_outlet_locations_UNOFFICIAL.zarr/</code></td>
+<td>Gauge lat/lon only</td>
+</tr>
+<tr>
+<td>Floodscan SFED</td>
+<td>Azure blob — <code>floodscan/daily/v5/processed/</code></td>
+<td>300s COGs, 1998–2025</td>
+</tr>
+<tr>
+<td>Processed Floodscan (Benue)</td>
+<td><code>ds-aa-nga-flooding/processed/floodscan/fs_benue_state_pixels_1998_2025.parquet</code></td>
+<td>Pixel-level, ~10km river buffer</td>
+</tr>
+<tr>
+<td>Processed Floodscan (Adamawa)</td>
+<td><code>ds-aa-nga-flooding/processed/floodscan/fs_adamawa_pixels_1998_2025.parquet</code></td>
+<td>Pixel-level, ~10km river buffer</td>
+</tr>
+<tr>
+<td>NiHSA risk communities</td>
+<td><code>ds-aa-nga-flooding/raw/AA-nigeria_data/NiHSA/AFO_communities_atrisk_2026.csv</code></td>
+<td><code>lat</code>, <code>lon</code>, <code>depth_zone</code></td>
+</tr>
+<tr>
+<td>Google inundation history</td>
+<td><code>ds-aa-nga-flooding/processed/google_inundation_history/combined_nga.parquet</code></td>
+<td>Geoparquet</td>
+</tr>
+<tr>
+<td>WorldPop 2020 (1km)</td>
+<td>WorldPop STAC — <code>nga_pop_2020_…_1km_…</code></td>
+<td>Via <code>worldpop.load_worldpop_from_stac()</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CERF Nigeria Flooding — Working Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.css" />
+
+  <style>
+    body { background: #f6f8fa; }
+    .markdown-body { max-width: 900px; margin: 40px auto; padding: 24px 32px;
+                     background: white; border-radius: 8px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  </style>
+</head>
+<body>
+<div class="markdown-body">
+<h1 id="session-2026-05-25">Session: 2026-05-25</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Extended the trigger performance analysis from the 2025 Wuroboki work
+to cover both <strong>Adamawa</strong> and <strong>Benue</strong>
+states, using the same analytical approach. The new notebook
+(<code>13_model_performance.ipynb</code>) is parameterised by state via
+<code>STATE_CONFIG</code> and reuses existing data access patterns
+throughout.</p>
+<hr />
+<h2 id="analysis-outputs">Analysis outputs</h2>
+<h3 id="annual-peak-correlation-13_model_performance.ipynb">Annual peak
+correlation (<code>13_model_performance.ipynb</code>)</h3>
+<p>Side-by-side scatter plots comparing wet-season (Jul–Nov) annual
+discharge peaks against Floodscan annual mean SFED:</p>
+<ul>
+<li><strong>GloFAS reanalysis vs Floodscan</strong> — each year
+labelled, 5-year RP threshold marked on both axes</li>
+<li><strong>Google GRRR reanalysis vs Floodscan</strong> — same
+layout</li>
+</ul>
+<p>These plots give a visual read of how well each model’s annual peak
+tracks observed flood severity.</p>
+<h3 id="precision-recall-f1-13_model_performance.ipynb">Precision,
+recall, F1 (<code>13_model_performance.ipynb</code>)</h3>
+<p>Performance metrics for three trigger configurations, evaluated
+against Floodscan 5-year RP events (wet-season annual max):</p>
+<table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Threshold</th>
+<th>Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GloFAS reanalysis</td>
+<td>3,132 m³/s</td>
+<td>Precision / Recall / F1</td>
+</tr>
+<tr>
+<td>Google GRRR reanalysis</td>
+<td>1,195 m³/s</td>
+<td>Precision / Recall / F1</td>
+</tr>
+<tr>
+<td>OR logic (either source)</td>
+<td>—</td>
+<td>Precision / Recall / F1</td>
+</tr>
+</tbody>
+</table>
+<p>A year-by-year table shows which years were events, which triggered,
+and which did not.</p>
+<hr />
+<h2 id="notebook-index">Notebook index</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>13_model_performance.ipynb</code></td>
+<td>Annual peak correlation plots + Precision/Recall/F1 for GloFAS,
+Google, and OR trigger</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li>Run <code>13_model_performance.ipynb</code> for both Adamawa and
+Benue; compare results side by side</li>
+<li>Explore alternative thresholds if performance is poor at one
+station</li>
+<li>Consider adding reforecast-based accuracy analysis (lead-time
+breakdown) following the same approach as
+<code>08_readiness_trigger_wurobokki.ipynb</code>_</li>
+</ul>
+</div>
+</body>
+</html>
