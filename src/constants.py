@@ -180,6 +180,11 @@ STATE_CONFIG = {
         "floodscan_blob": "ds-aa-nga-flooding/processed/floodscan/fs_benue_state_pixels_1998_2025.parquet",  # noqa
         "glofas_thresh": None,  # TBD via reforecast analysis
         "google_thresh": None,  # TBD via reforecast analysis
+        "glofas_leadtime_action": None,
+        "google_leadtime_action": None,
+        "glofas_leadtime_readiness": None,
+        "google_leadtime_readiness": None,
+        "glofas_reforecast_blob": "ds-aa-nga-flooding/processed/glofas/glofas_reforecast_makurdi_ensemble.parquet",  # noqa
     },
     "Adamawa": {
         "adm1_col": "ADM1_PCODE",
@@ -192,5 +197,10 @@ STATE_CONFIG = {
         "floodscan_blob": "ds-aa-nga-flooding/processed/floodscan/fs_adamawa_pixels_1998_2025.parquet",  # noqa
         "glofas_thresh": GLOFAS_THRESH,
         "google_thresh": GOOGLE_THRESH,
+        "glofas_leadtime_action": 5,
+        "google_leadtime_action": 7,
+        "glofas_leadtime_readiness": None,
+        "google_leadtime_readiness": None,
+        "glofas_reforecast_blob": "ds-aa-nga-flooding/processed/glofas/wuroboki_glofas_reforecast_ens.parquet",  # noqa
     },
 }
