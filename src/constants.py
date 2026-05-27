@@ -170,6 +170,8 @@ MAKURDI_HYBAS = "hybas_1120911340"
 # Per-state config for riverine flooding analysis notebooks
 STATE_CONFIG = {
     "Benue": {
+        "analysis_start_year": 1998,
+        "analysis_end_year": 2023,
         "adm1_col": "ADM1_PCODE",
         "adm1_val": BENUE,
         "lga_pcodes": BENUE_STATE_ADM2_PCODES,
@@ -187,6 +189,8 @@ STATE_CONFIG = {
         "glofas_reforecast_blob": "ds-aa-nga-flooding/processed/glofas/glofas_reforecast_makurdi_ensemble.parquet",  # noqa
     },
     "Adamawa": {
+        "analysis_start_year": 1998,
+        "analysis_end_year": 2023,
         "adm1_col": "ADM1_PCODE",
         "adm1_val": ADAMAWA,
         "lga_pcodes": ADAMAWA_ADM2_PCODES,
