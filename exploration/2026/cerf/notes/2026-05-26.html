@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CERF Nigeria Flooding — Working Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.css" />
+
+  <style>
+    body { background: #f6f8fa; }
+    .markdown-body { max-width: 900px; margin: 40px auto; padding: 24px 32px;
+                     background: white; border-radius: 8px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  </style>
+</head>
+<body>
+<div class="markdown-body">
+<h1 id="session-2026-05-26">Session: 2026-05-26</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Extended and refined the forecast performance analysis across two new
+notebooks. Notebook <code>14_forecast_performance.ipynb</code> received
+a series of metric and cosmetic improvements. A new notebook
+<code>15_trigger_performance.ipynb</code> was created to evaluate GloFAS
+reforecast performance directly against Floodscan flood events (rather
+than reanalysis), disaggregated by return period level.</p>
+<hr />
+<h2 id="analysis-outputs">Analysis outputs</h2>
+<h3
+id="forecast-performance-refinements-14_forecast_performance.ipynb">Forecast
+performance refinements
+(<code>14_forecast_performance.ipynb</code>)</h3>
+<p>Several changes to the exceedance detection and plotting logic:</p>
+<ul>
+<li><strong>Shared wet months</strong>: All analyses now filter to the
+intersection of months available in both GloFAS and Google GRRR
+reforecast data (<code>shared_wet_months</code>), and all plot titles
+include the month range.</li>
+<li><strong>Cumulative activation logic</strong>: At a given leadtime
+lt, a year is counted as activated if any forecast with leadtime ≤ lt
+exceeded the threshold. This ensures activation counts are monotonically
+non-decreasing across leadtimes. Years are counted at most once (no
+double-counting of multiple exceedances within a year).</li>
+<li><strong>Met-convention metrics</strong>: Switched from hit rate /
+POFD to <strong>POD</strong> (TP / (TP+FN)) and <strong>FAR</strong> (FP
+/ (TP+FP)). Activation count (TP+FP) replaced activation return
+period.</li>
+<li><strong>Fixed-threshold plots</strong>: Exceedance analysis at the
+defined trigger thresholds from <code>STATE_CONFIG</code> (GloFAS: 3,132
+m³/s; Google: 1,195 m³/s), showing POD and activation count vs
+leadtime.</li>
+<li><strong>Probability of activation plot</strong>: GloFAS-only panel
+with twin y-axis showing probability of activation (TP+FP)/N alongside
+FAR vs leadtime.</li>
+<li><strong>Leadtime shading</strong>: A light blue band shades the
+GloFAS operational action window (≤ 5 days for Adamawa) on all
+leadtime-axis plots.</li>
+<li><strong>GloFAS issue frequency caveat</strong>: Added a markdown
+note explaining that the Wuroboki GloFAS reforecast is issued
+twice-weekly (approximately every 3–4 days), yielding ~35 issue dates
+per wet season rather than ~120 for a daily product. This results in
+roughly 1/10th the valid-time density per leadtime compared to Google,
+making conditional skill estimates at higher RP levels (n ≤ 5) highly
+unstable.</li>
+</ul>
+<h3
+id="glofas-reforecast-trigger-performance-15_trigger_performance.ipynb">GloFAS
+reforecast trigger performance
+(<code>15_trigger_performance.ipynb</code>)</h3>
+<p>New notebook evaluating the GloFAS reforecast trigger (3,132 m³/s at
+Wuroboki) against observed Floodscan flood events for Adamawa:</p>
+<ul>
+<li><strong>Truth</strong>: Floodscan annual wet-season (Aug–Nov)
+maximum mean SFED across riverine pixels, classified at 3-year and
+5-year RP thresholds using the full 1998–2025 record.</li>
+<li><strong>Trigger</strong>: GloFAS ensemble-mean cumulative max at
+each leadtime exceeds the trigger threshold (once per year, using the
+same cumulative logic as notebook 14).</li>
+<li><strong>Metrics vs leadtime</strong>: Accuracy, detection rate
+(POD), false alarm ratio, precision, and F1 score — one line per RP
+level.</li>
+<li><strong>RP level note</strong>: The 4-year RP level is excluded
+because the Floodscan years that distinguish it from the 5-year RP set
+(1999, 2023–2025) all fall outside the GloFAS reforecast window
+(2003–2022), making the two event sets identical within the evaluation
+period.</li>
+</ul>
+<hr />
+<h2 id="notebook-index">Notebook index</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>14_forecast_performance.ipynb</code></td>
+<td>Skill metrics, exceedance detection, and activation analysis for
+GloFAS and Google GRRR reforecasts</td>
+</tr>
+<tr>
+<td><code>15_trigger_performance.ipynb</code></td>
+<td>GloFAS reforecast trigger performance vs Floodscan flood events —
+accuracy / POD / FAR / precision / F1 vs leadtime</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="open-questions">Open questions</h2>
+<h3 id="glofas-reforecast-issue-frequency">GloFAS reforecast issue
+frequency</h3>
+<p>The Wuroboki GloFAS reforecast data contains only ~35 issue dates per
+wet season (July–October), spaced every 3–4 days, rather than daily
+issuances. This is a data availability issue rather than a product
+limitation — it is worth confirming whether a more complete reforecast
+archive exists and whether it is worth re-downloading. The sparse issue
+frequency substantially reduces sample sizes in the conditional skill
+and exceedance analyses.</p>
+<h3 id="benue-state-trigger-threshold">Benue state trigger
+threshold</h3>
+<p>No trigger threshold is currently defined for the Benue state
+(Makurdi station) in <code>STATE_CONFIG</code>
+(<code>glofas_thresh</code> and <code>google_thresh</code> are both
+<code>None</code>). Selecting a threshold requires the same
+reanalysis-based RP analysis that was done for Wuroboki/Adamawa. This
+should follow the approach in
+<code>08_readiness_trigger_wurobokki.ipynb</code>: compute empirical RP
+from the full GloFAS and Google reanalysis records at Makurdi, identify
+the threshold corresponding to the target return period, and validate
+against Floodscan events.</p>
+<h3 id="historical-record-length-inconsistencies">Historical record
+length inconsistencies</h3>
+<p>Different datasets used in this analysis span different time
+periods:</p>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Floodscan SFED</td>
+<td>1998–2025</td>
+</tr>
+<tr>
+<td>GloFAS reanalysis</td>
+<td>1979–present</td>
+</tr>
+<tr>
+<td>GloFAS reforecast (Wuroboki)</td>
+<td>2003–2022</td>
+</tr>
+<tr>
+<td>Google GRRR reanalysis</td>
+<td>~2016–2023</td>
+</tr>
+</tbody>
+</table>
+<p>This creates inconsistencies in return period estimates, event
+classification, and performance evaluation depending on which record is
+used as the reference. It is worth deciding whether to standardise on a
+common reference period (e.g. 2003–2022 or 2016–2023 for the most
+constrained analyses), and whether more recent years (2023–2025) should
+be included as validation years where data allows.</p>
+</div>
+</body>
+</html>
