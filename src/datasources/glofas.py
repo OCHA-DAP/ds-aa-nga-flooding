@@ -567,15 +567,26 @@ def process_glofas_reforecast(
         f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
         f"glofas_reforecast_{station_name}_{product_type}.parquet"
     )
-    stratus.upload_parquet_to_blob(df, out_blob, write=True)
+    stratus.upload_parquet_to_blob(df, out_blob)
 
 
 def load_glofas_reforecast(
     station_name: str,
     product_type: Literal["ensemble", "control"] = "ensemble",
 ):
-    blob_name = (
-        f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
-        f"glofas_reforecast_{station_name}_{product_type}.parquet"
+    station_cfg = next(
+        (
+            v
+            for v in src.constants.STATE_CONFIG.values()
+            if v["glofas_station"] == station_name
+        ),
+        None,
     )
-    return blob.load_parquet_from_blob(blob_name)
+    if station_cfg and station_cfg.get("glofas_reforecast_blob"):
+        blob_name = station_cfg["glofas_reforecast_blob"]
+    else:
+        blob_name = (
+            f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+            f"glofas_reforecast_{station_name}_{product_type}.parquet"
+        )
+    return stratus.load_parquet_from_blob(blob_name)
