@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CERF Nigeria Flooding — Working Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.css" />
+  <style>
+      body { background: #f6f8fa; }
+      .markdown-body { max-width: 900px; margin: 40px auto; padding: 24px 32px;
+                       background: white; border-radius: 8px;
+                       box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+    </style>
+</head>
+<body>
+<div class="markdown-body">
+<h1 id="session-2026-05-27">Session: 2026-05-27</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Consistency fixes across notebooks 08, 14, and 15 to align wet-season
+definitions and Floodscan event classification. Investigated the 2025
+trigger threshold methodology. Created two new notebooks:
+<code>17_threshold_selection.ipynb</code> for the Benue grid search and
+<code>18_trigger_summary_performance.ipynb</code> for end-to-end trigger
+performance evaluation.</p>
+<hr />
+<h2 id="fixes-and-refinements">Fixes and refinements</h2>
+<h3 id="google-grrr-2023-coverage-08_trigger_events.ipynb">Google GRRR
+2023 coverage (<code>08_trigger_events.ipynb</code>)</h3>
+<p>The Google GRRR reforecast zarr is static and covers 1980–2023, but
+the reforecast data for 2023 ends in July — before the Aug–Oct flood
+season peak. Treating 2023 as a complete year would misclassify it as a
+non-event.</p>
+<p><strong>Fix:</strong> added a dynamic filter
+(<code>_grrr_rf_complete_years</code>) that excludes any year where the
+maximum <code>valid_time</code> month is below October. This makes 2023
+a <code>NaN</code> in the trigger matrix’s <code>google</code> column
+rather than a spurious <code>0</code>.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>_grrr_rf_complete_years <span class="op">=</span> (</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    df_grrr_rf</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    .assign(year<span class="op">=</span>..., month<span class="op">=</span>...)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    .groupby(<span class="st">&quot;year&quot;</span>)[<span class="st">&quot;month&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">max</span>()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    .pipe(<span class="kw">lambda</span> s: s[s <span class="op">&gt;=</span> <span class="dv">10</span>].index)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h3
+id="floodscan-event-years-from-trigger-matrix-15_trigger_performance.ipynb">Floodscan
+event years from trigger matrix
+(<code>15_trigger_performance.ipynb</code>)</h3>
+<p>Notebook 15 was independently recomputing Floodscan annual max and RP
+thresholds using a seasonal filter (Aug–Nov), diverging from notebook
+08’s all-months computation. This caused different event year
+classifications between notebooks.</p>
+<p><strong>Fix:</strong> replaced the local Floodscan computation with a
+direct load of the trigger matrix parquet produced by notebook 08
+(<code>{state}_trigger_matrix.parquet</code>). The <code>fs_3yr</code>,
+<code>fs_4yr</code>, <code>fs_5yr</code> columns are now the single
+source of truth across all performance notebooks.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>trigger_matrix_blob <span class="op">=</span> <span class="ss">f&quot;ds-aa-nga-flooding/processed/trigger_matrix/</span><span class="sc">{</span>STATE<span class="sc">.</span>lower()<span class="sc">}</span><span class="ss">_trigger_matrix.parquet&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>df_trig <span class="op">=</span> stratus.load_parquet_from_blob(trigger_matrix_blob)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>all_fs_years <span class="op">=</span> <span class="bu">set</span>(df_trig[<span class="st">&quot;year&quot;</span>])</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>fs_event_years <span class="op">=</span> {rp: <span class="bu">set</span>(df_trig[df_trig[<span class="ss">f&quot;fs_</span><span class="sc">{</span>rp<span class="sc">}</span><span class="ss">yr&quot;</span>] <span class="op">==</span> <span class="dv">1</span>][<span class="st">&quot;year&quot;</span>]) <span class="cf">for</span> rp <span class="kw">in</span> RP_LEVELS}</span></code></pre></div>
+<h3
+id="far-plot-vs-floodscan-rp-events-14_forecast_performance.ipynb">FAR
+plot vs Floodscan RP events
+(<code>14_forecast_performance.ipynb</code>)</h3>
+<p>The final “Activation probability &amp; FAR” plot was computing FAR
+against GloFAS reanalysis events, mixing reforecast performance with
+reanalysis ground truth.</p>
+<p><strong>Fix:</strong> replaced the single FAR line with three lines
+showing FAR vs Floodscan 3/4/5-year RP event years (loaded from the
+trigger matrix). Removed the light blue action window shading from this
+panel, which was added by <code>shade_action_windows(ax)</code>.</p>
+<hr />
+<h2 id="threshold-methodology">2025 threshold methodology</h2>
+<p>Investigated how the current Adamawa thresholds (GloFAS: 3,132 m³/s;
+Google: 1,195 m³/s) were derived, for reference when setting up the
+Benue trigger. Key findings from
+<code>exploration/2025/combined_gf_grrr_reanalysis.ipynb</code>:</p>
+<ul>
+<li><strong>Grid search</strong> over all (GloFAS rank, Google rank)
+pairs, using an OR trigger against Floodscan 5-year RP events</li>
+<li>Each pair evaluated on TPR (detection rate) and F1 score, with
+average lead time before the Floodscan peak as a tiebreaker</li>
+<li><strong>Selected “balanced trigger”</strong>: both models set to
+approximately 5.4-year RP implied return period</li>
+<li>Thresholds extracted as the minimum discharge value across the top-k
+triggered years in the historical reanalysis record</li>
+</ul>
+<p>The 2025 metrics code (<code>grrr_comparison.ipynb</code>) used
+<code>tpr</code> (detection rate), <code>ppv</code> (precision), and
+<code>f1</code> — accuracy and FAR were not computed in 2025.</p>
+<hr />
+<h2 id="new-notebooks">New notebooks</h2>
+<h3
+id="threshold_selection.ipynb-benue-threshold-grid-search"><code>17_threshold_selection.ipynb</code>
+— Benue threshold grid search</h3>
+<p>Grid search notebook for selecting GloFAS and Google GRRR thresholds
+for the Benue (Makurdi) trigger. Currently <code>glofas_thresh</code>
+and <code>google_thresh</code> are <code>None</code> in
+<code>STATE_CONFIG["Benue"]</code>.</p>
+<p><strong>Approach:</strong> - Loads GloFAS reanalysis (Makurdi),
+Google GRRR reanalysis (Makurdi HYBAS), Floodscan pixels for Benue state
+- Floodscan flood years computed from all-months annual max (consistent
+with notebook 08) - Wet-season (Aug–Nov) annual max for both models,
+inner-joined on common years - Grid search over all (GloFAS rank, Google
+rank) pairs; rank 0 = never trigger; OR trigger logic - Outputs:
+performance heatmaps (POD / Precision / F1) per Floodscan RP level,
+implied combined RP heatmap, threshold selection cells, year-by-year
+table, performance summary</p>
+<p><strong>Usage:</strong> run heatmaps, set
+<code>SELECTED_GF_RANK</code> and <code>SELECTED_GOOGLE_RANK</code>,
+then update <code>STATE_CONFIG["Benue"]</code> in
+<code>src/constants.py</code>.</p>
+<h3
+id="trigger_summary_performance.ipynb-end-to-end-trigger-evaluation"><code>18_trigger_summary_performance.ipynb</code>
+— End-to-end trigger evaluation</h3>
+<p>Evaluates GloFAS trigger performance (accuracy, detection rate, FAR,
+precision, F1) for both the action and readiness triggers as configured
+in <code>STATE_CONFIG</code>, against all Floodscan RP levels.</p>
+<p><strong>Key design:</strong> - <strong>Reanalysis as
+leadtime=0</strong>: GloFAS reanalysis daily discharge is prepended to
+the reforecast as <code>leadtime=0</code>. A year activates if any
+signal at leadtime ≤ cutoff exceeds the threshold — covering both
+real-time observations and short-range forecasts in a single
+cumulative-max framework. - <strong>Consistent denominator</strong>:
+evaluation restricted to reforecast years (2003–2022) so all years have
+both reanalysis and forecast signal. - Readiness trigger is skipped if
+<code>glofas_leadtime_readiness</code> is <code>None</code>; the
+notebook asserts action leadtime and threshold are set. - Outputs:
+per-trigger summary table, year-by-year activation table with
+TP/FP/FN/TN classification, metric-vs-leadtime plot for all leadtimes
+0–16.</p>
+<hr />
+<h2 id="notebook-index">Notebook index</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>08_trigger_events.ipynb</code></td>
+<td>Trigger matrix — Floodscan flood year flags and model trigger
+columns (canonical source of truth)</td>
+</tr>
+<tr>
+<td><code>13_model_performance.ipynb</code></td>
+<td>Annual peak correlation and precision/recall for GloFAS and Google
+reanalysis vs Floodscan</td>
+</tr>
+<tr>
+<td><code>14_forecast_performance.ipynb</code></td>
+<td>Skill metrics and exceedance detection for GloFAS and Google
+reforecasts</td>
+</tr>
+<tr>
+<td><code>15_trigger_performance.ipynb</code></td>
+<td>GloFAS reforecast trigger performance
+(accuracy/POD/FAR/precision/F1) vs leadtime, evaluated against trigger
+matrix event years</td>
+</tr>
+<tr>
+<td><code>17_threshold_selection.ipynb</code></td>
+<td>Benue threshold grid search — OR trigger performance heatmaps over
+(GloFAS rank, Google rank) pairs</td>
+</tr>
+<tr>
+<td><code>18_trigger_summary_performance.ipynb</code></td>
+<td>Summary trigger performance at configured action/readiness
+leadtimes, with reanalysis as leadtime=0</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="open-questions">Open questions</h2>
+<h3 id="benue-trigger-thresholds">Benue trigger thresholds</h3>
+<p><code>glofas_thresh</code> and <code>google_thresh</code> for Benue
+are <code>None</code> in <code>STATE_CONFIG</code>. Run
+<code>17_threshold_selection.ipynb</code> and update
+<code>src/constants.py</code> to unblock notebooks 16 and 18 for
+Benue.</p>
+<h3 id="benue-readiness-leadtime">Benue readiness leadtime</h3>
+<p><code>glofas_leadtime_readiness</code> and
+<code>google_leadtime_readiness</code> are <code>None</code> for both
+Adamawa and Benue. These need to be defined based on the operational AA
+framework timeline before notebook 18 can evaluate readiness trigger
+performance.</p>
+<h3 id="wet-season-definition-inconsistency">Wet season definition
+inconsistency</h3>
+<p>Different notebooks use different wet-season month filters:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Wet months</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>08_trigger_events.ipynb</code></td>
+<td>All months (no filter before annual max)</td>
+<td>Floodscan event classification</td>
+</tr>
+<tr>
+<td><code>13_model_performance.ipynb</code></td>
+<td>Aug–Dec [8,9,10,11,12]</td>
+<td>Daily correlation and annual max</td>
+</tr>
+<tr>
+<td><code>14_forecast_performance.ipynb</code></td>
+<td>Aug–Dec [8,9,10,11,12]</td>
+<td>Reforecast exceedance detection</td>
+</tr>
+<tr>
+<td><code>15_trigger_performance.ipynb</code></td>
+<td>Aug–Nov [8,9,10,11]</td>
+<td>Reforecast cumulative max</td>
+</tr>
+<tr>
+<td><code>17_threshold_selection.ipynb</code></td>
+<td>Aug–Nov [8,9,10,11]</td>
+<td>Reanalysis annual max for threshold grid</td>
+</tr>
+<tr>
+<td><code>18_trigger_summary_performance.ipynb</code></td>
+<td>Aug–Nov [8,9,10,11]</td>
+<td>Combined reanalysis+reforecast annual max</td>
+</tr>
+</tbody>
+</table>
+<p>This is intentional (Floodscan uses all months to catch tail events;
+model evaluation filters to the core flood season) but worth documenting
+explicitly in a shared constants cell if the notebooks are later
+consolidated.</p>
+</div>
+</body>
+</html>
