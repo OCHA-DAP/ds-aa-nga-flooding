@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CERF Nigeria — Trigger Explorer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      color: #24292f;
+      background: #fff;
+      padding: 32px 24px;
+    }
+
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 24px;
+    }
+
+    /* ── Collapsible sections ─────────────────────────────────────────────── */
+    details.section {
+      background: #fff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    details.section > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #57606a;
+      list-style: none;
+      user-select: none;
+    }
+    details.section > summary::-webkit-details-marker { display: none; }
+    details.section > summary::after {
+      content: "›";
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      transform: rotate(0deg);
+      transition: transform 0.15s;
+      color: #8c959f;
+    }
+    details.section[open] > summary::after {
+      transform: rotate(90deg);
+    }
+    details.section > summary:hover { background: #f6f8fa; }
+
+    .section-body {
+      padding: 0 20px 20px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    /* ── Geography ───────────────────────────────────────────────────────── */
+    .geo-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 32px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+    }
+
+    select {
+      font-size: 14px;
+      font-family: inherit;
+      padding: 5px 10px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background: #fff;
+      color: #24292f;
+      cursor: pointer;
+    }
+    select:focus { outline: 2px solid #0969da; outline-offset: 1px; }
+
+    .control-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: #57606a;
+      margin-bottom: 6px;
+    }
+
+    /* LGA pills */
+    .lga-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .lga-pill {
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #f0f6ff;
+      border: 1px solid #cce0ff;
+      color: #0550ae;
+    }
+
+    /* Timeline */
+    .timeline-grid { display: flex; flex-direction: column; gap: 10px; }
+    .timeline-row { display: flex; align-items: center; gap: 8px; }
+
+    .row-label {
+      width: 56px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #57606a;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .dots { display: flex; gap: 4px; flex-wrap: nowrap; }
+    .dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid #d0d7de;
+      background: #f6f8fa;
+      flex-shrink: 0;
+    }
+    .dot.filled { border-color: transparent; }
+
+    .dot-year {
+      font-size: 10px;
+      color: #57606a;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      height: 28px;
+    }
+    .dot-year.highlight { font-weight: 700; color: #24292f; }
+
+    .none-msg { font-size: 13px; color: #57606a; font-style: italic; }
+
+    .rp-legend { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #57606a; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Slider */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .slider-row label { font-size: 13px; color: #57606a; white-space: nowrap; }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 200px;
+      height: 4px;
+      background: #d0d7de;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #007CE0;
+      cursor: pointer;
+    }
+    .lt-badge {
+      font-size: 13px;
+      font-weight: 600;
+      color: #007CE0;
+      background: #f0f6ff;
+      border: 1px solid #cce0ff;
+      border-radius: 4px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+
+    /* Controls section */
+    .controls-section {
+      display: flex;
+      align-items: flex-start;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .control-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* RP radio selector */
+    .rp-radio-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: #57606a;
+    }
+    .rp-radio-row label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    /* Summary block */
+    .trigger-summary {
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: #f6f8fa;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+    }
+    .summary-text {
+      font-size: 13px;
+      color: #24292f;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .summary-note {
+      font-size: 12px;
+      color: #57606a;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* Signal timeline */
+    #signal-canvas {
+      display: block;
+      width: 100%;
+      height: 380px;
+    }
+
+    /* Canvas hover tooltip */
+    #signal-tooltip {
+      position: fixed;
+      background: #24292f;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 6px 10px;
+      border-radius: 4px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    #signal-tooltip.visible { opacity: 1; }
+
+    /* Placeholder */
+    .placeholder-msg {
+      padding: 20px 0;
+      font-size: 13px;
+      color: #57606a;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+<h1>CERF Nigeria — Trigger Explorer</h1>
+
+<!-- ── 1. Geographic selection ──────────────────────────────────────────────── -->
+<details class="section" open>
+  <summary>Geographic Selection</summary>
+  <div class="section-body">
+    <div class="geo-row">
+      <div>
+        <div class="control-label">State</div>
+        <select id="state-select">
+          <option value="Adamawa">Adamawa</option>
+          <option value="Benue">Benue</option>
+        </select>
+      </div>
+      <div>
+        <div class="control-label" id="lga-title">Affected LGAs</div>
+        <div class="lga-list" id="lga-list"></div>
+      </div>
+    </div>
+  </div>
+</details>
+
+<!-- ── 2. Reference flooding years ─────────────────────────────────────────── -->
+<details class="section" open>
+  <summary>Reference Flooding Years</summary>
+  <div class="section-body" style="padding-top:16px">
+    <div class="rp-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#74ADD1"></div>3-yr RP</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F46D43"></div>4-yr RP</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#D73027"></div>5-yr RP</div>
+    </div>
+    <div id="fs-timeline"></div>
+  </div>
+</details>
+
+<!-- ── 3. Action trigger ─────────────────────────────────────────────────────── -->
+<details class="section">
+  <summary>Action Trigger</summary>
+  <div class="section-body">
+    <p class="placeholder-msg">Action trigger not yet configured for this state.</p>
+  </div>
+</details>
+
+<!-- ── 4. Readiness trigger ──────────────────────────────────────────────────── -->
+<details class="section" open>
+  <summary>Readiness Trigger — GloFAS Reforecast</summary>
+  <div class="section-body" style="padding-top:16px">
+    <div id="trigger-unavailable" class="none-msg" style="display:none">
+      Reforecast data not yet available for this state.
+    </div>
+    <div id="trigger-content">
+      <div class="controls-section">
+        <div class="control-block">
+          <div class="control-label">Leadtime</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="lt-slider" min="1" max="16" value="5">
+            <span class="lt-badge" id="lt-badge">5 days</span>
+          </div>
+        </div>
+        <div class="control-block">
+          <div class="control-label">Floodscan RP</div>
+          <div class="rp-radio-row">
+            <label><input type="radio" name="tl-rp" value="3"> 3-yr</label>
+            <label><input type="radio" name="tl-rp" value="4"> 4-yr</label>
+            <label><input type="radio" name="tl-rp" value="5" checked> 5-yr</label>
+          </div>
+        </div>
+        <div class="control-block">
+          <div class="control-label">Threshold</div>
+          <span id="thresh-label" style="font-size:13px;font-weight:600;color:#24292f">—</span>
+        </div>
+        <div class="control-block">
+          <div class="control-label">Reanalysis</div>
+          <label style="font-size:13px;color:#24292f;cursor:pointer;display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="reanalysis-toggle" checked>
+            Include as leadtime 0
+          </label>
+        </div>
+      </div>
+      <div id="trigger-summary" class="trigger-summary"></div>
+      <div class="rp-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#2ca25f"></div>TP — triggered, flood year</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F2645A"></div>FN — missed flood year</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8856a7"></div>FP — triggered, non-event</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f6f8fa;border:1.5px solid #d0d7de"></div>TN</div>
+      </div>
+      <div id="trigger-timeline" style="margin-top:12px;margin-bottom:4px"></div>
+    </div>
+  </div>
+</details>
+
+<!-- ── 5. Signal timeline ─────────────────────────────────────────────────────── -->
+<details class="section" open>
+  <summary>Signal Timeline — GloFAS Trigger vs Floodscan</summary>
+  <div class="section-body" style="padding-top:16px">
+    <div id="signal-unavailable" class="none-msg" style="display:none">
+      Timeline not available for this state.
+    </div>
+    <div id="signal-content">
+      <div class="rp-legend" style="margin-bottom:12px">
+        <div class="legend-item"><div class="legend-dot" style="background:#007CE0;border-radius:2px;transform:rotate(45deg)"></div>GloFAS trigger (issue date)</div>
+        <div class="legend-item"><div class="legend-dot" id="tl-rp-legend-dot" style="background:#D73027"></div>Floodscan RP crossing</div>
+        <div class="legend-item"><div style="width:20px;height:2px;background:#d0d7de;margin-right:2px"></div>Floodscan annual peak</div>
+      </div>
+      <canvas id="signal-canvas"></canvas>
+    </div>
+  </div>
+</details>
+
+</div><!-- .page-wrap -->
+
+<div id="signal-tooltip"></div>
+
+<!-- Generated by generate_data.py — re-run to refresh -->
+<script src="data.js"></script>
+
+<script>
+const RP_COLORS = { 3: "#74ADD1", 4: "#F46D43", 5: "#D73027" };
+const CAT_COLORS = { TP: "#2ca25f", FP: "#8856a7", FN: "#F2645A", TN: null };
+const RF_YEARS = Array.from({ length: 20 }, (_, i) => 2003 + i); // 2003–2022
+const FS_YEARS = Array.from({ length: 26 }, (_, i) => 1998 + i); // 1998–2023
+
+let signalHitTargets = [];
+
+function fmtDate(d) {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+function pct(v) { return isNaN(v) ? "—" : (v * 100).toFixed(0) + "%"; }
+
+function metricClass(val, metric) {
+  if (isNaN(val)) return "";
+  if (metric === "pod") return val >= 0.6 ? "metric-good" : "metric-bad";
+  if (metric === "far") return val <= 0.4 ? "metric-good" : "metric-bad";
+  return "";
+}
+
+function calcMetrics(activatedSet, eventYears, evalYears) {
+  const events = new Set(eventYears.filter(y => evalYears.has(y)));
+  const tp = [...activatedSet].filter(y => events.has(y)).length;
+  const fp = [...activatedSet].filter(y => !events.has(y)).length;
+  const fn = [...events].filter(y => !activatedSet.has(y)).length;
+  const pod = (tp + fn) > 0 ? tp / (tp + fn) : NaN;
+  const far = (tp + fp) > 0 ? fp / (tp + fp) : NaN;
+  const p_act = evalYears.size > 0 ? (tp + fp) / evalYears.size : NaN;
+  return { tp, fp, fn, n_events: events.size, pod, far, p_act };
+}
+
+function getCategory(year, activatedSet, eventSet) {
+  const trig = activatedSet.has(year);
+  const event = eventSet.has(year);
+  if (trig && event)  return "TP";
+  if (trig && !event) return "FP";
+  if (!trig && event) return "FN";
+  return "TN";
+}
+
+// ── Timeline helpers ──────────────────────────────────────────────────────────
+function getTriggerDate(state, year, ltCutoff, useReanalysis) {
+  const fe = DASHBOARD_DATA[state]?.first_exceedance?.[String(year)];
+  const dates = [];
+  if (fe) {
+    Object.entries(fe)
+      .filter(([lt]) => +lt <= ltCutoff)
+      .forEach(([, d]) => dates.push(new Date(d)));
+  }
+  if (useReanalysis) {
+    const raDate = DASHBOARD_DATA[state]?.reanalysis_exceed?.[String(year)];
+    if (raDate) dates.push(new Date(raDate));
+  }
+  return dates.length ? new Date(Math.min(...dates)) : null;
+}
+
+function getFsDate(state, year, rp) {
+  const d = DASHBOARD_DATA[state]?.fs_crossings?.[String(year)]?.[String(rp)];
+  return d ? new Date(d) : null;
+}
+
+function getFsPeakDate(state, year) {
+  const d = DASHBOARD_DATA[state]?.fs_peak?.[String(year)];
+  return d ? new Date(d) : null;
+}
+
+// Days elapsed since Aug 1 of the same year
+function dayFromAug1(date) {
+  return Math.round((date - new Date(date.getFullYear(), 7, 1)) / 86400000);
+}
+
+// ── Signal timeline chart ─────────────────────────────────────────────────────
+function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
+  const canvas = document.getElementById("signal-canvas");
+  const unavail = document.getElementById("signal-unavailable");
+  const content = document.getElementById("signal-content");
+  const tl = DASHBOARD_DATA[state];
+
+  if (!tl) {
+    unavail.style.display = "";
+    content.style.display = "none";
+    return;
+  }
+  unavail.style.display = "none";
+  content.style.display = "";
+
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width, H = rect.height;
+  const YEARS = Array.from({ length: 20 }, (_, i) => 2003 + i);
+  const PAD = { top: 16, right: 20, bottom: 28, left: 42 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+  const rowH = cH / YEARS.length;
+
+  // Aug 1 = day 0, Nov 30 = day 121
+  const DAY_RANGE = 121;
+  const xD = d => PAD.left + Math.max(0, Math.min(1, d / DAY_RANGE)) * cW;
+  const yY = i => PAD.top + (i + 0.5) * rowH;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Month grid lines + labels
+  const MONTHS = [{ label: "Aug", day: 0 }, { label: "Sep", day: 31 },
+                  { label: "Oct", day: 61 }, { label: "Nov", day: 92 }];
+  MONTHS.forEach(({ label, day }) => {
+    const x = xD(day);
+    ctx.beginPath();
+    ctx.strokeStyle = "#ebebeb";
+    ctx.lineWidth = 0.5;
+    ctx.moveTo(x, PAD.top);
+    ctx.lineTo(x, PAD.top + cH);
+    ctx.stroke();
+    ctx.fillStyle = "#57606a";
+    ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(label, x, PAD.top + cH + 16);
+  });
+
+  signalHitTargets = [];
+  const rpColor = RP_COLORS[rp];
+  document.getElementById("tl-rp-legend-dot").style.background = rpColor;
+
+  YEARS.forEach((year, i) => {
+    const y = yY(i);
+    const trigDate = getTriggerDate(state, year, ltCutoff, useReanalysis);
+    const fsDate   = getFsDate(state, year, rp);
+    const peakDate = getFsPeakDate(state, year);
+
+    // Row baseline
+    ctx.beginPath();
+    ctx.strokeStyle = "#ebebeb";
+    ctx.lineWidth = 0.8;
+    ctx.moveTo(PAD.left, y);
+    ctx.lineTo(PAD.left + cW, y);
+    ctx.stroke();
+
+    // Year label
+    ctx.fillStyle = "#57606a";
+    ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(year, PAD.left - 5, y + 3);
+
+    // Floodscan annual peak — small gray tick
+    if (peakDate) {
+      const pd = dayFromAug1(peakDate);
+      if (pd >= -5 && pd <= DAY_RANGE + 5) {
+        const px = xD(pd);
+        ctx.beginPath();
+        ctx.strokeStyle = "#c8c8c8";
+        ctx.lineWidth = 1.5;
+        ctx.moveTo(px, y - 6);
+        ctx.lineTo(px, y + 6);
+        ctx.stroke();
+      }
+    }
+
+    // Connector line: trigger → FS crossing
+    if (trigDate && fsDate) {
+      const tx = xD(dayFromAug1(trigDate));
+      const fx = xD(dayFromAug1(fsDate));
+      ctx.beginPath();
+      ctx.strokeStyle = "#d0d7de";
+      ctx.lineWidth = 1;
+      ctx.moveTo(tx, y);
+      ctx.lineTo(fx, y);
+      ctx.stroke();
+
+      // Days-advance label on connector
+      const advance = Math.round((fsDate - trigDate) / 86400000);
+      if (advance > 0 && Math.abs(fx - tx) > 20) {
+        ctx.fillStyle = "#8c959f";
+        ctx.font = "8px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`${advance}d`, (tx + fx) / 2, y - 4);
+      }
+    }
+
+    // FS RP crossing — filled circle
+    if (fsDate) {
+      const fx = xD(dayFromAug1(fsDate));
+      ctx.beginPath();
+      ctx.fillStyle = rpColor;
+      ctx.arc(fx, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      signalHitTargets.push({ x: fx, y, r: 8,
+        html: `Floodscan ${rp}-yr RP crossing<br><strong>${fmtDate(fsDate)}</strong>` });
+    }
+
+    // GloFAS trigger — filled diamond
+    if (trigDate) {
+      const tx = xD(dayFromAug1(trigDate));
+      const s = 5;
+      ctx.beginPath();
+      ctx.fillStyle = "#007CE0";
+      ctx.moveTo(tx,     y - s);
+      ctx.lineTo(tx + s, y    );
+      ctx.lineTo(tx,     y + s);
+      ctx.lineTo(tx - s, y    );
+      ctx.closePath();
+      ctx.fill();
+      signalHitTargets.push({ x: tx, y, r: 8,
+        html: `GloFAS trigger<br><strong>${fmtDate(trigDate)}</strong>` });
+    }
+  });
+}
+
+// ── Floodscan timeline ────────────────────────────────────────────────────────
+function renderFsTimeline(state) {
+  const d = DASHBOARD_DATA[state];
+  const container = document.getElementById("fs-timeline");
+
+  if (!d.event_years) {
+    container.innerHTML = `<p class="none-msg">Event years not yet available — run notebook 08 for ${state}.</p>`;
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "timeline-grid";
+
+  [3, 4, 5].forEach(rp => {
+    const events = new Set(d.event_years[String(rp)]);
+    const row = document.createElement("div");
+    row.className = "timeline-row";
+    const dots = FS_YEARS.map(y => {
+      const isEvent = events.has(y);
+      const style = isEvent ? `background:${RP_COLORS[rp]};` : "";
+      return `<div class="dot-wrap">
+        <div class="dot${isEvent ? " filled" : ""}" style="${style}" title="${y}${isEvent ? ` — ${rp}yr event` : ""}"></div>
+      </div>`;
+    }).join("");
+    row.innerHTML = `<div class="row-label">${rp}-yr</div><div class="dots">${dots}</div>`;
+    grid.appendChild(row);
+  });
+
+  // Year labels
+  const labelRow = document.createElement("div");
+  labelRow.className = "timeline-row";
+  const anyEvent = y => Object.values(d.event_years).some(yrs => Array.isArray(yrs) && yrs.includes(y));
+  labelRow.innerHTML = `<div class="row-label"></div><div class="dots">${
+    FS_YEARS.map(y => `<div class="dot-wrap">
+      <div style="width:16px;height:16px"></div>
+      <div class="dot-year${anyEvent(y) ? " highlight" : ""}">${y}</div>
+    </div>`).join("")
+  }</div>`;
+
+  container.innerHTML = "";
+  container.appendChild(grid);
+  container.appendChild(labelRow);
+}
+
+// ── Readiness trigger ─────────────────────────────────────────────────────────
+function renderTrigger(state, lt) {
+  const unavail = document.getElementById("trigger-unavailable");
+  const content = document.getElementById("trigger-content");
+  const d = DASHBOARD_DATA[state];
+
+  if (!d?.annual_cum_max) {
+    unavail.style.display = "";
+    content.style.display = "none";
+    return;
+  }
+  unavail.style.display = "none";
+  content.style.display = "";
+
+  document.getElementById("lt-badge").textContent = `${lt} day${lt > 1 ? "s" : ""}`;
+  document.getElementById("thresh-label").textContent = `${d.thresh.toLocaleString()} m³/s`;
+  const useReanalysis = document.getElementById("reanalysis-toggle").checked;
+
+  // Activated years at this leadtime (reanalysis counts as leadtime=0)
+  const activated = new Set(
+    RF_YEARS.filter(y => {
+      const cm = d.annual_cum_max[String(y)];
+      const rfTriggered = cm && cm[String(lt)] > d.thresh;
+      const raTriggered = useReanalysis && !!d.reanalysis_exceed?.[String(y)];
+      return rfTriggered || raTriggered;
+    })
+  );
+
+  const evalYears = new Set(RF_YEARS);
+  const rp = selectedRp();
+  const eventYearSets = d.event_years || {};
+
+  // Summary sentence
+  const { pod, far } = calcMetrics(activated, eventYearSets[rp] || [], evalYears);
+  const summaryEl = document.getElementById("trigger-summary");
+  if (activated.size === 0) {
+    summaryEl.innerHTML = `<p class="summary-text">This trigger does not activate at this leadtime.</p>` +
+      `<p class="summary-note">Note that these probabilities are based on a very small sample size of events (n&lt;10) and so should not be overly relied upon.</p>`;
+  } else {
+    const rpAct = (RF_YEARS.length / activated.size).toFixed(1);
+    const podPct = Math.round(pod * 100);
+    const farPct = Math.round(far * 100);
+    const activatedYears = [...activated].sort((a, b) => a - b).join(", ");
+    summaryEl.innerHTML =
+      `<p class="summary-text">This trigger is estimated to activate every 1 in <strong>${rpAct}</strong> years. ` +
+      `It has a <strong>${podPct}%</strong> likelihood of flood event detection, and a ` +
+      `<strong>${farPct}%</strong> chance of false activation. ` +
+      `It would have activated in: <strong>${activatedYears}</strong>.</p>` +
+      `<p class="summary-note">Note that these probabilities are based on a very small sample size of events (n&lt;10) and so should not be overly relied upon.</p>`;
+  }
+
+  drawSignalTimeline(state, lt, rp, useReanalysis);
+
+  // Trigger year dot timeline (coloured by category vs selected RP)
+  const eventsRp = new Set((eventYearSets[rp] || []).filter(y => evalYears.has(y)));
+  const grid = document.createElement("div");
+  grid.className = "timeline-grid";
+
+  const trigRow = document.createElement("div");
+  trigRow.className = "timeline-row";
+  const dots = RF_YEARS.map(y => {
+    const cat = getCategory(y, activated, eventsRp);
+    const color = CAT_COLORS[cat];
+    const style = color ? `background:${color};` : "";
+    return `<div class="dot-wrap">
+      <div class="dot${color ? " filled" : ""}" style="${style}" title="${y}: ${cat}"></div>
+    </div>`;
+  }).join("");
+  trigRow.innerHTML = `<div class="row-label">Trigger</div><div class="dots">${dots}</div>`;
+
+  // Year labels
+  const labelRow = document.createElement("div");
+  labelRow.className = "timeline-row";
+  labelRow.innerHTML = `<div class="row-label"></div><div class="dots">${
+    RF_YEARS.map(y => `<div class="dot-wrap">
+      <div style="width:16px;height:16px"></div>
+      <div class="dot-year${activated.has(y) ? " highlight" : ""}">${y}</div>
+    </div>`).join("")
+  }</div>`;
+
+  grid.appendChild(trigRow);
+  const container = document.getElementById("trigger-timeline");
+  container.innerHTML = "";
+  container.appendChild(grid);
+  container.appendChild(labelRow);
+}
+
+// ── Wiring ────────────────────────────────────────────────────────────────────
+function selectedRp() {
+  return +document.querySelector("input[name='tl-rp']:checked").value;
+}
+
+function render(state) {
+  const d = DASHBOARD_DATA[state];
+  document.getElementById("lga-title").textContent = `Affected LGAs — ${d.station} station`;
+  document.getElementById("lga-list").innerHTML =
+    d.lgas.map(l => `<span class="lga-pill">${l}</span>`).join("");
+  renderFsTimeline(state);
+  renderTrigger(state, +document.getElementById("lt-slider").value);
+}
+
+document.getElementById("state-select").addEventListener("change", e => render(e.target.value));
+
+document.getElementById("lt-slider").addEventListener("input", e => {
+  const state = document.getElementById("state-select").value;
+  renderTrigger(state, +e.target.value);
+});
+
+document.querySelectorAll("input[name='tl-rp']").forEach(radio => {
+  radio.addEventListener("change", () => {
+    const state = document.getElementById("state-select").value;
+    renderTrigger(state, +document.getElementById("lt-slider").value);
+  });
+});
+
+document.getElementById("reanalysis-toggle").addEventListener("change", () => {
+  const state = document.getElementById("state-select").value;
+  renderTrigger(state, +document.getElementById("lt-slider").value);
+});
+
+// ── Signal timeline tooltip ───────────────────────────────────────────────────
+const _sigCanvas  = document.getElementById("signal-canvas");
+const _sigTooltip = document.getElementById("signal-tooltip");
+
+_sigCanvas.addEventListener("mousemove", e => {
+  const rect = _sigCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  let hit = null, minDist = Infinity;
+  for (const t of signalHitTargets) {
+    const d = Math.hypot(mx - t.x, my - t.y);
+    if (d < t.r && d < minDist) { hit = t; minDist = d; }
+  }
+  if (hit) {
+    _sigTooltip.innerHTML = hit.html;
+    _sigTooltip.style.left = (e.clientX + 14) + "px";
+    _sigTooltip.style.top  = (e.clientY - 10) + "px";
+    _sigTooltip.classList.add("visible");
+    _sigCanvas.style.cursor = "default";
+  } else {
+    _sigTooltip.classList.remove("visible");
+    _sigCanvas.style.cursor = "";
+  }
+});
+
+_sigCanvas.addEventListener("mouseleave", () => {
+  _sigTooltip.classList.remove("visible");
+  _sigCanvas.style.cursor = "";
+});
+
+render("Adamawa");
+</script>
+</body>
+</html>

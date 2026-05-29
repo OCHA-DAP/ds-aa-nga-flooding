@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Session: 2026-05-28</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Session: 2026-05-28</h1>
+</header>
+<h1 id="session-2026-05-28">Session: 2026-05-28</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Created two new notebooks —
+<code>19_model_reanalysis_comparison.ipynb</code> (Google GRRR gauge
+correlation analysis) and <code>20_trigger_tuning.ipynb</code> (trigger
+grid search) — and made several refinements to the trigger explorer web
+dashboard.</p>
+<hr />
+<h2 id="new-notebooks">New notebooks</h2>
+<h3
+id="model_reanalysis_comparison.ipynb-grrr-gauge-correlation-analysis"><code>19_model_reanalysis_comparison.ipynb</code>
+— GRRR gauge correlation analysis</h3>
+<p>Compares Google GRRR and GloFAS reanalysis correlations with
+Floodscan SFED across all gauges within the selected state’s LGAs.
+Parameterisable by <code>STATE</code> (“Adamawa” or “Benue”).</p>
+<p><strong>Approach:</strong> - Gauge discovery via
+<code>grrr.get_gauges_by_area(gdf_selected, include_non_quality_verified=True)</code>,
+using LGAs from <code>STATE_CONFIG["lga_pcodes"]</code> (same pattern as
+notebook 16) - Spearman correlation on raw wet-season (Aug–Nov) daily
+values against Floodscan SFED, across a lag range of [-7, +14] days —
+raw values chosen to match notebook 13; deseasonalisation was tested but
+rejected as it removes the shared seasonal cycle and lowers correlations
+- Gauges flagged by <code>is_benue</code> (river name contains “benue”)
+and <code>quality_verified</code> - <strong>Annual peak correlation
+diagnostics</strong> (cells after cell-12): Spearman ρ on wet-season
+annual maxima per gauge vs Floodscan, plus mean peak timing difference
+(gauge peak DOY − Floodscan peak DOY). These address the concern that
+daily correlation can be high even if peaks occur at different times of
+year - Top 10 gauges by best Spearman ρ saved to blob:
+<code>ds-aa-nga-flooding/processed/model_comparison/{state}_top10_gauges.parquet</code></p>
+<p><strong>Outputs:</strong> -
+<code>figures/{state}_corr_histograms.png</code> — distribution of best
+ρ and best lag - <code>figures/{state}_corr_lag_profiles.png</code> —
+lag profile curves (median + IQR) by group -
+<code>figures/{state}_corr_dot_plot.png</code> — Cleveland dot plot per
+gauge, coloured by category -
+<code>figures/{state}_corr_gauge_map.png</code> — gauge map, sized by ρ,
+coloured by category -
+<code>figures/{state}_annual_peak_diagnostics.png</code> — annual peak ρ
+histogram + peak timing difference chart</p>
+<p><strong>Category colours (shared across all plots):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Colour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GloFAS</td>
+<td><code>#F2645A</code> (coral)</td>
+</tr>
+<tr>
+<td>Google (high confidence)</td>
+<td><code>#F4A93B</code> (amber)</td>
+</tr>
+<tr>
+<td>Google (Benue)</td>
+<td><code>#007CE0</code> (OCHA blue)</td>
+</tr>
+<tr>
+<td>Google (non-Benue)</td>
+<td><code>#1EBFB3</code> (teal)</td>
+</tr>
+</tbody>
+</table>
+<h3
+id="trigger_tuning.ipynb-trigger-grid-search"><code>20_trigger_tuning.ipynb</code>
+— Trigger grid search</h3>
+<p>Grid search over trigger configurations using the top 10 gauges from
+notebook 19. Trigger fires if N of the top 10 gauges exceed a Y-year
+return period threshold in a wet-season annual maximum.</p>
+<p><strong>Two threshold approaches:</strong></p>
+<ul>
+<li><strong>Part 1 — Google official RP</strong> (2-, 5-, 7-yr): uses
+<code>grrr.load_return_periods()</code> pre-computed thresholds per
+gauge</li>
+<li><strong>Part 2 — Empirical RP (Gumbel)</strong> (2–6-yr): Gumbel
+distribution fitted to each gauge’s wet-season annual maxima via
+<code>estimate_return_periods()</code> from
+<code>src/utils/rp_calc.py</code></li>
+</ul>
+<p><strong>Grid search:</strong> for each
+<code>(N gauges, RP threshold, Floodscan RP level)</code> triple,
+computes POD / FAR / F1 against Floodscan event years from the trigger
+matrix. Results shown as heatmaps and a summary table disaggregated by
+Floodscan RP level (3-, 4-, 5-yr).</p>
+<p><strong>Evaluation period:</strong> 1998–2023 (full GRRR reanalysis
+record, ~26 years).</p>
+<hr />
+<h2 id="dashboard-refinements-exploration2026cerfweb">Dashboard
+refinements (<code>exploration/2026/cerf/web/</code>)</h2>
+<h3 id="collapsible-sections">Collapsible sections</h3>
+<p>Restructured <code>index.html</code> into five collapsible
+<code>&lt;details&gt;</code> sections (native HTML, no JS required):</p>
+<ol type="1">
+<li><strong>Geographic Selection</strong> — state dropdown + affected
+LGA pills</li>
+<li><strong>Reference Flooding Years</strong> — Floodscan event year dot
+timeline</li>
+<li><strong>Action Trigger</strong> — placeholder (not yet
+configured)</li>
+<li><strong>Readiness Trigger — GloFAS Reforecast</strong> — controls,
+summary, dot timeline</li>
+<li><strong>Signal Timeline — GloFAS Trigger vs Floodscan</strong> —
+canvas chart (moved out of readiness trigger section)</li>
+</ol>
+<h3 id="floodscan-threshold-bug-fix-generate_data.py">Floodscan
+threshold bug fix (<code>generate_data.py</code>)</h3>
+<p><code>get_floodscan_data</code> was computing RP thresholds from all
+years in the raw Floodscan data (1998–2025), while the trigger matrix
+uses only the analysis years (1998–2023). This caused some event years
+to be missing from <code>fs_crossings</code> on the signal timeline
+(2003 and 2019 for Adamawa 3-yr RP).</p>
+<p><strong>Fix:</strong> thresholds are now derived from the trigger
+matrix event years directly — for each RP level, the threshold is the
+minimum annual max SFED across the years classified as events at that
+RP. This guarantees consistency with notebook 08. If the trigger matrix
+is unavailable, <code>get_floodscan_data</code> returns empty dicts
+rather than falling back to independent computation.</p>
+<h3 id="other-dashboard-changes">Other dashboard changes</h3>
+<ul>
+<li>Page background changed to white</li>
+<li>FN (missed flood year) and FP (false activation) colours swapped: FN
+is now red (<code>#F2645A</code>), FP is purple (<code>#8856a7</code>),
+reflecting that a missed event is the worse outcome</li>
+</ul>
+<hr />
+<h2 id="open-questions-next-steps">Open questions / next steps</h2>
+<h3 id="action-trigger-in-dashboard">Action trigger in dashboard</h3>
+<p>The main next step is wiring up the Action Trigger section in
+<code>index.html</code> using the grid-search outputs from
+<code>20_trigger_tuning.ipynb</code>. The trigger for each state should
+be of the form: “trigger if N of the top 10 gauges exceed Y-year RP”.
+The selected <code>(N, Y)</code> configuration from notebook 20 needs to
+be:</p>
+<ol type="1">
+<li>Recorded in <code>STATE_CONFIG</code> (or passed to
+<code>generate_data.py</code> directly)</li>
+<li>Added as a new data loader in <code>generate_data.py</code> — load
+GRRR reanalysis annual maxima for the top 10 gauges, apply the selected
+RP threshold, check exceedance count ≥ N for each year</li>
+<li>Rendered in the Action Trigger section of <code>index.html</code>
+with a dot timeline and summary sentence (same pattern as readiness
+trigger)</li>
+</ol>
+<h3 id="gauge-selection-for-trigger">Gauge selection for trigger</h3>
+<p>Notebook 20 uses the top 10 gauges ranked by Spearman ρ (daily
+correlation). The annual peak diagnostics added to notebook 19 (peak ρ
+and peak timing difference) are available as additional filters but have
+not yet been applied to the selection. Consider whether any gauges
+should be excluded based on poor peak timing alignment before finalising
+the trigger gauge set.</p>
+<hr />
+<h2 id="notebook-index">Notebook index</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>08_trigger_events.ipynb</code></td>
+<td>Trigger matrix — Floodscan flood year flags (canonical source of
+truth)</td>
+</tr>
+<tr>
+<td><code>13_model_performance.ipynb</code></td>
+<td>Annual peak correlation and daily correlation for GloFAS and Google
+reanalysis</td>
+</tr>
+<tr>
+<td><code>14_forecast_performance.ipynb</code></td>
+<td>Skill metrics for GloFAS and Google reforecasts</td>
+</tr>
+<tr>
+<td><code>15_trigger_performance.ipynb</code></td>
+<td>GloFAS reforecast trigger performance vs leadtime</td>
+</tr>
+<tr>
+<td><code>17_threshold_selection.ipynb</code></td>
+<td>Benue threshold grid search (GloFAS + Google OR trigger)</td>
+</tr>
+<tr>
+<td><code>18_trigger_summary_performance.ipynb</code></td>
+<td>Summary trigger performance at configured action/readiness
+leadtimes</td>
+</tr>
+<tr>
+<td><code>19_model_reanalysis_comparison.ipynb</code></td>
+<td>Google GRRR gauge correlation analysis; top 10 gauge selection</td>
+</tr>
+<tr>
+<td><code>20_trigger_tuning.ipynb</code></td>
+<td>Multi-gauge trigger grid search using top 10 GRRR gauges</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
