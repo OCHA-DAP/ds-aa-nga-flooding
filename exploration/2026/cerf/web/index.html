@@ -1066,8 +1066,6 @@ function drawGaugeMarkers(state) {
       .setLngLat([g.longitude, g.latitude])
       .setPopup(popup)
       .addTo(gaugeMap);
-    el.addEventListener("mouseenter", () => popup.addTo(gaugeMap));
-    el.addEventListener("mouseleave", () => popup.remove());
     gaugeMarkers.push(marker);
     lnglats.push([g.longitude, g.latitude]);
   });
@@ -1090,8 +1088,6 @@ function drawGaugeMarkers(state) {
       .setLngLat([gfCoords.lon, gfCoords.lat])
       .setPopup(popup)
       .addTo(gaugeMap);
-    el.addEventListener("mouseenter", () => popup.addTo(gaugeMap));
-    el.addEventListener("mouseleave", () => popup.remove());
     gaugeMarkers.push(gfMarker);
     lnglats.push([gfCoords.lon, gfCoords.lat]);
   }
