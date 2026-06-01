@@ -56,12 +56,14 @@ import pandas as pd  # noqa: E402
 
 from src.constants import PROJECT_PREFIX, STATE_CONFIG  # noqa: E402
 from src.datasources import grrr  # noqa: E402
-from src.datasources.glofas import get_blob_name  # noqa: E402
+from src.datasources.glofas import GF_STATIONS, get_blob_name  # noqa: E402
 from src.utils.rp_calc import estimate_return_periods  # noqa: E402
 
 # ── Config ───────────────────────────────────────────────────────────────────
 WET_MONTHS = [8, 9, 10, 11]
-EVAL_YEARS = list(range(2003, 2023))
+EVAL_YEARS = list(range(2003, 2023))  # GloFAS reforecast evaluation period
+RA_YEARS = list(range(1998, 2023))  # GloFAS reanalysis evaluation period
+GRRR_RF_YEARS = list(range(2016, 2024))  # GRRR reforecast evaluation period
 MAX_LEADTIME = 16
 RP_LEVELS = [3, 4, 5]
 
@@ -185,7 +187,7 @@ def get_reanalysis_exceed(cfg: dict) -> dict:
     )
     exceed = df[
         df["month"].isin(WET_MONTHS)
-        & df["year"].isin(EVAL_YEARS)
+        & df["year"].isin(RA_YEARS)
         & (df[dis_col] > thresh)
     ]
     return {
@@ -263,6 +265,8 @@ def get_floodscan_data(
 def _first_exceed(df_wet, gauge_ids, thresholds_by_gid, rp_keys):
     """First wet-season exceedance date per (gauge, year) for each RP key.
 
+    df_wet must have columns: gauge_id, date (date of observation),
+    year, streamflow.
     Returns: {rp_key: {gauge_id: {year_str: date_str}}}
     """
     result = {rp: {} for rp in rp_keys}
@@ -277,6 +281,31 @@ def _first_exceed(df_wet, gauge_ids, thresholds_by_gid, rp_keys):
             yr_dates = {}
             for yr, grp in exceed.groupby("year"):
                 yr_dates[str(int(yr))] = grp["date"].min().strftime("%Y-%m-%d")
+            if yr_dates:
+                result[rp][gid] = yr_dates
+    return result
+
+
+def _first_exceed_rf(df_rf_wet, gauge_ids, thresholds_by_gid, rp_keys):
+    """First wet-season issue date exceedance per (gauge, year) for each RP.
+
+    df_rf_wet must have columns: gauge_id, issue_date, year, streamflow.
+    Returns: {rp_key: {gauge_id: {year_str: issue_date_str}}}
+    """
+    result = {rp: {} for rp in rp_keys}
+    for gid in gauge_ids:
+        df_g = df_rf_wet[df_rf_wet["gauge_id"] == gid]
+        thresh_map = thresholds_by_gid.get(gid, {})
+        for rp in rp_keys:
+            thresh = thresh_map.get(rp)
+            if thresh is None:
+                continue
+            exceed = df_g[df_g["streamflow"] >= thresh]
+            yr_dates = {}
+            for yr, grp in exceed.groupby("year"):
+                yr_dates[str(int(yr))] = (
+                    grp["issue_date"].min().strftime("%Y-%m-%d")
+                )
             if yr_dates:
                 result[rp][gid] = yr_dates
     return result
@@ -303,7 +332,12 @@ def get_action_data(state: str, cfg: dict) -> dict | None:
         print(f"  Warning: top-10 gauge file not found for {state}: {e}")
         return None
 
-    gauge_ids = df_top10["gauge_id"].tolist()
+    if "top_10" in df_top10.columns:
+        gauge_ids = df_top10[df_top10["top_10"]]["gauge_id"].tolist()
+    else:
+        gauge_ids = df_top10[
+            "gauge_id"
+        ].tolist()  # legacy blob: all rows are top-10
     analysis_years = range(
         cfg["analysis_start_year"], cfg["analysis_end_year"] + 1
     )
@@ -387,14 +421,113 @@ def get_action_data(state: str, cfg: dict) -> dict | None:
 
     eval_years = sorted(int(y) for y in df_annual["year"].unique())
 
+    # ── GRRR reforecast (issue-time based, GRRR_RF_YEARS) ────────────────────
+    rf_annual_max: dict = {}
+    rf_first_exceed: dict = {"google": {}, "empirical": {}}
+    rf_eval_years: list = []
+
+    rf_frames = []
+    for gid in gauge_ids:
+        try:
+            ds_g = grrr.load_reforecast(gauge=gid)
+            df_g = grrr.process_reforecast(ds_g)
+            df_g["gauge_id"] = gid
+            rf_frames.append(df_g)
+        except Exception as exc:
+            print(f"    Warning: reforecast unavailable for {gid}: {exc}")
+
+    if rf_frames:
+        df_rf = pd.concat(rf_frames, ignore_index=True)
+        df_rf["issue_time"] = pd.to_datetime(df_rf["issue_time"])
+        df_rf["issue_year"] = df_rf["issue_time"].dt.year
+        df_rf["issue_month"] = df_rf["issue_time"].dt.month
+        df_rf["issue_date"] = df_rf["issue_time"].dt.normalize()
+
+        df_rf_wet = df_rf[
+            df_rf["issue_month"].isin(WET_MONTHS)
+            & df_rf["issue_year"].isin(GRRR_RF_YEARS)
+        ].copy()
+        df_rf_wet["year"] = df_rf_wet["issue_year"]
+
+        df_rf_ann = (
+            df_rf_wet.groupby(["gauge_id", "year"])["streamflow"]
+            .max()
+            .reset_index()
+        )
+        rf_annual_max = {
+            gid: {
+                str(int(r["year"])): round(float(r["streamflow"]), 2)
+                for _, r in grp.iterrows()
+            }
+            for gid, grp in df_rf_ann.groupby("gauge_id")
+        }
+        rf_first_exceed = {
+            "google": _first_exceed_rf(
+                df_rf_wet, gauge_ids, google_rp_thresholds, google_keys
+            ),
+            "empirical": _first_exceed_rf(
+                df_rf_wet, gauge_ids, empirical_rp_thresholds, empirical_keys
+            ),
+        }
+        rf_eval_years = sorted(
+            y
+            for y in GRRR_RF_YEARS
+            if any(str(y) in rf_annual_max.get(gid, {}) for gid in gauge_ids)
+        )
+
     return {
         "eval_years": eval_years,
+        "rf_eval_years": rf_eval_years,
         "gauge_ids": gauge_ids,
         "gauge_annual_max": gauge_annual_max,
+        "rf_annual_max": rf_annual_max,
         "google_rp_thresholds": google_rp_thresholds,
         "empirical_rp_thresholds": empirical_rp_thresholds,
         "gauge_first_exceed": gauge_first_exceed,
+        "rf_first_exceed": rf_first_exceed,
     }
+
+
+def get_gauge_data(state: str) -> list | None:
+    """All gauges with lat/lon, correlation metrics, and top_10 flag."""
+    blob = (
+        f"{PROJECT_PREFIX}/processed/model_comparison"
+        f"/{state.lower()}_top10_gauges.parquet"
+    )
+    try:
+        df = stratus.load_parquet_from_blob(blob)
+    except Exception as e:
+        print(f"  Warning: gauge data not available for {state}: {e}")
+        return None
+
+    keep = [
+        c
+        for c in [
+            "gauge_id",
+            "latitude",
+            "longitude",
+            "best_r",
+            "best_lag",
+            "is_benue",
+            "quality_verified",
+            "top_10",
+        ]
+        if c in df.columns
+    ]
+    records = []
+    for _, row in df[keep].iterrows():
+        rec = {}
+        for k, v in row.items():
+            if k in ("is_benue", "quality_verified", "top_10"):
+                rec[k] = bool(v)
+            elif k in ("best_r", "latitude", "longitude"):
+                rec[k] = round(float(v), 4) if pd.notna(v) else None
+            elif k == "best_lag":
+                rec[k] = int(v) if pd.notna(v) else None
+            else:
+                rec[k] = v
+        records.append(rec)
+    return records
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
@@ -420,6 +553,9 @@ def main():
         print("  action trigger...")
         action = get_action_data(state, cfg)
 
+        print("  gauge overview...")
+        gauges = get_gauge_data(state)
+
         out[state] = {
             **STATIC[state],
             "thresh": cfg["glofas_thresh"],
@@ -433,20 +569,17 @@ def main():
             "fs_crossings": fs_crossings,
             "fs_peak": fs_peak,
             "action": action,
+            "gauges": gauges,
+            "glofas_coords": GF_STATIONS.get(cfg["glofas_station"]),
         }
 
     here = Path(__file__).parent
     json_path = here / "data.json"
-    js_path = here / "data.js"
 
     json_path.write_text(json.dumps(out, indent=2) + "\n")
-    js_str = json.dumps(out, separators=(",", ":"))
-    js_path.write_text("const DASHBOARD_DATA = " + js_str + ";\n")
 
     json_kb = round(json_path.stat().st_size / 1024)
-    js_kb = round(js_path.stat().st_size / 1024)
     print(f"\nWrote {json_path}  ({json_kb} KB)")
-    print(f"Wrote {js_path}  ({js_kb} KB)")
 
 
 if __name__ == "__main__":

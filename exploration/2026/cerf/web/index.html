@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CERF Nigeria — Trigger Explorer</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -239,6 +240,18 @@
 
     .none-msg { font-size: 13px; color: #57606a; font-style: italic; }
     .placeholder-msg { padding: 20px 0; font-size: 13px; color: #57606a; font-style: italic; }
+
+    .dl-btn {
+      font-size: 12px;
+      font-family: inherit;
+      padding: 5px 12px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background: #f6f8fa;
+      color: #24292f;
+      cursor: pointer;
+    }
+    .dl-btn:hover { background: #eaeef2; }
   </style>
 </head>
 <body>
@@ -275,7 +288,7 @@
 </details>
 
 <!-- ── 2. Reference flooding years ─────────────────────────────────────────── -->
-<details class="section" open>
+<details class="section">
   <summary>Reference Flooding Years</summary>
   <div class="section-body" style="padding-top:16px">
     <div class="rp-legend">
@@ -287,7 +300,40 @@
   </div>
 </details>
 
-<!-- ── 3. Action trigger ─────────────────────────────────────────────────────── -->
+<!-- ── 3. Gauge overview ─────────────────────────────────────────────────────── -->
+<details class="section" id="gauge-section">
+  <summary>Gauge Overview — GRRR</summary>
+  <div class="section-body" style="padding-top:16px">
+    <div id="gauge-unavailable" class="none-msg" style="display:none">
+      Gauge data not available for this state.
+    </div>
+    <div id="gauge-content">
+      <div class="controls-section" style="margin-bottom:10px">
+        <div class="control-block">
+          <label style="font-size:13px;color:#24292f;cursor:pointer;display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="gauge-top10-toggle" checked>
+            Highlight top-10 selected gauges
+          </label>
+        </div>
+      </div>
+      <div class="rp-legend" style="margin-bottom:10px">
+        <div class="legend-item"><div class="legend-dot" style="background:#F4A93B"></div>Quality verified (GRRR)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1EBFB3"></div>Not quality verified (GRRR)</div>
+        <div class="legend-item">
+          <div style="width:12px;height:12px;background:#007CE0;border-radius:50%;flex-shrink:0"></div>
+          GloFAS station
+        </div>
+        <div class="legend-item" style="gap:6px;font-size:12px;color:#57606a">GRRR marker size = Spearman ρ with Floodscan</div>
+      </div>
+      <div id="gauge-map" style="height:420px;border-radius:6px;border:1px solid #d0d7de"></div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end">
+        <button class="dl-btn" id="gauge-dl-btn">Download gauge summary CSV</button>
+      </div>
+    </div>
+  </div>
+</details>
+
+<!-- ── 4. Action trigger ─────────────────────────────────────────────────────── -->
 <details class="section" open>
   <summary>Action Trigger — GRRR Multi-Gauge</summary>
   <div class="section-body" style="padding-top:16px">
@@ -318,13 +364,6 @@
         </div>
       </div>
       <div id="action-summary" class="trigger-summary"></div>
-      <div class="rp-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#2ca25f"></div>TP — triggered, flood year</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#F2645A"></div>FN — missed flood year</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#8856a7"></div>FP — triggered, non-event</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f6f8fa;border:1.5px solid #d0d7de"></div>TN</div>
-      </div>
-      <div id="action-timeline" style="margin-top:12px;margin-bottom:4px"></div>
     </div>
   </div>
 </details>
@@ -358,13 +397,6 @@
         </div>
       </div>
       <div id="trigger-summary" class="trigger-summary"></div>
-      <div class="rp-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#2ca25f"></div>TP — triggered, flood year</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#F2645A"></div>FN — missed flood year</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#8856a7"></div>FP — triggered, non-event</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f6f8fa;border:1.5px solid #d0d7de"></div>TN</div>
-      </div>
-      <div id="trigger-timeline" style="margin-top:12px;margin-bottom:4px"></div>
     </div>
   </div>
 </details>
@@ -377,24 +409,31 @@
       Timeline not available for this state.
     </div>
     <div id="signal-content">
+      <div class="controls-section" style="margin-bottom:12px">
+        <div class="control-block">
+          <div class="control-label">Signal source</div>
+          <div class="rp-radio-row">
+            <label><input type="radio" name="signal-mode" value="reanalysis" checked> Reanalysis</label>
+            <label><input type="radio" name="signal-mode" value="reforecast"> Reforecast</label>
+          </div>
+        </div>
+      </div>
       <div class="rp-legend" style="margin-bottom:8px">
-        <div class="legend-item"><div class="legend-dot" style="background:#007CE0;border-radius:2px;transform:rotate(45deg)"></div>GloFAS trigger (issue date)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#007CE0;border-radius:2px;transform:rotate(45deg)"></div>GloFAS readiness trigger</div>
         <div class="legend-item"><div class="legend-dot" id="tl-rp-legend-dot" style="background:#D73027"></div>Floodscan RP crossing</div>
         <div class="legend-item"><div style="width:10px;height:10px;background:#F4A93B;flex-shrink:0;border-radius:2px"></div>Action trigger (activation date)</div>
         <div class="legend-item"><div style="width:20px;height:2px;background:#d0d7de;margin-right:2px"></div>Floodscan annual peak</div>
       </div>
       <div class="rp-legend" style="margin-bottom:12px">
         <div class="legend-item" style="gap:8px">
-          <span style="font-size:11px;font-weight:600;color:#8c959f">R / A</span>
-          <span style="font-size:11px;color:#57606a">Readiness / Action classification per year:</span>
-          <div class="legend-dot" style="background:#2ca25f"></div><span style="font-size:11px;color:#57606a">TP</span>
-          <div class="legend-dot" style="background:#F2645A"></div><span style="font-size:11px;color:#57606a">FN</span>
-          <div class="legend-dot" style="background:#8856a7"></div><span style="font-size:11px;color:#57606a">FP</span>
-          <div class="legend-dot" style="background:#d8d8d8"></div><span style="font-size:11px;color:#57606a">TN</span>
-          <div style="width:10px;height:10px;border-radius:50%;border:1px dashed #d0d7de;flex-shrink:0"></div><span style="font-size:11px;color:#57606a">no data (pre-2003)</span>
+          <span style="font-size:11px;font-weight:600;color:#8c959f">F / R / A</span>
+          <span style="font-size:11px;color:#57606a">Flood event / Readiness / Action — filled = yes</span>
         </div>
       </div>
       <canvas id="signal-canvas"></canvas>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end">
+        <button class="dl-btn" id="signal-dl-btn">Download signal timeline CSV</button>
+      </div>
     </div>
   </div>
 </details>
@@ -404,9 +443,10 @@
 <div id="signal-tooltip"></div>
 
 <!-- Generated by generate_data.py — re-run to refresh -->
-<script src="data.js"></script>
+<script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
 
 <script>
+let DASHBOARD_DATA = {};
 const RP_COLORS = { 3: "#74ADD1", 4: "#F46D43", 5: "#D73027" };
 const CAT_COLORS = { TP: "#2ca25f", FP: "#8856a7", FN: "#F2645A", TN: null };
 const RF_YEARS     = Array.from({ length: 20 }, (_, i) => 2003 + i); // 2003–2022
@@ -425,6 +465,10 @@ function fmtDate(d) {
 // ── Global RP selector ────────────────────────────────────────────────────────
 function selectedFsRp() {
   return +document.querySelector("input[name='fs-rp']:checked").value;
+}
+
+function getSignalMode() {
+  return document.querySelector("input[name='signal-mode']:checked")?.value ?? "reanalysis";
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -479,8 +523,8 @@ function makeDotTimeline(years, activated, eventsRp, containerId) {
   container.appendChild(labelRow);
 }
 
-function makeSummaryHtml(activated, evalYears, pod, far) {
-  const NOTE = `<p class="summary-note">Note: probabilities are based on a small sample size (n&lt;10).</p>`;
+function makeSummaryHtml(activated, evalYears, pod, far, sourceNote) {
+  const NOTE = `<p class="summary-note">${sourceNote} Note: probabilities are based on a small sample size (n&lt;10).</p>`;
   if (activated.size === 0) {
     return `<p class="summary-text">This trigger does not activate with these settings.</p>${NOTE}`;
   }
@@ -494,11 +538,12 @@ function makeSummaryHtml(activated, evalYears, pod, far) {
 }
 
 // ── Action trigger ─────────────────────────────────────────────────────────────
-function getActionDate(state, rpSource, rpLevel, nGauges, year) {
+function getActionDate(state, rpSource, rpLevel, nGauges, year, signalMode = "reanalysis") {
   const d = DASHBOARD_DATA[state]?.action;
-  if (!d?.gauge_first_exceed) return null;
-  const rpKey = String(rpLevel);
-  const exceedMap = d.gauge_first_exceed[rpSource]?.[rpKey];
+  if (!d) return null;
+  const rpKey      = String(rpLevel);
+  const exceedData = signalMode === "reforecast" ? d.rf_first_exceed : d.gauge_first_exceed;
+  const exceedMap  = exceedData?.[rpSource]?.[rpKey];
   if (!exceedMap) return null;
   const dates = [];
   for (const gid of d.gauge_ids) {
@@ -510,13 +555,30 @@ function getActionDate(state, rpSource, rpLevel, nGauges, year) {
 }
 
 function updateActionRpLevels(source) {
-  const levels = source === "google" ? GOOGLE_RP_LEVELS : EMPIRICAL_RP_LEVELS;
+  const state      = document.getElementById("state-select").value;
+  const levels     = source === "google" ? GOOGLE_RP_LEVELS : EMPIRICAL_RP_LEVELS;
+  const thresholds = DASHBOARD_DATA[state]?.action?.[
+    source === "google" ? "google_rp_thresholds" : "empirical_rp_thresholds"
+  ];
+  const fmt = v => v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
   const container = document.getElementById("action-rp-levels");
-  container.innerHTML = levels.map((lvl, i) =>
-    `<label><input type="radio" name="action-rp-level" value="${lvl}"${
+  container.innerHTML = levels.map((lvl, i) => {
+    let titleAttr = "";
+    if (thresholds) {
+      const vals = Object.values(thresholds)
+        .map(t => t?.[String(lvl)])
+        .filter(v => v != null)
+        .sort((a, b) => a - b);
+      if (vals.length) {
+        const lo = fmt(vals[0]), hi = fmt(vals[vals.length - 1]);
+        titleAttr = ` title="${lo === hi ? lo : lo + "–" + hi} m³/s (range across gauges)"`;
+      }
+    }
+    return `<label${titleAttr}><input type="radio" name="action-rp-level" value="${lvl}"${
       i === 0 ? " checked" : ""
-    }> ${lvl}-yr</label>`
-  ).join("");
+    }> ${lvl}-yr</label>`;
+  }).join("");
   container.querySelectorAll("input").forEach(radio => {
     radio.addEventListener("change", () => {
       renderActionTrigger(document.getElementById("state-select").value);
@@ -525,19 +587,21 @@ function updateActionRpLevels(source) {
   });
 }
 
-function getActionActivated(state, rpSource, rpLevel, nGauges) {
+function getActionActivated(state, rpSource, rpLevel, nGauges, signalMode = "reanalysis") {
   const d = DASHBOARD_DATA[state]?.action;
   if (!d) return new Set();
   const thresholds = rpSource === "google"
     ? d.google_rp_thresholds
     : d.empirical_rp_thresholds;
-  const rpKey = String(rpLevel);
+  const rpKey   = String(rpLevel);
+  const evalYrs = signalMode === "reforecast" ? (d.rf_eval_years  || []) : d.eval_years;
+  const annMax  = signalMode === "reforecast" ? (d.rf_annual_max  || {}) : d.gauge_annual_max;
   return new Set(
-    d.eval_years.filter(year => {
+    evalYrs.filter(year => {
       let count = 0;
       for (const gid of d.gauge_ids) {
         const thresh = thresholds[gid]?.[rpKey];
-        const val    = d.gauge_annual_max[gid]?.[String(year)];
+        const val    = annMax[gid]?.[String(year)];
         if (thresh != null && val != null && val >= thresh) count++;
       }
       return count >= nGauges;
@@ -575,10 +639,12 @@ function renderActionTrigger(state) {
   const eventsRp  = new Set((d.event_years?.[fsRp] || []).filter(y => evalSet.has(y)));
 
   const { pod, far } = calcMetrics(activated, [...eventsRp], evalSet);
+  const actionNote = `Stats computed from GRRR <strong>reanalysis</strong> annual maxima ` +
+    `(${evalYears[0]}–${evalYears[evalYears.length - 1]}). ` +
+    `Reforecast history is limited to 2016–present.`;
   document.getElementById("action-summary").innerHTML =
-    makeSummaryHtml(activated, evalYears, pod, far);
+    makeSummaryHtml(activated, evalYears, pod, far, actionNote);
 
-  makeDotTimeline(evalYears, activated, eventsRp, "action-timeline");
 }
 
 // ── Floodscan timeline ────────────────────────────────────────────────────────
@@ -656,26 +722,25 @@ function renderTrigger(state, lt) {
   const eventsRp  = new Set((d.event_years?.[fsRp] || []).filter(y => evalSet.has(y)));
   const { pod, far } = calcMetrics(activated, [...eventsRp], evalSet);
 
+  const readNote = `Stats computed from GloFAS <strong>reforecast</strong> data (2003–2022).`;
   document.getElementById("trigger-summary").innerHTML =
-    makeSummaryHtml(activated, RF_YEARS, pod, far);
+    makeSummaryHtml(activated, RF_YEARS, pod, far, readNote);
 
-  makeDotTimeline(RF_YEARS, activated, eventsRp, "trigger-timeline");
-  drawSignalTimeline(state, lt, fsRp, useReanalysis);
+  drawSignalTimeline(state, lt, fsRp, getSignalMode());
 }
 
 // ── Signal timeline chart ─────────────────────────────────────────────────────
-function getTriggerDate(state, year, ltCutoff, useReanalysis) {
-  const fe = DASHBOARD_DATA[state]?.first_exceedance?.[String(year)];
-  const dates = [];
-  if (fe) {
-    Object.entries(fe)
-      .filter(([lt]) => +lt <= ltCutoff)
-      .forEach(([, d]) => dates.push(new Date(d)));
-  }
-  if (useReanalysis) {
+function getTriggerDate(state, year, ltCutoff, signalMode) {
+  if (signalMode === "reanalysis") {
     const raDate = DASHBOARD_DATA[state]?.reanalysis_exceed?.[String(year)];
-    if (raDate) dates.push(new Date(raDate));
+    return raDate ? new Date(raDate) : null;
   }
+  // reforecast: earliest issue date across leadtimes 1..ltCutoff
+  const fe = DASHBOARD_DATA[state]?.first_exceedance?.[String(year)];
+  if (!fe) return null;
+  const dates = Object.entries(fe)
+    .filter(([lt]) => +lt <= ltCutoff)
+    .map(([, d]) => new Date(d));
   return dates.length ? new Date(Math.min(...dates)) : null;
 }
 
@@ -693,7 +758,7 @@ function dayFromAug1(date) {
   return Math.round((date - new Date(date.getFullYear(), 7, 1)) / 86400000);
 }
 
-function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
+function drawSignalTimeline(state, ltCutoff, rp, signalMode) {
   const canvas  = document.getElementById("signal-canvas");
   const unavail = document.getElementById("signal-unavailable");
   const content = document.getElementById("signal-content");
@@ -716,7 +781,7 @@ function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
 
   const W = rect.width, H = rect.height;
   const YEARS = SIGNAL_YEARS;  // 1998–2022
-  const PAD   = { top: 22, right: 20, bottom: 28, left: 106 };
+  const PAD   = { top: 22, right: 20, bottom: 28, left: 122 };
   const cW = W - PAD.left - PAD.right;
   const cH = H - PAD.top  - PAD.bottom;
   const rowH = cH / YEARS.length;
@@ -728,32 +793,36 @@ function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
   ctx.clearRect(0, 0, W, H);
 
   // Pre-compute activation sets and DOM config for classification dots
-  const readActivated = new Set(
-    RF_YEARS.filter(y => {
-      const cm = tl.annual_cum_max?.[String(y)];
-      const rfTriggered = cm && cm[String(ltCutoff)] > tl.thresh;
-      const raTriggered = useReanalysis && !!tl.reanalysis_exceed?.[String(y)];
-      return rfTriggered || raTriggered;
-    })
-  );
+  const readActivated = signalMode === "reanalysis"
+    ? new Set(SIGNAL_YEARS.filter(y => !!tl.reanalysis_exceed?.[String(y)]))
+    : new Set(RF_YEARS.filter(y => {
+        const cm = tl.annual_cum_max?.[String(y)];
+        return cm && cm[String(ltCutoff)] > tl.thresh;
+      }));
   const actSrcEl   = document.querySelector("input[name='action-rp-source']:checked");
   const actLvlEl   = document.querySelector("input[name='action-rp-level']:checked");
   const actNGauges = +document.getElementById("action-n-slider").value;
   const actSrc  = actSrcEl?.value ?? null;
   const actLvl  = actLvlEl ? +actLvlEl.value : null;
   const actionActivated = (actSrc && actLvl)
-    ? getActionActivated(state, actSrc, actLvl, actNGauges)
+    ? getActionActivated(state, actSrc, actLvl, actNGauges, signalMode)
     : new Set();
-  const actionEvalSet = new Set(tl.action?.eval_years || []);
+  const actionEvalSet = new Set(
+    signalMode === "reforecast"
+      ? (tl.action?.rf_eval_years || [])
+      : (tl.action?.eval_years    || [])
+  );
   const fsEventsSet   = new Set(tl.event_years?.[rp] || []);
 
-  const DOT_R = 44;  // x-center of Readiness classification dot
-  const DOT_A = 62;  // x-center of Action classification dot
+  const DOT_F = 34;  // x-center of Floodscan event dot
+  const DOT_R = 56;  // x-center of Readiness trigger dot
+  const DOT_A = 78;  // x-center of Action trigger dot
 
   // Column header labels above the first row
   ctx.fillStyle = "#8c959f";
   ctx.font = "bold 9px -apple-system, BlinkMacSystemFont, sans-serif";
   ctx.textAlign = "center";
+  ctx.fillText("F", DOT_F, PAD.top - 6);
   ctx.fillText("R", DOT_R, PAD.top - 6);
   ctx.fillText("A", DOT_A, PAD.top - 6);
 
@@ -783,43 +852,64 @@ function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
     const yc = yY(i);
     const hasRf = RF_YEAR_SET.has(year);
 
-    // Subtle background for pre-reforecast years (1998–2002)
-    if (!hasRf) {
-      ctx.fillStyle = "rgba(0,0,0,0.03)";
-      ctx.fillRect(0, PAD.top + i * rowH, W, rowH);
-    }
-
-    // ── Classification dots (left margin) ────────────────────────
-    // Readiness — only available for 2003–2022
-    if (hasRf) {
-      const cat = getCategory(year, readActivated, fsEventsSet);
+    // ── Classification dots (left margin): F / R / A ─────────────
+    // F — Floodscan event at selected RP
+    if (fsEventsSet.has(year)) {
       ctx.beginPath();
-      ctx.fillStyle = CAT_COLORS[cat] ?? "#d8d8d8";
-      ctx.arc(DOT_R, yc, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = rpColor;
+      ctx.arc(DOT_F, yc, 4.5, 0, Math.PI * 2);
       ctx.fill();
-      signalHitTargets.push({ x: DOT_R, y: yc, r: 7,
-        html: `${year} — Readiness: <strong>${cat}</strong>` });
+      signalHitTargets.push({ x: DOT_F, y: yc, r: 7,
+        html: `${year} — Flood event (${rp}-yr RP)` });
     } else {
       ctx.beginPath();
       ctx.strokeStyle = "#d0d7de";
       ctx.lineWidth = 1;
-      ctx.setLineDash([2, 2]);
-      ctx.arc(DOT_R, yc, 4, 0, Math.PI * 2);
+      ctx.arc(DOT_F, yc, 4, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.setLineDash([]);
-      signalHitTargets.push({ x: DOT_R, y: yc, r: 7,
-        html: `${year} — Readiness: <strong>no reforecast data</strong>` });
+      signalHitTargets.push({ x: DOT_F, y: yc, r: 7,
+        html: `${year} — No flood event (${rp}-yr RP)` });
     }
 
-    // Action
+    // R — Readiness trigger (all years in reanalysis mode; RF years only in reforecast mode)
+    const rHasData = signalMode === "reanalysis" || hasRf;
+    if (rHasData) {
+      if (readActivated.has(year)) {
+        ctx.beginPath();
+        ctx.fillStyle = "#007CE0";
+        ctx.arc(DOT_R, yc, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        signalHitTargets.push({ x: DOT_R, y: yc, r: 7,
+          html: `${year} — Readiness: <strong>triggered</strong>` });
+      } else {
+        ctx.beginPath();
+        ctx.strokeStyle = "#d0d7de";
+        ctx.lineWidth = 1;
+        ctx.arc(DOT_R, yc, 4, 0, Math.PI * 2);
+        ctx.stroke();
+        signalHitTargets.push({ x: DOT_R, y: yc, r: 7,
+          html: `${year} — Readiness: not triggered` });
+      }
+    }
+
+    // A — Action trigger
     if (actSrc && actLvl && actionEvalSet.has(year)) {
-      const cat = getCategory(year, actionActivated, fsEventsSet);
-      ctx.beginPath();
-      ctx.fillStyle = CAT_COLORS[cat] ?? "#d8d8d8";
-      ctx.arc(DOT_A, yc, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      signalHitTargets.push({ x: DOT_A, y: yc, r: 7,
-        html: `${year} — Action: <strong>${cat}</strong>` });
+      if (actionActivated.has(year)) {
+        ctx.beginPath();
+        ctx.fillStyle = "#F4A93B";
+        ctx.arc(DOT_A, yc, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        signalHitTargets.push({ x: DOT_A, y: yc, r: 7,
+          html: `${year} — Action: <strong>triggered</strong>` });
+      } else {
+        ctx.beginPath();
+        ctx.strokeStyle = "#d0d7de";
+        ctx.lineWidth = 1;
+        ctx.arc(DOT_A, yc, 4, 0, Math.PI * 2);
+        ctx.stroke();
+        signalHitTargets.push({ x: DOT_A, y: yc, r: 7,
+          html: `${year} — Action: not triggered` });
+      }
     }
 
     // ── Row gridline ─────────────────────────────────────────────
@@ -852,13 +942,13 @@ function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
     }
 
     // ── Chart markers ────────────────────────────────────────────
-    // GloFAS trigger only available from 2003; reanalysis also 2003+
-    const trigDate   = hasRf
-      ? getTriggerDate(state, year, ltCutoff, useReanalysis)
+    // GloFAS trigger: all years in reanalysis mode; RF years only in reforecast mode
+    const trigDate   = rHasData
+      ? getTriggerDate(state, year, ltCutoff, signalMode)
       : null;
     const fsDate     = getFsDate(state, year, rp);
     const actionDate = (actSrc && actLvl)
-      ? getActionDate(state, actSrc, actLvl, actNGauges, year)
+      ? getActionDate(state, actSrc, actLvl, actNGauges, year, signalMode)
       : null;
 
     if (trigDate && fsDate) {
@@ -901,7 +991,7 @@ function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
       ctx.closePath();
       ctx.fill();
       signalHitTargets.push({ x: tx, y: yc, r: 8,
-        html: `GloFAS trigger<br><strong>${fmtDate(trigDate)}</strong>` });
+        html: `GloFAS ${signalMode === "reanalysis" ? "reanalysis" : "reforecast (issue date)"}<br><strong>${fmtDate(trigDate)}</strong>` });
     }
 
     if (actionDate) {
@@ -916,6 +1006,138 @@ function drawSignalTimeline(state, ltCutoff, rp, useReanalysis) {
   });
 }
 
+// ── Gauge overview map ────────────────────────────────────────────────────────
+let gaugeMap        = null;
+let gaugeMapLoaded  = false;
+let gaugeMarkers    = [];
+let pendingMapState = null;
+
+function gaugeColor(g) {
+  return g.quality_verified ? "#F4A93B" : "#1EBFB3";
+}
+
+function gaugeRadius(r) {
+  return Math.max(4, 4 + (r - 0.5) * 22);
+}
+
+function drawGaugeMarkers(state) {
+  if (!gaugeMap || !gaugeMapLoaded) return;
+
+  const gauges  = DASHBOARD_DATA[state]?.gauges;
+  const unavail = document.getElementById("gauge-unavailable");
+  const content = document.getElementById("gauge-content");
+
+  if (!gauges?.length) {
+    unavail.style.display = "";
+    content.style.display = "none";
+    return;
+  }
+  unavail.style.display = "none";
+  content.style.display = "";
+
+  gaugeMarkers.forEach(m => m.remove());
+  gaugeMarkers = [];
+
+  const showTop10 = document.getElementById("gauge-top10-toggle").checked;
+  const lnglats   = [];
+
+  gauges.forEach(g => {
+    if (g.latitude == null || g.longitude == null) return;
+    const isTop = !!g.top_10;
+    const color = gaugeColor(g);
+    const r     = gaugeRadius(g.best_r ?? 0.5);
+    const diam  = Math.round((showTop10 && isTop ? r * 1.6 : r) * 2);
+    const el    = document.createElement("div");
+    el.style.cssText = [
+      `width:${diam}px`, `height:${diam}px`, `border-radius:50%`,
+      `background:${color}`,
+      `opacity:${showTop10 && !isTop ? 0.3 : 0.85}`,
+      `border:${showTop10 && isTop ? "2.5px solid #e63946" : `1px solid ${color}`}`,
+      `cursor:pointer`, `box-sizing:border-box`,
+    ].join(";");
+
+    const popup = new maplibregl.Popup({ offset: 8, closeButton: false }).setHTML(
+      `<strong style="font-size:12px">${g.gauge_id}</strong><br>` +
+      `ρ = ${g.best_r?.toFixed(3) ?? "—"}<br>` +
+      (g.quality_verified ? "Quality verified" : "Not quality verified") +
+      (isTop ? "<br><em>Top-10 selected</em>" : "")
+    );
+    const marker = new maplibregl.Marker({ element: el, anchor: "center" })
+      .setLngLat([g.longitude, g.latitude])
+      .setPopup(popup)
+      .addTo(gaugeMap);
+    el.addEventListener("mouseenter", () => popup.addTo(gaugeMap));
+    el.addEventListener("mouseleave", () => popup.remove());
+    gaugeMarkers.push(marker);
+    lnglats.push([g.longitude, g.latitude]);
+  });
+
+  // GloFAS station marker (circle)
+  const gfCoords = DASHBOARD_DATA[state]?.glofas_coords;
+  const gfName   = DASHBOARD_DATA[state]?.station ?? "GloFAS";
+  if (gfCoords?.lat != null && gfCoords?.lon != null) {
+    const s  = 14;
+    const el = document.createElement("div");
+    el.style.cssText = [
+      `width:${s}px`, `height:${s}px`, `background:#007CE0`,
+      `border-radius:50%`, `cursor:pointer`,
+      `border:2px solid #fff`, `box-sizing:border-box`,
+    ].join(";");
+    const popup = new maplibregl.Popup({ offset: 10, closeButton: false }).setHTML(
+      `<strong style="font-size:12px">GloFAS — ${gfName}</strong><br>Reforecast station`
+    );
+    const gfMarker = new maplibregl.Marker({ element: el, anchor: "center" })
+      .setLngLat([gfCoords.lon, gfCoords.lat])
+      .setPopup(popup)
+      .addTo(gaugeMap);
+    el.addEventListener("mouseenter", () => popup.addTo(gaugeMap));
+    el.addEventListener("mouseleave", () => popup.remove());
+    gaugeMarkers.push(gfMarker);
+    lnglats.push([gfCoords.lon, gfCoords.lat]);
+  }
+
+  if (lnglats.length) {
+    const bounds = lnglats.reduce(
+      (b, ll) => b.extend(ll),
+      new maplibregl.LngLatBounds(lnglats[0], lnglats[0])
+    );
+    gaugeMap.fitBounds(bounds, { padding: 40, maxZoom: 11 });
+  }
+}
+
+function initAndDrawGaugeMap(state) {
+  if (!gaugeMap) {
+    gaugeMap = new maplibregl.Map({
+      container: "gauge-map",
+      style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+      center: [12, 8],
+      zoom: 6,
+    });
+    gaugeMap.on("load", () => { gaugeMapLoaded = true; drawGaugeMarkers(state); });
+  } else {
+    gaugeMap.resize();
+    drawGaugeMarkers(state);
+  }
+}
+
+function renderGaugeMap(state) {
+  const section = document.getElementById("gauge-section");
+  if (!section.open) { pendingMapState = state; return; }
+  initAndDrawGaugeMap(state);
+  pendingMapState = null;
+}
+
+document.getElementById("gauge-section").addEventListener("toggle", e => {
+  if (!e.target.open) return;
+  const state = pendingMapState ?? document.getElementById("state-select").value;
+  initAndDrawGaugeMap(state);
+  pendingMapState = null;
+});
+
+document.getElementById("gauge-top10-toggle").addEventListener("change", () => {
+  drawGaugeMarkers(document.getElementById("state-select").value);
+});
+
 // ── Wiring ────────────────────────────────────────────────────────────────────
 function render(state) {
   const d = DASHBOARD_DATA[state];
@@ -923,6 +1145,7 @@ function render(state) {
   document.getElementById("lga-list").innerHTML =
     d.lgas.map(l => `<span class="lga-pill">${l}</span>`).join("");
   renderFsTimeline(state);
+  renderGaugeMap(state);
   updateActionRpLevels(
     document.querySelector("input[name='action-rp-source']:checked").value
   );
@@ -953,13 +1176,16 @@ document.getElementById("reanalysis-toggle").addEventListener("change", () => {
   renderTrigger(state, +document.getElementById("lt-slider").value);
 });
 
+document.querySelectorAll("input[name='signal-mode']").forEach(radio => {
+  radio.addEventListener("change", reDrawSignal);
+});
+
 // Action trigger controls
 function reDrawSignal() {
   const state = document.getElementById("state-select").value;
   const lt    = +document.getElementById("lt-slider").value;
   const fsRp  = selectedFsRp();
-  const useRa = document.getElementById("reanalysis-toggle").checked;
-  drawSignalTimeline(state, lt, fsRp, useRa);
+  drawSignalTimeline(state, lt, fsRp, getSignalMode());
 }
 
 document.querySelectorAll("input[name='action-rp-source']").forEach(radio => {
@@ -1005,9 +1231,87 @@ _sigCanvas.addEventListener("mouseleave", () => {
   _sigCanvas.style.cursor = "";
 });
 
+// ── CSV download helpers ──────────────────────────────────────────────────────
+function downloadCsv(filename, rows) {
+  const csv = rows.map(r => r.map(v => (v == null ? "" : String(v).includes(",") ? `"${String(v).replace(/"/g, '""')}"` : v)).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = filename;
+  a.click();
+}
+
+function downloadGaugeCsv() {
+  const state  = document.getElementById("state-select").value;
+  const gauges = DASHBOARD_DATA[state]?.gauges;
+  const gfCoords = DASHBOARD_DATA[state]?.glofas_coords;
+  const gfName   = DASHBOARD_DATA[state]?.station ?? "GloFAS";
+  if (!gauges?.length && !gfCoords) return;
+  const rows = [["gauge_id", "source", "latitude", "longitude", "best_r", "best_lag", "quality_verified", "top_10"]];
+  (gauges || []).forEach(g => rows.push([
+    g.gauge_id, "Google", g.latitude, g.longitude, g.best_r, g.best_lag,
+    g.quality_verified, g.top_10,
+  ]));
+  if (gfCoords?.lat != null && gfCoords?.lon != null) {
+    rows.push([gfName, "GloFAS", gfCoords.lat, gfCoords.lon, "", "", "", ""]);
+  }
+  downloadCsv(`${state.toLowerCase()}_gauge_summary.csv`, rows);
+}
+
+function downloadSignalCsv() {
+  const state      = document.getElementById("state-select").value;
+  const d          = DASHBOARD_DATA[state];
+  if (!d) return;
+  const signalMode = getSignalMode();
+  const lt         = +document.getElementById("lt-slider").value;
+  const rp         = selectedFsRp();
+  const actSrc     = document.querySelector("input[name='action-rp-source']:checked")?.value ?? null;
+  const actLvl     = +document.querySelector("input[name='action-rp-level']:checked")?.value || null;
+  const actNGauges = +document.getElementById("action-n-slider").value;
+
+  const readActivated = signalMode === "reanalysis"
+    ? new Set(SIGNAL_YEARS.filter(y => !!d.reanalysis_exceed?.[String(y)]))
+    : new Set(RF_YEARS.filter(y => { const cm = d.annual_cum_max?.[String(y)]; return cm && cm[String(lt)] > d.thresh; }));
+  const actionActivated = (actSrc && actLvl)
+    ? getActionActivated(state, actSrc, actLvl, actNGauges, signalMode)
+    : new Set();
+  const actionEvalSet = new Set(signalMode === "reforecast" ? (d.action?.rf_eval_years || []) : (d.action?.eval_years || []));
+  const fsEventsSet = new Set(d.event_years?.[rp] || []);
+
+  const rows = [["year", "flood_event", "readiness_triggered", "readiness_date", "action_triggered", "action_date", "floodscan_peak_date", "floodscan_rp_crossing_date"]];
+  SIGNAL_YEARS.forEach(year => {
+    const hasRf      = RF_YEAR_SET.has(year);
+    const rHasData   = signalMode === "reanalysis" || hasRf;
+    const readTrig   = rHasData ? readActivated.has(year) : null;
+    const readDate   = rHasData ? getTriggerDate(state, year, lt, signalMode) : null;
+    const actInEval  = actionEvalSet.has(year);
+    const actTrig    = (actSrc && actLvl && actInEval) ? actionActivated.has(year) : null;
+    const actDate    = (actSrc && actLvl && actInEval) ? getActionDate(state, actSrc, actLvl, actNGauges, year, signalMode) : null;
+    const peakDate   = getFsPeakDate(state, year);
+    const fsDate     = getFsDate(state, year, rp);
+    const fmt = d => d ? d.toISOString().slice(0, 10) : "";
+    rows.push([year, fsEventsSet.has(year) ? 1 : 0, readTrig == null ? "" : readTrig ? 1 : 0, fmt(readDate), actTrig == null ? "" : actTrig ? 1 : 0, fmt(actDate), fmt(peakDate), fmt(fsDate)]);
+  });
+  downloadCsv(`${state.toLowerCase()}_signal_timeline_${signalMode}.csv`, rows);
+}
+
+document.getElementById("gauge-dl-btn").addEventListener("click", downloadGaugeCsv);
+document.getElementById("signal-dl-btn").addEventListener("click", downloadSignalCsv);
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-updateActionRpLevels("google");
-render("Adamawa");
+fetch("data.json")
+  .then(r => r.json())
+  .then(data => {
+    DASHBOARD_DATA = data;
+    updateActionRpLevels("google");
+    render("Adamawa");
+  })
+  .catch(err => {
+    document.body.insertAdjacentHTML("afterbegin",
+      `<div style="padding:16px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;margin-bottom:16px">
+        <strong>Could not load data.json:</strong> ${err.message}<br>
+        Make sure you are running a local server (e.g. <code>python -m http.server 8000</code>).
+      </div>`);
+  });
 </script>
 </body>
 </html>
