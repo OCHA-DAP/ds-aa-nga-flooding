@@ -81,6 +81,19 @@ resources:
       tasks:
         - task_key: download
           job_cluster_key: main
+          libraries:
+            - pypi:
+                package: cdsapi
+            - pypi:
+                package: ocha-stratus
+            - pypi:
+                package: cfgrib
+            - pypi:
+                package: "eccodes==2.42.0"
+            - pypi:
+                package: python-dotenv
+            - pypi:
+                package: xarray
           spark_python_task:
             python_file: pipelines/download_glofas_reforecast_country.py
             source: GIT
