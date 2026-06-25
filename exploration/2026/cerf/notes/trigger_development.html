@@ -94,41 +94,13 @@ summary</a> for full detail.</em></p>
 <h2 id="contents">Contents</h2>
 <ol type="1">
 <li><a href="#background">Background</a></li>
-<li><a href="#data-and-methods">Data and methods</a>
-<ul>
-<li><a href="#flood-ground-truth">Flood ground truth</a></li>
-<li><a href="#gauge-discovery-and-ranking">Gauge discovery and
-ranking</a></li>
-</ul></li>
-<li><a href="#action-trigger">Action trigger</a>
-<ul>
-<li><a href="#gauge-selection">Gauge selection</a></li>
-<li><a href="#trigger-design">Trigger design</a></li>
-</ul></li>
+<li><a href="#data-and-methods">Data and methods</a></li>
+<li><a href="#action-trigger">Action trigger</a></li>
 <li><a href="#readiness-trigger">Readiness trigger</a></li>
-<li><a href="#performance-evaluation">Performance evaluation</a>
-<ul>
-<li><a href="#2025-vs-2026-comparison">2025 vs 2026 comparison</a></li>
-<li><a href="#performance-summary">Performance summary</a></li>
-<li><a href="#readiness-trigger-performance">Readiness trigger
-performance</a></li>
-<li><a href="#trigger-timing-performance">Trigger timing
-performance</a></li>
-</ul></li>
-<li><a href="#trigger-specifications">Trigger specifications</a>
-<ul>
-<li><a href="#trigger-definitions">Trigger definitions</a></li>
-<li><a href="#action-trigger-gauge-thresholds">Action trigger gauge
-thresholds</a></li>
-<li><a href="#historical-event-and-trigger-year-overview">Historical
-event and trigger year overview</a></li>
-<li><a href="#year-by-year-peak-timing">Year-by-year peak
-timing</a></li>
-<li><a href="#summary-of-2026-improvements">Summary of 2026
-improvements</a></li>
-</ul></li>
+<li><a href="#performance-evaluation">Performance evaluation</a></li>
+<li><a href="#trigger-specifications">Trigger specifications</a></li>
 <li><a href="#nhf-flash-flood-trigger">NHF flash flood trigger</a></li>
-<li><a href="#what-was-not-resolved">What was not resolved</a></li>
+<li><a href="#appendix">Appendix</a></li>
 </ol>
 <hr />
 <h2 id="background">Background</h2>
@@ -1217,6 +1189,160 @@ the Trigger timing performance section above.
 </p>
 </div>
 <!-- markdownlint-enable MD033 -->
+<hr />
+<h2 id="nhf-flash-flood-trigger">NHF flash flood trigger</h2>
+<p>The NHF trigger targets <strong>flash flooding</strong> in BAY states
+(Borno, Adamawa, Yobe) — a distinct flood type and funding mechanism
+from the CERF riverine trigger above. Flash flood risk is based on the
+<strong>NiHSA 2026 (Nigeria Humanitarian Snapshot Assessment)</strong>
+at-risk communities dataset, which classifies 7,210 communities across
+BAY states into high, medium, and low inundation depth zones (high:
+1,190; medium: 5,545; low: 475).</p>
+<h3 id="lga-targeting-methodology">LGA targeting methodology</h3>
+<p>LGAs are ranked by a weighted composite count of NiHSA at-risk
+communities, where the composite score = (High-risk × 3) + (Medium-risk
+× 2) + (Low-risk × 1). Weights reflect relative severity: high-depth
+zones carry three times the weight of low-depth zones. HNRP
+(Humanitarian Needs Revised Priority) status from OCHA’s 2026
+prioritisation is shown as a contextual indicator but does not influence
+the quantitative ranking.</p>
+<h3 id="candidate-lgas">Candidate LGAs</h3>
+<p>Seven LGAs are identified as candidates for 2026 NHF targeting;
+<strong>4 are expected to be selected following an ongoing LGA
+review</strong>. Ranked by composite score:</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Rank</th>
+<th>LGA</th>
+<th>State</th>
+<th>High-risk</th>
+<th>Medium-risk</th>
+<th>Low-risk</th>
+<th>Composite score</th>
+<th>HNRP priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Mobbar</td>
+<td>Borno</td>
+<td>377</td>
+<td>309</td>
+<td>0</td>
+<td>1,395</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Geidam</td>
+<td>Yobe</td>
+<td>207</td>
+<td>133</td>
+<td>0</td>
+<td>747</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Gubio</td>
+<td>Borno</td>
+<td>105</td>
+<td>221</td>
+<td>77</td>
+<td>712</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Ngala</td>
+<td>Borno</td>
+<td>76</td>
+<td>188</td>
+<td>0</td>
+<td>452</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Maiduguri</td>
+<td>Borno</td>
+<td>73</td>
+<td>196</td>
+<td>0</td>
+<td>442</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Numan</td>
+<td>Adamawa</td>
+<td>125</td>
+<td>31</td>
+<td>0</td>
+<td>406</td>
+<td>—</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Yola North</td>
+<td>Adamawa</td>
+<td>102</td>
+<td>128</td>
+<td>0</td>
+<td>358</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>4 of the 7 candidates (Mobbar, Gubio, Ngala, Maiduguri) are
+HNRP-prioritised, indicating good alignment between the quantitative
+flash flood ranking and OCHA’s humanitarian prioritisation framework. Of
+these, <strong>Maiduguri and Ngala</strong> also appeared in the 2025
+NHF trigger, providing continuity; the other four 2025 trigger LGAs
+(Bade, Bama, Karasuwa, Madagali) do not appear in the 2026 top-7 under
+the revised scoring.</p>
+<hr />
+<h2 id="appendix">Appendix</h2>
+<h3 id="what-was-not-resolved">What was not resolved</h3>
+<p><strong>GloFAS reanalysis as a supplementary readiness
+component</strong> was evaluated and not recommended. Adding a condition
+that fires if the GloFAS ERA5 reanalysis exceeds 3,132 m³/s (as a
+near-real-time nowcast proxy) produces no additional event detections
+within the 2003–2022 evaluation window — the reanalysis only adds 2022
+and 2003, both already captured by the reforecast component — and
+provides only a 2-day earlier signal in 2022. Its main theoretical value
+is as a safety net for years where the reforecast fails, but realising
+this benefit would require a reliable near-real-time GloFAS data feed
+that is not currently operational in this workflow.</p>
+<p><strong>2015 and 2023 remain unexplained misses.</strong> Both are
+genuine 4–5-year Floodscan events that neither trigger configuration
+detects. Whether this reflects a different flood pathway (e.g. Lagdo dam
+release timing, upper Benue vs tributary contributions), gaps in GRRR
+gauge coverage for those years, or a model deficiency is not yet
+determined. Investigating these years is a priority before operational
+deployment.</p>
+<p><strong>Benue state</strong> was initially in scope as a second state
+for trigger development. Following the Adamawa analysis, the decision
+was made to keep focus on Adamawa and not proceed with a Benue trigger
+for the 2026 framework. The workflow is transferable: notebooks
+<code>05_trigger_assessment.ipynb</code> and
+<code>06_trigger_definition.ipynb</code> are ready to run with
+<code>STATE = "Benue"</code>, and the same methodology applies directly
+once the optimal RP threshold and gauge count for Makurdi are calibrated
+in <code>STATE_CONFIG</code>.</p>
+<hr />
 <h3 id="year-by-year-peak-timing">Year-by-year peak timing</h3>
 <p>Per-event detail plots showing Floodscan SFED (amber), GloFAS
 reanalysis (blue), individual GRRR gauge series normalised to each
@@ -1401,178 +1527,5 @@ event</figcaption>
 </figure>
 </details>
 <!-- markdownlint-enable MD033 -->
-<h3 id="summary-of-2026-improvements">Summary of 2026 improvements</h3>
-<p>The 2026 action trigger replaces the 2025 dual-model OR design
-(GloFAS at Wuroboki OR GRRR at Kangli) with a spatially distributed
-consensus condition within a single model: at least 6 of 10 upstream
-GRRR gauges must simultaneously exceed their individual 4-year empirical
-RP threshold. This corrects the main weakness of the 2025 design: the
-2025 trigger missed the 2018 Floodscan event (a genuine ≥4-year flood
-year) while firing in 2003 (a 3-year event below the intended design
-threshold). The 2026 trigger fires in 2018 and not in 2003, improving F1
-at the 4-year benchmark from 0.50 to 0.67. The trigger’s overall return
-period (4.5 years) and activation frequency (22%) are unchanged.</p>
-<p>A new readiness trigger is introduced — absent from the 2025
-framework — using the GloFAS ensemble reforecast at Wuroboki (&gt; 3,132
-m³/s, lead time ≤ 13 days). It fires approximately every 3 years and
-detected 3 of 4 action trigger years in the 2003–2022 evaluation window
-at lead times of 2–13 days, enabling pre-positioning decisions ahead of
-the GRRR-based action trigger. The 2025 GloFAS component — which used
-reanalysis, not reforecast, and had no explicit lead time requirement —
-was not suitable as a readiness trigger in the operational sense; the
-2026 design makes this preparedness function explicit and independently
-evaluable.</p>
-<hr />
-<h2 id="nhf-flash-flood-trigger">NHF flash flood trigger</h2>
-<p>The NHF trigger targets <strong>flash flooding</strong> in BAY states
-(Borno, Adamawa, Yobe) — a distinct flood type and funding mechanism
-from the CERF riverine trigger above. Flash flood risk is based on the
-<strong>NiHSA 2026 (Nigeria Humanitarian Snapshot Assessment)</strong>
-at-risk communities dataset, which classifies 7,210 communities across
-BAY states into high, medium, and low inundation depth zones (high:
-1,190; medium: 5,545; low: 475).</p>
-<h3 id="lga-targeting-methodology">LGA targeting methodology</h3>
-<p>LGAs are ranked by a weighted composite count of NiHSA at-risk
-communities, where the composite score = (High-risk × 3) + (Medium-risk
-× 2) + (Low-risk × 1). Weights reflect relative severity: high-depth
-zones carry three times the weight of low-depth zones. HNRP
-(Humanitarian Needs Revised Priority) status from OCHA’s 2026
-prioritisation is shown as a contextual indicator but does not influence
-the quantitative ranking.</p>
-<h3 id="candidate-lgas">Candidate LGAs</h3>
-<p>Seven LGAs are identified as candidates for 2026 NHF targeting;
-<strong>4 are expected to be selected following an ongoing LGA
-review</strong>. Ranked by composite score:</p>
-<table>
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-</colgroup>
-<thead>
-<tr>
-<th>Rank</th>
-<th>LGA</th>
-<th>State</th>
-<th>High-risk</th>
-<th>Medium-risk</th>
-<th>Low-risk</th>
-<th>Composite score</th>
-<th>HNRP priority</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Mobbar</td>
-<td>Borno</td>
-<td>377</td>
-<td>309</td>
-<td>0</td>
-<td>1,395</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Geidam</td>
-<td>Yobe</td>
-<td>207</td>
-<td>133</td>
-<td>0</td>
-<td>747</td>
-<td>—</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Gubio</td>
-<td>Borno</td>
-<td>105</td>
-<td>221</td>
-<td>77</td>
-<td>712</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Ngala</td>
-<td>Borno</td>
-<td>76</td>
-<td>188</td>
-<td>0</td>
-<td>452</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Maiduguri</td>
-<td>Borno</td>
-<td>73</td>
-<td>196</td>
-<td>0</td>
-<td>442</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>6</td>
-<td>Numan</td>
-<td>Adamawa</td>
-<td>125</td>
-<td>31</td>
-<td>0</td>
-<td>406</td>
-<td>—</td>
-</tr>
-<tr>
-<td>7</td>
-<td>Yola North</td>
-<td>Adamawa</td>
-<td>102</td>
-<td>128</td>
-<td>0</td>
-<td>358</td>
-<td>—</td>
-</tr>
-</tbody>
-</table>
-<p>4 of the 7 candidates (Mobbar, Gubio, Ngala, Maiduguri) are
-HNRP-prioritised, indicating good alignment between the quantitative
-flash flood ranking and OCHA’s humanitarian prioritisation framework. Of
-these, <strong>Maiduguri and Ngala</strong> also appeared in the 2025
-NHF trigger, providing continuity; the other four 2025 trigger LGAs
-(Bade, Bama, Karasuwa, Madagali) do not appear in the 2026 top-7 under
-the revised scoring.</p>
-<hr />
-<h2 id="what-was-not-resolved">What was not resolved</h2>
-<p><strong>GloFAS reanalysis as a supplementary readiness
-component</strong> was evaluated and not recommended. Adding a condition
-that fires if the GloFAS ERA5 reanalysis exceeds 3,132 m³/s (as a
-near-real-time nowcast proxy) produces no additional event detections
-within the 2003–2022 evaluation window — the reanalysis only adds 2022
-and 2003, both already captured by the reforecast component — and
-provides only a 2-day earlier signal in 2022. Its main theoretical value
-is as a safety net for years where the reforecast fails, but realising
-this benefit would require a reliable near-real-time GloFAS data feed
-that is not currently operational in this workflow.</p>
-<p><strong>2015 and 2023 remain unexplained misses.</strong> Both are
-genuine 4–5-year Floodscan events that neither trigger configuration
-detects. Whether this reflects a different flood pathway (e.g. Lagdo dam
-release timing, upper Benue vs tributary contributions), gaps in GRRR
-gauge coverage for those years, or a model deficiency is not yet
-determined. Investigating these years is a priority before operational
-deployment.</p>
-<p><strong>Benue state</strong> was initially in scope as a second state
-for trigger development. Following the Adamawa analysis, the decision
-was made to keep focus on Adamawa and not proceed with a Benue trigger
-for the 2026 framework. The workflow is transferable: notebooks
-<code>05_trigger_assessment.ipynb</code> and
-<code>06_trigger_definition.ipynb</code> are ready to run with
-<code>STATE = "Benue"</code>, and the same methodology applies directly
-once the optimal RP threshold and gauge count for Makurdi are calibrated
-in <code>STATE_CONFIG</code>.</p>
 </body>
 </html>
