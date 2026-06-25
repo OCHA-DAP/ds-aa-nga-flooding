@@ -74,16 +74,25 @@ def main() -> None:
         type=lambda x: x.lower() == "true",
         default=True,
         metavar="true|false",
-        help="Restrict to rainy season months Jun–Dec (default: true)",
+        help="Restrict to rainy season months Jun-Dec (default: true)",
+    )
+    p.add_argument(
+        "--cds-url",
+        default=None,
+        help=(
+            "Override CDS API URL (e.g. https://ewds.climate.copernicus.eu/api"
+            "). Falls back to CDSAPI_URL env var or ~/.cdsapirc."
+        ),
     )
     args = p.parse_args()
 
     print(
         f"Starting country-wide GloFAS reforecast download: "
         f"product_type={args.product_type}, "
-        f"years={args.start_year}–{args.end_year}, "
+        f"years={args.start_year}-{args.end_year}, "
         f"max_leadtime_days={args.max_leadtime_days}, "
-        f"rainy_season_only={args.rainy_season_only}"
+        f"rainy_season_only={args.rainy_season_only}, "
+        f"cds_url={args.cds_url or '(from env)'}"
     )
 
     download_glofas_reforecast_country(
@@ -92,6 +101,7 @@ def main() -> None:
         max_leadtime_days=args.max_leadtime_days,
         max_leadtime_chunk=args.max_leadtime_chunk,
         rainy_season_only=args.rainy_season_only,
+        cds_url=args.cds_url or None,
     )
 
     print("Done.")

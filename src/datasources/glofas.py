@@ -598,6 +598,7 @@ def _download_country_chunk(
     product_type: Literal["ensemble", "control"],
     months: list,
     clobber: bool = False,
+    cds_url: str = None,
 ) -> None:
     product_type_str = (
         "ensemble_perturbed_reforecast"
@@ -627,6 +628,7 @@ def _download_country_chunk(
         request,
         blob_name,
         keep_local_copy=False,
+        cds_url=cds_url,
     )
 
 
@@ -638,6 +640,7 @@ def download_glofas_reforecast_country_year(
     rainy_season_only: bool = True,
     clobber: bool = False,
     max_workers: int = 4,
+    cds_url: str = None,
 ) -> None:
     """Download whole-Nigeria GloFAS reforecast for one year.
 
@@ -663,6 +666,7 @@ def download_glofas_reforecast_country_year(
                 product_type,
                 months,
                 clobber,
+                cds_url,
             ): lt_chunk
             for lt_chunk in leadtime_chunks
         }
@@ -686,7 +690,8 @@ def download_glofas_reforecast_country(
     max_leadtime_chunk: int = 4,
     rainy_season_only: bool = True,
     clobber: bool = False,
-    max_workers: int = 2,
+    max_workers: int = 4,
+    cds_url: str = None,
 ) -> None:
     """Download whole-Nigeria GloFAS reforecast for multiple years.
 
@@ -703,6 +708,7 @@ def download_glofas_reforecast_country(
             rainy_season_only=rainy_season_only,
             clobber=clobber,
             max_workers=max_workers,
+            cds_url=cds_url,
         )
 
 

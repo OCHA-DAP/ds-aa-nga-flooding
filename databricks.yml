@@ -62,16 +62,21 @@ resources:
           default: "4"
         - name: rainy_season_only
           default: "true"
+        - name: cds_url
+          default: ""
 
       job_clusters:
         - job_cluster_key: main
           new_cluster:
-            # Job Compute policy injects CDSAPI_KEY + DSCI_AZ_* from the dsci
-            # secret scope. CDSAPI_URL is not in that scope, so set it here.
+            # Job Compute policy injects CDSAPI_KEY + DSCI_AZ_* from dsci scope.
+            # Policy enforces CDSAPI_URL=https://cds.climate.copernicus.eu/api
+            # and num_workers=1; set both explicitly to satisfy validation.
+            # Note: the working station job used https://ewds.climate.copernicus.eu/api
+            # (hardcoded in the notebook). If this URL fails for GloFAS, the
+            # entrypoint can be updated to override via --cds-url.
             policy_id: "000C79D951EAF0D6"
             apply_policy_default_values: true
-            spark_env_vars:
-              CDSAPI_URL: "https://ewds.climate.copernicus.eu/api"
+            num_workers: 1
 
       tasks:
         - task_key: download
@@ -92,6 +97,8 @@ resources:
               - "{{job.parameters.max_leadtime_chunk}}"
               - "--rainy-season-only"
               - "{{job.parameters.rainy_season_only}}"
+              - "--cds-url"
+              - "{{job.parameters.cds_url}}"
 
 targets:
   dev:
