@@ -167,4 +167,9 @@ exploration/2026/figures/*
 *.nc
 *.grib
 *.idx
+
+# Allow notes figures for GitHub Pages
+!exploration/2026/cerf/notes/figures/*.png
+!exploration/2026/cerf/workflow/figures/adamawa/*.png
+
 exploration/2026/cerf/shapefiles/*
