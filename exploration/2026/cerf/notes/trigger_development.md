@@ -62,6 +62,13 @@ The correlation profiles did not show a sharp peak at a single lag — instead t
 
 <!-- markdownlint-disable MD033 -->
 <details>
+<summary>Figure: Correlation by lag (median across all Google gauges, best gauge, and GloFAS)</summary>
+
+![Spearman ρ vs lag for all 42 Google gauges (median ± IQR), the best individual gauge (hybas_1120842990), and GloFAS at Wuroboki. The profile is flat across the full −3 to +14 day range with no clear peak, confirming the uncertainty in best-lag estimates.](../workflow/figures/adamawa/03_corr_lag_profiles.png)
+
+</details>
+
+<details>
 <summary>Figure: Gauge correlation ranking (Spearman ρ vs Floodscan SFED)</summary>
 
 ![Best Spearman ρ per gauge (all 42 candidates + GloFAS), ranked by correlation with Floodscan SFED. GRRR gauges cluster at the top; the GloFAS point at Wuroboki sits mid-table.](../workflow/figures/adamawa/03_corr_dot_plot.png)
