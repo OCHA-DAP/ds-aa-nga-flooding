@@ -336,6 +336,8 @@ hybas\_1120840690 has a substantially lower threshold (143 m³/s vs ~1,100 m³/s
 
 ### Trigger mechanism statistics
 
+The 2026 action trigger was explicitly designed to preserve the **same activation frequency as 2025** — both fire 6 times in 26 reanalysis years, giving a Weibull RP of 4.5 years and an annual activation probability of 22%. The revision changes *which* years the trigger fires in (improving alignment with the 4-year RP design target) without altering the overall intervention frequency expected by the AA framework.
+
 | | 2025 (endorsed) | 2026 (revised) |
 |---|---|---|
 | Return period | 4.5 years | 4.5 years |
@@ -362,6 +364,8 @@ Action trigger performance against Floodscan SFED annual maxima, 1998–2023 (n 
 † 2025 figures at 3-yr and 5-yr RP are taken from the endorsed framework PDF and reflect a different evaluation period. The 2025 4-yr row is computed here using the same 1998–2023 evaluation period as the 2026 rows for direct comparability.
 
 Event year sets (Weibull, n = 26): 3-yr RP → {1998, 1999, 2003, 2012, 2015, 2018, 2019, 2022, 2023}; 4-yr RP → {1999, 2012, 2015, 2018, 2022, 2023}; 5-yr RP → {1999, 2012, 2015, 2022, 2023}.
+
+**Small sample caveat:** The positive event counts are small — 9 events at 3-yr RP, 6 at 4-yr RP, and 5 at 5-yr RP. Each individual year shifts POD by 11–20 percentage points and F1 by a similar margin. All metrics should be treated as indicative rather than statistically robust estimates of true trigger skill.
 
 ### Readiness trigger performance
 
@@ -391,9 +395,13 @@ Lead time from readiness to action trigger in confirmed TP years:
 
 The 2019 lead of 46 days reflects an unusually early GloFAS signal rather than a reliable early warning; the operationally expected advance notice is 2–13 days. The 2018 miss cannot be resolved by threshold or lead time adjustment — the GloFAS ensemble systematically underforecast the 2018 event at all short lead times.
 
+**Small sample caveat:** The readiness trigger is benchmarked against only 4 action trigger years in the 2003–2022 evaluation window. Each year shifts POD by 25 percentage points; the 75% POD figure rests on 3 detections out of 4 opportunities and should not be read as a stable estimate of operational reliability.
+
 ### Trigger timing performance
 
 Timing is measured relative to two reference dates per event year: (1) the **first day Floodscan SFED exceeds the 4-year RP threshold** ("RP exceedance"), and (2) the **Floodscan wet-season annual maximum** ("seasonal peak"). Positive lead = trigger fired before the reference date.
+
+**Small sample caveat:** Lead times are observed in at most 4 event years for the action trigger and 2 years for the readiness trigger. Single outlier years (e.g. 1999's +41d reanalysis lead) substantially affect any summary statistic. Ranges and individual year values are more meaningful than averages here.
 
 #### Action trigger
 
