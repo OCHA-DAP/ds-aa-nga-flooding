@@ -6,151 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Session: 2026-05-28</title>
   <style>
-    html {
-      color: #1a1a1a;
-      background-color: #fdfdfd;
-    }
-    body {
-      margin: 0 auto;
-      max-width: 36em;
-      padding-left: 50px;
-      padding-right: 50px;
-      padding-top: 50px;
-      padding-bottom: 50px;
-      hyphens: auto;
-      overflow-wrap: break-word;
-      text-rendering: optimizeLegibility;
-      font-kerning: normal;
-    }
-    @media (max-width: 600px) {
-      body {
-        font-size: 0.9em;
-        padding: 12px;
-      }
-      h1 {
-        font-size: 1.8em;
-      }
-    }
-    @media print {
-      html {
-        background-color: white;
-      }
-      body {
-        background-color: transparent;
-        color: black;
-        font-size: 12pt;
-      }
-      p, h2, h3 {
-        orphans: 3;
-        widows: 3;
-      }
-      h2, h3, h4 {
-        page-break-after: avoid;
-      }
-    }
-    p {
-      margin: 1em 0;
-    }
-    a {
-      color: #1a1a1a;
-    }
-    a:visited {
-      color: #1a1a1a;
-    }
-    img {
-      max-width: 100%;
-    }
-    svg {
-      height: auto;
-      max-width: 100%;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      margin-top: 1.4em;
-    }
-    h5, h6 {
-      font-size: 1em;
-      font-style: italic;
-    }
-    h6 {
-      font-weight: normal;
-    }
-    ol, ul {
-      padding-left: 1.7em;
-      margin-top: 1em;
-    }
-    li > ol, li > ul {
-      margin-top: 0;
-    }
-    blockquote {
-      margin: 1em 0 1em 1.7em;
-      padding-left: 1em;
-      border-left: 2px solid #e6e6e6;
-      color: #606060;
-    }
-    code {
-      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
-      font-size: 85%;
-      margin: 0;
-      hyphens: manual;
-    }
-    pre {
-      margin: 1em 0;
-      overflow: auto;
-    }
-    pre code {
-      padding: 0;
-      overflow: visible;
-      overflow-wrap: normal;
-    }
-    .sourceCode {
-     background-color: transparent;
-     overflow: visible;
-    }
-    hr {
-      border: none;
-      border-top: 1px solid #1a1a1a;
-      height: 1px;
-      margin: 1em 0;
-    }
-    table {
-      margin: 1em 0;
-      border-collapse: collapse;
-      width: 100%;
-      overflow-x: auto;
-      display: block;
-      font-variant-numeric: lining-nums tabular-nums;
-    }
-    table caption {
-      margin-bottom: 0.75em;
-    }
-    tbody {
-      margin-top: 0.5em;
-      border-top: 1px solid #1a1a1a;
-      border-bottom: 1px solid #1a1a1a;
-    }
-    th {
-      border-top: 1px solid #1a1a1a;
-      padding: 0.25em 0.5em 0.25em 0.5em;
-    }
-    td {
-      padding: 0.125em 0.5em 0.25em 0.5em;
-    }
-    header {
-      margin-bottom: 4em;
-      text-align: center;
-    }
-    #TOC li {
-      list-style: none;
-    }
-    #TOC ul {
-      padding-left: 1.3em;
-    }
-    #TOC > ul {
-      padding-left: 0;
-    }
-    #TOC a:not(:hover) {
-      text-decoration: none;
-    }
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -167,11 +22,9 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
+  <link rel="stylesheet" href="notes.css" />
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">Session: 2026-05-28</h1>
-</header>
 <h1 id="session-2026-05-28">Session: 2026-05-28</h1>
 <p><a href="index.html">← Index</a></p>
 <hr />
@@ -189,31 +42,40 @@ id="model_reanalysis_comparison.ipynb-grrr-gauge-correlation-analysis"><code>19_
 <p>Compares Google GRRR and GloFAS reanalysis correlations with
 Floodscan SFED across all gauges within the selected state’s LGAs.
 Parameterisable by <code>STATE</code> (“Adamawa” or “Benue”).</p>
-<p><strong>Approach:</strong> - Gauge discovery via
+<p><strong>Approach:</strong></p>
+<ul>
+<li>Gauge discovery via
 <code>grrr.get_gauges_by_area(gdf_selected, include_non_quality_verified=True)</code>,
 using LGAs from <code>STATE_CONFIG["lga_pcodes"]</code> (same pattern as
-notebook 16) - Spearman correlation on raw wet-season (Aug–Nov) daily
-values against Floodscan SFED, across a lag range of [-7, +14] days —
-raw values chosen to match notebook 13; deseasonalisation was tested but
-rejected as it removes the shared seasonal cycle and lowers correlations
-- Gauges flagged by <code>is_benue</code> (river name contains “benue”)
-and <code>quality_verified</code> - <strong>Annual peak correlation
-diagnostics</strong> (cells after cell-12): Spearman ρ on wet-season
-annual maxima per gauge vs Floodscan, plus mean peak timing difference
-(gauge peak DOY − Floodscan peak DOY). These address the concern that
-daily correlation can be high even if peaks occur at different times of
-year - Top 10 gauges by best Spearman ρ saved to blob:
-<code>ds-aa-nga-flooding/processed/model_comparison/{state}_top10_gauges.parquet</code></p>
-<p><strong>Outputs:</strong> -
-<code>figures/{state}_corr_histograms.png</code> — distribution of best
-ρ and best lag - <code>figures/{state}_corr_lag_profiles.png</code> —
-lag profile curves (median + IQR) by group -
-<code>figures/{state}_corr_dot_plot.png</code> — Cleveland dot plot per
-gauge, coloured by category -
-<code>figures/{state}_corr_gauge_map.png</code> — gauge map, sized by ρ,
-coloured by category -
-<code>figures/{state}_annual_peak_diagnostics.png</code> — annual peak ρ
-histogram + peak timing difference chart</p>
+notebook 16)</li>
+<li>Spearman correlation on raw wet-season (Aug–Nov) daily values
+against Floodscan SFED, across a lag range of [-7, +14] days — raw
+values chosen to match notebook 13; deseasonalisation was tested but
+rejected as it removes the shared seasonal cycle and lowers
+correlations</li>
+<li>Gauges flagged by <code>is_benue</code> (river name contains
+“benue”) and <code>quality_verified</code></li>
+<li><strong>Annual peak correlation diagnostics</strong> (cells after
+cell-12): Spearman ρ on wet-season annual maxima per gauge vs Floodscan,
+plus mean peak timing difference (gauge peak DOY − Floodscan peak DOY).
+These address the concern that daily correlation can be high even if
+peaks occur at different times of year</li>
+<li>Top 10 gauges by best Spearman ρ saved to blob:
+<code>ds-aa-nga-flooding/processed/model_comparison/{state}_top10_gauges.parquet</code></li>
+</ul>
+<p><strong>Outputs:</strong></p>
+<ul>
+<li><code>figures/{state}_corr_histograms.png</code> — distribution of
+best ρ and best lag</li>
+<li><code>figures/{state}_corr_lag_profiles.png</code> — lag profile
+curves (median + IQR) by group</li>
+<li><code>figures/{state}_corr_dot_plot.png</code> — Cleveland dot plot
+per gauge, coloured by category</li>
+<li><code>figures/{state}_corr_gauge_map.png</code> — gauge map, sized
+by ρ, coloured by category</li>
+<li><code>figures/{state}_annual_peak_diagnostics.png</code> — annual
+peak ρ histogram + peak timing difference chart</li>
+</ul>
 <p><strong>Category colours (shared across all plots):</strong></p>
 <table>
 <thead>

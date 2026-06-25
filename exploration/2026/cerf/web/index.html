@@ -333,6 +333,42 @@
   </div>
 </details>
 
+<!-- ── 3.5. Trigger Performance Grid ─────────────────────────────────────────── -->
+<details class="section">
+  <summary>Trigger Performance Grid — Reanalysis</summary>
+  <div class="section-body" style="padding-top:16px">
+    <div id="grid-unavailable" class="none-msg" style="display:none">
+      Trigger grid not available for this state.
+    </div>
+    <div id="grid-content">
+      <div class="controls-section">
+        <div class="control-block">
+          <div class="control-label">Floodscan reference RP</div>
+          <div class="rp-radio-row">
+            <label><input type="radio" name="grid-fs-rp" value="3"> 3-yr</label>
+            <label><input type="radio" name="grid-fs-rp" value="4"> 4-yr</label>
+            <label><input type="radio" name="grid-fs-rp" value="5" checked> 5-yr</label>
+          </div>
+        </div>
+        <div class="control-block">
+          <div class="control-label">Metric</div>
+          <div class="rp-radio-row">
+            <label><input type="radio" name="grid-metric" value="pod"> POD</label>
+            <label><input type="radio" name="grid-metric" value="far"> FAR</label>
+            <label><input type="radio" name="grid-metric" value="f1" checked> F1</label>
+          </div>
+        </div>
+      </div>
+      <div id="grid-table-wrap" style="overflow-x:auto;margin-bottom:8px"></div>
+      <p style="font-size:11px;color:#57606a;line-height:1.5">
+        Rows = number of gauges required to exceed the RP threshold in the same wet season (Aug–Nov).
+        Hover a cell for full POD / FAR / F1 / TP / FP / FN breakdown.
+        Color: green = high score, red = low (reversed for FAR).
+      </p>
+    </div>
+  </div>
+</details>
+
 <!-- ── 4. Action trigger ─────────────────────────────────────────────────────── -->
 <details class="section" open>
   <summary>Action Trigger — GRRR Multi-Gauge</summary>
@@ -382,6 +418,14 @@
           <div style="display:flex;align-items:center;gap:10px">
             <input type="range" id="lt-slider" min="1" max="16" value="5">
             <span class="lt-badge" id="lt-badge">5 days</span>
+          </div>
+        </div>
+        <div class="control-block">
+          <div class="control-label">GloFAS RP Level</div>
+          <div class="rp-radio-row">
+            <label><input type="radio" name="glofas-rp" value="3"> 3-yr</label>
+            <label><input type="radio" name="glofas-rp" value="4"> 4-yr</label>
+            <label><input type="radio" name="glofas-rp" value="5" checked> 5-yr</label>
           </div>
         </div>
         <div class="control-block">
@@ -467,6 +511,10 @@ function selectedFsRp() {
   return +document.querySelector("input[name='fs-rp']:checked").value;
 }
 
+function selectedGloFasRp() {
+  return +document.querySelector("input[name='glofas-rp']:checked").value;
+}
+
 function getSignalMode() {
   return document.querySelector("input[name='signal-mode']:checked")?.value ?? "reanalysis";
 }
@@ -537,6 +585,79 @@ function makeSummaryHtml(activated, evalYears, pod, far, sourceNote) {
     `Activated in: <strong>${yrs}</strong>.</p>${NOTE}`;
 }
 
+// ── Trigger Performance Grid ──────────────────────────────────────────────────
+function metricColor(val, metric) {
+  if (val == null || isNaN(val)) return "#f6f8fa";
+  const t   = Math.max(0, Math.min(1, val));
+  const inv = metric === "far";
+  const eff = inv ? 1 - t : t;
+  // green (0,160,80) → white (240,240,240) → red (210,50,50)
+  const r = Math.round(210 - eff * 210 + (1 - eff) * 30);
+  const g = Math.round(160 * eff + 240 * (1 - eff));
+  const b = Math.round(80  * eff + 240 * (1 - eff));
+  return `rgb(${r},${g},${b})`;
+}
+
+function renderTriggerGrid(state) {
+  const d      = DASHBOARD_DATA[state];
+  const unavail = document.getElementById("grid-unavailable");
+  const content = document.getElementById("grid-content");
+
+  if (!d?.trigger_grid?.length) {
+    unavail.style.display = "";
+    content.style.display = "none";
+    return;
+  }
+  unavail.style.display = "none";
+  content.style.display = "";
+
+  const fsRp   = +document.querySelector("input[name='grid-fs-rp']:checked").value;
+  const metric = document.querySelector("input[name='grid-metric']:checked").value;
+
+  const rows  = d.trigger_grid.filter(r => r.fs_rp === fsRp);
+  const rps   = [...new Set(rows.map(r => r.rp_thresh))].sort((a, b) => a - b);
+  const nVals = [...new Set(rows.map(r => r.n_gauges))].sort((a, b) => a - b);
+
+  const lookup = {};
+  rows.forEach(r => {
+    if (!lookup[r.n_gauges]) lookup[r.n_gauges] = {};
+    lookup[r.n_gauges][r.rp_thresh] = r;
+  });
+
+  const thStyle = "padding:6px 14px;text-align:center;color:#57606a;font-weight:600;" +
+    "font-size:12px;border-bottom:2px solid #d0d7de;white-space:nowrap";
+  const thFirstStyle = "padding:6px 10px;text-align:left;color:#57606a;font-weight:600;" +
+    "font-size:12px;border-bottom:2px solid #d0d7de;white-space:nowrap";
+
+  let html = `<table style="border-collapse:collapse;font-size:12px;min-width:320px">
+    <thead><tr>
+      <th style="${thFirstStyle}">N gauges required</th>
+      ${rps.map(rp => `<th style="${thStyle}">${rp}-yr RP threshold</th>`).join("")}
+    </tr></thead><tbody>`;
+
+  nVals.forEach((n, i) => {
+    const bg = i % 2 === 0 ? "#fff" : "#fafafa";
+    html += `<tr style="background:${bg}">`;
+    html += `<td style="padding:5px 10px;font-size:12px;color:#57606a;white-space:nowrap">` +
+      `${n} gauge${n > 1 ? "s" : ""}</td>`;
+    rps.forEach(rp => {
+      const rec  = lookup[n]?.[rp];
+      const val  = rec?.[metric];
+      const cell = metricColor(val, metric);
+      const disp = (val != null && !isNaN(val)) ? val.toFixed(2) : "—";
+      const tip  = rec
+        ? `POD ${rec.pod?.toFixed(2) ?? "—"} · FAR ${rec.far?.toFixed(2) ?? "—"} · F1 ${rec.f1?.toFixed(2) ?? "—"} · TP ${rec.tp} · FP ${rec.fp} · FN ${rec.fn}`
+        : "";
+      html += `<td style="padding:5px 14px;text-align:center;background:${cell};` +
+        `border:2px solid #fff;font-weight:600;cursor:default" title="${tip}">${disp}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById("grid-table-wrap").innerHTML = html;
+}
+
 // ── Action trigger ─────────────────────────────────────────────────────────────
 function getActionDate(state, rpSource, rpLevel, nGauges, year, signalMode = "reanalysis") {
   const d = DASHBOARD_DATA[state]?.action;
@@ -602,7 +723,7 @@ function getActionActivated(state, rpSource, rpLevel, nGauges, signalMode = "rea
       for (const gid of d.gauge_ids) {
         const thresh = thresholds[gid]?.[rpKey];
         const val    = annMax[gid]?.[String(year)];
-        if (thresh != null && val != null && val >= thresh) count++;
+        if (thresh != null && val != null && val > thresh) count++;
       }
       return count >= nGauges;
     })
@@ -704,15 +825,18 @@ function renderTrigger(state, lt) {
   unavail.style.display = "none";
   content.style.display = "";
 
+  const glofasRp    = selectedGloFasRp();
+  const glofasThresh = d.glofas_rp_thresholds?.[String(glofasRp)];
   document.getElementById("lt-badge").textContent = `${lt} day${lt > 1 ? "s" : ""}`;
-  document.getElementById("thresh-label").textContent = `${d.thresh.toLocaleString()} m³/s`;
+  document.getElementById("thresh-label").textContent =
+    glofasThresh ? `${glofasThresh.toLocaleString()} m³/s (${glofasRp}-yr RP)` : `—`;
   const useReanalysis = document.getElementById("reanalysis-toggle").checked;
 
   const activated = new Set(
     RF_YEARS.filter(y => {
       const cm = d.annual_cum_max[String(y)];
-      const rfTriggered = cm && cm[String(lt)] > d.thresh;
-      const raTriggered = useReanalysis && !!d.reanalysis_exceed?.[String(y)];
+      const rfTriggered = cm && glofasThresh && cm[String(lt)] > glofasThresh;
+      const raTriggered = useReanalysis && !!d.reanalysis_exceed?.[String(glofasRp)]?.[String(y)];
       return rfTriggered || raTriggered;
     })
   );
@@ -731,12 +855,13 @@ function renderTrigger(state, lt) {
 
 // ── Signal timeline chart ─────────────────────────────────────────────────────
 function getTriggerDate(state, year, ltCutoff, signalMode) {
+  const glofasRp = selectedGloFasRp();
   if (signalMode === "reanalysis") {
-    const raDate = DASHBOARD_DATA[state]?.reanalysis_exceed?.[String(year)];
+    const raDate = DASHBOARD_DATA[state]?.reanalysis_exceed?.[String(glofasRp)]?.[String(year)];
     return raDate ? new Date(raDate) : null;
   }
   // reforecast: earliest issue date across leadtimes 1..ltCutoff
-  const fe = DASHBOARD_DATA[state]?.first_exceedance?.[String(year)];
+  const fe = DASHBOARD_DATA[state]?.first_exceedance?.[String(glofasRp)]?.[String(year)];
   if (!fe) return null;
   const dates = Object.entries(fe)
     .filter(([lt]) => +lt <= ltCutoff)
@@ -793,11 +918,13 @@ function drawSignalTimeline(state, ltCutoff, rp, signalMode) {
   ctx.clearRect(0, 0, W, H);
 
   // Pre-compute activation sets and DOM config for classification dots
+  const _glofasRp    = selectedGloFasRp();
+  const _glofasThresh = tl.glofas_rp_thresholds?.[String(_glofasRp)];
   const readActivated = signalMode === "reanalysis"
-    ? new Set(SIGNAL_YEARS.filter(y => !!tl.reanalysis_exceed?.[String(y)]))
+    ? new Set(SIGNAL_YEARS.filter(y => !!tl.reanalysis_exceed?.[String(_glofasRp)]?.[String(y)]))
     : new Set(RF_YEARS.filter(y => {
         const cm = tl.annual_cum_max?.[String(y)];
-        return cm && cm[String(ltCutoff)] > tl.thresh;
+        return cm && _glofasThresh && cm[String(ltCutoff)] > _glofasThresh;
       }));
   const actSrcEl   = document.querySelector("input[name='action-rp-source']:checked");
   const actLvlEl   = document.querySelector("input[name='action-rp-level']:checked");
@@ -1141,6 +1268,7 @@ function render(state) {
   document.getElementById("lga-list").innerHTML =
     d.lgas.map(l => `<span class="lga-pill">${l}</span>`).join("");
   renderFsTimeline(state);
+  renderTriggerGrid(state);
   renderGaugeMap(state);
   updateActionRpLevels(
     document.querySelector("input[name='action-rp-source']:checked").value
@@ -1148,6 +1276,13 @@ function render(state) {
   renderActionTrigger(state);
   renderTrigger(state, +document.getElementById("lt-slider").value);
 }
+
+// Trigger grid controls
+document.querySelectorAll("input[name='grid-fs-rp'], input[name='grid-metric']").forEach(el => {
+  el.addEventListener("change", () => {
+    renderTriggerGrid(document.getElementById("state-select").value);
+  });
+});
 
 // State change
 document.getElementById("state-select").addEventListener("change", e => render(e.target.value));
@@ -1165,6 +1300,13 @@ document.querySelectorAll("input[name='fs-rp']").forEach(radio => {
 document.getElementById("lt-slider").addEventListener("input", e => {
   const state = document.getElementById("state-select").value;
   renderTrigger(state, +e.target.value);
+});
+
+document.querySelectorAll("input[name='glofas-rp']").forEach(radio => {
+  radio.addEventListener("change", () => {
+    const state = document.getElementById("state-select").value;
+    renderTrigger(state, +document.getElementById("lt-slider").value);
+  });
 });
 
 document.getElementById("reanalysis-toggle").addEventListener("change", () => {
@@ -1248,7 +1390,8 @@ function downloadGaugeCsv() {
     g.quality_verified, g.top_10,
   ]));
   if (gfCoords?.lat != null && gfCoords?.lon != null) {
-    rows.push([gfName, "GloFAS", gfCoords.lat, gfCoords.lon, "", "", "", ""]);
+    rows.push([gfName, "GloFAS", gfCoords.lat, gfCoords.lon,
+      gfCoords.best_r ?? "NA", "NA", "NA", false]);
   }
   downloadCsv(`${state.toLowerCase()}_gauge_summary.csv`, rows);
 }
@@ -1264,9 +1407,11 @@ function downloadSignalCsv() {
   const actLvl     = +document.querySelector("input[name='action-rp-level']:checked")?.value || null;
   const actNGauges = +document.getElementById("action-n-slider").value;
 
+  const _csvGloFasRp    = selectedGloFasRp();
+  const _csvGloFasThresh = d.glofas_rp_thresholds?.[String(_csvGloFasRp)];
   const readActivated = signalMode === "reanalysis"
-    ? new Set(SIGNAL_YEARS.filter(y => !!d.reanalysis_exceed?.[String(y)]))
-    : new Set(RF_YEARS.filter(y => { const cm = d.annual_cum_max?.[String(y)]; return cm && cm[String(lt)] > d.thresh; }));
+    ? new Set(SIGNAL_YEARS.filter(y => !!d.reanalysis_exceed?.[String(_csvGloFasRp)]?.[String(y)]))
+    : new Set(RF_YEARS.filter(y => { const cm = d.annual_cum_max?.[String(y)]; return cm && _csvGloFasThresh && cm[String(lt)] > _csvGloFasThresh; }));
   const actionActivated = (actSrc && actLvl)
     ? getActionActivated(state, actSrc, actLvl, actNGauges, signalMode)
     : new Set();

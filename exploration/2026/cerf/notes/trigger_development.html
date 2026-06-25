@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>2026 Trigger Development — Adamawa</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="notes.css" />
+</head>
+<body>
+<h1 id="trigger-development-adamawa">2026 Trigger Development —
+Adamawa</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="starting-point">Starting point</h2>
+<p>The 2025 Adamawa trigger was a single-station OR trigger: it fired if
+either GloFAS reanalysis (≥ 3,132 m³/s) or Google GRRR reanalysis (≥
+1,195 m³/s) exceeded its threshold at Wuroboki on any wet-season day.
+Both thresholds were calibrated to approximately 5.4-year empirical RP
+and evaluated against Floodscan 5-year RP events.</p>
+<p>The 2026 work revisited this design with two goals: to evaluate
+whether a spatially distributed, multi-gauge action trigger would be
+more robust than a single-station approach, and to develop an
+independent GloFAS reforecast readiness trigger that could provide
+advance warning ahead of the action trigger.</p>
+<hr />
+<h2 id="flood-ground-truth">Flood ground truth</h2>
+<p>All trigger performance evaluation is grounded in Floodscan SFED
+(Surface Fraction Exposed to Flooding), aggregated as the daily mean
+across all pixels within a 10 km buffer of the Benue river in Adamawa
+state. Wet-season (Aug–Nov) annual maxima from 1998–2023 are ranked
+using the Weibull plotting position formula (RP = (n+1)/k) to identify
+flood event years at 3-, 4-, and 5-year return periods.</p>
+<p>The <strong>4-year RP</strong> is used as the primary design target
+throughout, giving the following event years: <strong>1999, 2012, 2015,
+2018, 2022, 2023</strong> (n = 26, k = 6, RP = 4.5 yr). This targets
+5-year RP CERF-level events while calibrating against observed satellite
+flooding rather than modelled discharge.</p>
+<hr />
+<h2 id="gauge-discovery-and-correlation-ranking">Gauge discovery and
+correlation ranking</h2>
+<p>Candidate streamflow gauges were identified by spatial intersection:
+all Google GRRR gauges whose catchment areas overlap the target LGAs in
+Adamawa state. This yielded 42 GRRR gauges plus the GloFAS reference
+point at Wuroboki.</p>
+<p>Each gauge was scored by the Spearman rank correlation between its
+wet-season daily streamflow and the Floodscan SFED time series,
+optimised over a lag range of −7 to +14 days. Correlation was computed
+on raw daily values to preserve the shared seasonal cycle; annual peak
+timing was also assessed separately to confirm that highly correlated
+gauges also peak at the right time of year. GRRR gauges consistently
+outperformed GloFAS in daily correlation (best ρ ≈ 0.74 vs 0.68), and
+all top-ranked gauges peak 2–3 days <em>before</em> the Floodscan SFED
+peak, confirming they carry genuine predictive information.</p>
+<figure>
+<img src="../workflow/figures/adamawa/03_corr_dot_plot.png"
+alt="Best Spearman ρ per gauge (all 42 candidates + GloFAS), ranked by correlation with Floodscan SFED. GRRR gauges cluster at the top; the GloFAS point at Wuroboki sits mid-table." />
+<figcaption aria-hidden="true">Best Spearman ρ per gauge (all 42
+candidates + GloFAS), ranked by correlation with Floodscan SFED. GRRR
+gauges cluster at the top; the GloFAS point at Wuroboki sits
+mid-table.</figcaption>
+</figure>
+<hr />
+<h2 id="gauge-selection">Gauge selection</h2>
+<!-- markdownlint-disable MD033 -->
+<div style="display:flex; gap:2em; align-items:flex-start;">
+<div style="flex:1; min-width:0;">
+<p>The top 10 gauges by Spearman ρ were retained from the combined GRRR
+and GloFAS candidate pool — the selection is purely performance-based
+with no source-level filtering. In Adamawa, all 10 happen to be GRRR
+gauges: the GloFAS station at Wuroboki ranked just below the cutoff (ρ ≈
+0.68) against the top GRRR gauges (ρ ≈ 0.71–0.74). Nine of the ten are
+tightly clustered around 9.3–9.4°N, 12.3–12.9°E on the main Benue
+channel (best ρ ≈ 0.71–0.74, lag = −3 days). The tenth,
+hybas_1120840690, is a clear outlier: its 4-year empirical RP threshold
+is 143 m³/s — roughly 8× lower than the others (~1,100 m³/s) — it peaks
+2 days <em>after</em> the Floodscan peak, and it contributed to only 4
+of the 6 action trigger years. It likely represents a small tributary
+rather than the main channel. It was retained in the gauge pool because
+a single anomalous gauge cannot dominate the ≥60% voting rule, but it
+warrants attention in any future gauge set review.</p>
+</div>
+<div style="flex:0 0 50%;">
+<figure>
+<img src="../workflow/figures/adamawa/04_selected_gauges_map.png"
+style="width:100.0%"
+alt="Map of the 10 selected gauges along the Benue channel in Adamawa" />
+<figcaption aria-hidden="true">Map of the 10 selected gauges along the
+Benue channel in Adamawa</figcaption>
+</figure>
+</div>
+</div>
+<!-- markdownlint-enable MD033 -->
+<hr />
+<h2 id="action-trigger-design">Action trigger design</h2>
+<p>A grid search was run over two parameters: the per-gauge return
+period threshold (2–5 yr) and the minimum number of gauges required to
+fire simultaneously on the same wet-season day (2–10). For each
+combination, trigger fire years were counted and scored against
+Floodscan event years using POD, FPR, and F1.</p>
+<p>The selected configuration is: <strong>≥ 6 of 10 gauges
+simultaneously exceed their individual 4-year empirical Weibull RP
+threshold on at least one wet-season day.</strong> Empirical 4-year
+thresholds range from 1,101 to 1,117 m³/s across the main-channel gauges
+(and 143 m³/s for the outlier). The ≥6/10 requirement (60%) balances
+spatial corroboration against sensitivity: lower fractions pick up
+isolated gauge noise, higher fractions miss events where flooding is
+spatially concentrated.</p>
+<figure>
+<img src="../workflow/figures/adamawa/05_trigger_grid_fs4yr.png"
+alt="Grid search results evaluated against Floodscan 4-yr RP events. Each cell shows POD, precision-based FAR (FP/(TP+FP)), and F1 for a given (gauge RP threshold, N gauges required) combination. The selected configuration — 4-yr threshold, 6 gauges — achieves F1 = 0.67. Note: the accuracy metrics table uses the false positive rate definition FAR = FP/(FP+TN); at 4-yr RP this equals 10%." />
+<figcaption aria-hidden="true">Grid search results evaluated against
+Floodscan 4-yr RP events. Each cell shows POD, precision-based FAR
+(FP/(TP+FP)), and F1 for a given (gauge RP threshold, N gauges required)
+combination. The selected configuration — 4-yr threshold, 6 gauges —
+achieves F1 = 0.67. Note: the accuracy metrics table uses the false
+positive rate definition FAR = FP/(FP+TN); at 4-yr RP this equals
+10%.</figcaption>
+</figure>
+<p>Over the full reanalysis period 1998–2023, the trigger fires in:
+<strong>1998, 1999, 2012, 2018, 2019, 2022</strong> — giving a combined
+Weibull RP of <strong>4.5 years</strong> (n = 26, k = 6), well-matched
+to the 4-year RP design target.</p>
+<figure>
+<img src="../workflow/figures/adamawa/06_gauge_contributions_rp4_n6.png"
+alt="Per-gauge contributions across the six trigger fire years. Most gauges contribute in all years; hybas_1120840690 (second column) is absent in 2018 and 2019, and hybas_1120842990 and hybas_1120843610 are absent in 2019." />
+<figcaption aria-hidden="true">Per-gauge contributions across the six
+trigger fire years. Most gauges contribute in all years;
+hybas_1120840690 (second column) is absent in 2018 and 2019, and
+hybas_1120842990 and hybas_1120843610 are absent in 2019.</figcaption>
+</figure>
+<hr />
+<h2 id="comparison-with-the-2025-trigger">Comparison with the 2025
+trigger</h2>
+<p>The two triggers differ in exactly one year each. The 2025 trigger
+fires in 2003 (a 3-year Floodscan event, not a 4-year event) but not in
+2018. The 2026 trigger fires in 2018 (a genuine 4-year Floodscan event)
+but not in 2003. This directly reflects the design target shift from
+5-year RP (2025) to 4-year RP (2026).</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>2025 POD / FAR / F1</th>
+<th>2026 POD / FAR / F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3-yr RP events</td>
+<td>0.67 / 0.00 / 0.80</td>
+<td>0.67 / 0.00 / 0.80</td>
+</tr>
+<tr>
+<td><strong>4-yr RP events</strong></td>
+<td><strong>0.50 / 0.15 / 0.50</strong></td>
+<td><strong>0.67 / 0.10 / 0.67</strong></td>
+</tr>
+<tr>
+<td>5-yr RP events</td>
+<td>0.60 / 0.14 / 0.55</td>
+<td>0.60 / 0.14 / 0.55</td>
+</tr>
+</tbody>
+</table>
+<p>FAR = FP / (FP + TN). The improvement at the 4-year level is
+material: POD rises from 0.50 to 0.67 and F1 from 0.50 to 0.67. At
+3-year and 5-year benchmarks the triggers perform identically. Both miss
+2015 and 2023, which are genuine 4–5-year flood years not captured by
+either design.</p>
+<p>The 2026 design trades the 2025 trigger’s two-model redundancy
+(GloFAS + GRRR) for spatial redundancy within a single model (10
+geographically distributed GRRR gauges). This makes it more robust to
+local gauge noise but removes GloFAS as an independent cross-check. The
+GRRR reforecast horizon (≤7 days) is also shorter than GloFAS’s,
+constraining maximum early warning from the action trigger alone — which
+is why a separate readiness trigger was developed.</p>
+<hr />
+<h2 id="readiness-trigger">Readiness trigger</h2>
+<p>The readiness trigger uses the GloFAS ensemble reforecast at
+Wuroboki, evaluated over 2003–2022 (n = 20 years). A year fires if the
+ensemble mean exceeds the discharge threshold at any lead time within
+the maximum lead time window (Aug–Nov). The discharge threshold is fixed
+at the 2025 value of <strong>3,132 m³/s</strong> (~5-year GloFAS
+reanalysis RP), which sits above the 4-year reanalysis RP (3,009 m³/s)
+to reduce false alarms. Two lead time configurations were evaluated:</p>
+<ul>
+<li><strong>Option A — 3,132 m³/s, LT ≤ 13 days:</strong> fires in 2003,
+2008, 2012, 2014, 2016, 2019, 2022 (k = 7, RP = 3.0 yr). POD = 3/4
+action years (misses 2018). Lead times vs action trigger: 2012 +2d, 2019
++46d, 2022 +13d.</li>
+<li><strong>Option B — 3,250 m³/s, LT ≤ 12 days:</strong> fires in 2003,
+2014, 2016, 2019, 2022 (k = 6, RP = 3.5 yr). POD = 2/4 (misses 2012 and
+2018). Lead times vs action trigger: 2012 −15d (fires after), 2019 +46d,
+2022 +3d. The higher threshold means the GloFAS signal in 2012 (max
+3,142 m³/s) never crosses the bar.</li>
+</ul>
+<figure>
+<img src="../workflow/figures/adamawa/07_readiness_trigger_rp4.png"
+alt="GloFAS readiness trigger performance vs lead time at Wuroboki (4-yr RP threshold). POD rises steeply between LT 8–13d and plateaus; FAR increases continuously. The selected cut-off at LT ≤ 13d sits just before FAR begins to climb sharply for the 4-yr RP benchmark." />
+<figcaption aria-hidden="true">GloFAS readiness trigger performance vs
+lead time at Wuroboki (4-yr RP threshold). POD rises steeply between LT
+8–13d and plateaus; FAR increases continuously. The selected cut-off at
+LT ≤ 13d sits just before FAR begins to climb sharply for the 4-yr RP
+benchmark.</figcaption>
+</figure>
+<p><strong>Option A (3,132 m³/s, LT ≤ 13d) was selected.</strong> The
++2d lead in 2012 is operationally marginal (GloFAS peaks only 3,142 m³/s
+at LT=1d, meaning any higher threshold misses 2012 entirely), but Option
+A is preferable to Option B because it avoids a retroactive trigger in
+2012. Both options fail to detect 2018; extending to LT ≤ 16d detects
+2018 but adds a new false positive in 2010 and shortens the combined RP
+to 2.3 years — an unacceptable activation frequency. The GloFAS
+reforecast appears to have systematically underforecast the 2018 event
+at short lead times, which cannot be resolved by threshold or lead time
+adjustment alone.</p>
+<p>The readiness trigger fires approximately once every 3 years,
+compared to the action trigger’s once every 4.5 years. Roughly 4
+readiness activations per 20 years will not be followed by an action
+trigger activation. This frequency is financially acceptable at 5%
+pre-positioning cost but should be communicated clearly to partners.</p>
+<hr />
+<h2 id="framework-update-for-2026">Framework update for 2026</h2>
+<p>This section summarises the 2026 design in the format of the endorsed
+2025 AA Framework document, to support updating the PDF.</p>
+<h3 id="trigger-definitions">Trigger definitions</h3>
+<p><strong>2025 action trigger (endorsed Aug 2025):</strong></p>
+<ul>
+<li>GloFAS: ensemble mean discharge ≥ 3,132 m³/s at Wuroboki (G5004)
+within next 5 days</li>
+<li>OR Google GRRR: discharge ≥ 1,195 m³/s at Kangli (hybas_1120842550)
+at any point in wet season</li>
+</ul>
+<p><strong>2026 action trigger (revised):</strong></p>
+<ul>
+<li>Google GRRR: ≥ 6 of 10 gauges simultaneously exceed their individual
+4-year empirical RP threshold on the same wet-season day</li>
+<li>Individual threshold: approximately 1,100–1,117 m³/s at each of 9
+main-channel gauges; 143 m³/s at outlier gauge hybas_1120840690</li>
+<li>The single-station Google condition at Kangli is replaced by a
+spatially distributed multi-gauge voting rule. GloFAS is moved to a
+separate, independent readiness trigger.</li>
+</ul>
+<p><strong>2026 readiness trigger (new — not in 2025
+framework):</strong></p>
+<ul>
+<li>GloFAS ensemble mean &gt; 3,132 m³/s at Wuroboki within lead time ≤
+13 days</li>
+<li>Designed to fire ahead of the action trigger and enable
+pre-positioning</li>
+</ul>
+<h3 id="action-trigger-gauge-thresholds">Action trigger gauge
+thresholds</h3>
+<p>The action trigger fires if <strong>≥ 6 of the 10 gauges
+below</strong> simultaneously exceed their individual 4-year empirical
+RP threshold on the same wet-season day. Thresholds were estimated using
+Weibull plotting positions on wet-season annual maxima, 1998–2023.
+Gauges are ordered by Spearman ρ (descending); all are GRRR source.</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>Gauge ID</th>
+<th>Latitude</th>
+<th>Longitude</th>
+<th>Spearman ρ</th>
+<th>4-yr RP threshold (m³/s)</th>
+<th>Trigger years contributed (of 6)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hybas_1120842990</td>
+<td>9.39°N</td>
+<td>12.81°E</td>
+<td>0.742</td>
+<td>1,111</td>
+<td>5</td>
+</tr>
+<tr>
+<td>hybas_1120843610</td>
+<td>9.37°N</td>
+<td>12.85°E</td>
+<td>0.742</td>
+<td>1,102</td>
+<td>5</td>
+</tr>
+<tr>
+<td>hybas_1120845060</td>
+<td>9.33°N</td>
+<td>12.71°E</td>
+<td>0.732</td>
+<td>1,102</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1120849600</td>
+<td>9.24°N</td>
+<td>12.58°E</td>
+<td>0.728</td>
+<td>1,114</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1120848550</td>
+<td>9.26°N</td>
+<td>12.49°E</td>
+<td>0.726</td>
+<td>1,106</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1121970280</td>
+<td>9.31°N</td>
+<td>12.44°E</td>
+<td>0.723</td>
+<td>1,110</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1120842550 <em>(Kangli)</em></td>
+<td>9.39°N</td>
+<td>12.37°E</td>
+<td>0.719</td>
+<td>1,114</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1120840700</td>
+<td>9.44°N</td>
+<td>12.36°E</td>
+<td>0.719</td>
+<td>1,113</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1120840560</td>
+<td>9.45°N</td>
+<td>12.35°E</td>
+<td>0.719</td>
+<td>1,117</td>
+<td>6</td>
+</tr>
+<tr>
+<td>hybas_1120840690 <em>(outlier — small tributary)</em></td>
+<td>9.44°N</td>
+<td>12.34°E</td>
+<td>0.711</td>
+<td>143</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>hybas_1120840690 has a substantially lower threshold (143 m³/s vs
+~1,100 m³/s for the main-channel gauges) and contributed to only 4 of 6
+trigger years. It is retained in the pool because a single anomalous
+gauge cannot dominate the ≥6/10 voting rule.</p>
+<hr />
+<h3 id="trigger-mechanism-statistics">Trigger mechanism statistics</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>2025 (endorsed)</th>
+<th>2026 (revised)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Return period</td>
+<td>4.5 years</td>
+<td>4.5 years</td>
+</tr>
+<tr>
+<td>Annual activation probability</td>
+<td>22%</td>
+<td>22%</td>
+</tr>
+<tr>
+<td>Years activated (reanalysis, 1998–2023)</td>
+<td>1998, 1999, 2003, 2012, 2019, 2022</td>
+<td>1998, 1999, 2012, 2018, 2019, 2022</td>
+</tr>
+<tr>
+<td>Historical lead time (action)</td>
+<td>14–25 days</td>
+<td>≤ 7 days (GRRR reforecast horizon)</td>
+</tr>
+<tr>
+<td>Readiness trigger RP</td>
+<td>—</td>
+<td>~3 years</td>
+</tr>
+<tr>
+<td>Readiness trigger years (2003–2022)</td>
+<td>—</td>
+<td>2003, 2008, 2012, 2014, 2016, 2019, 2022</td>
+</tr>
+<tr>
+<td>Readiness trigger lead time to action</td>
+<td>—</td>
+<td>up to 13 days</td>
+</tr>
+</tbody>
+</table>
+<h3 id="accuracy-metrics">Accuracy metrics</h3>
+<p>Action trigger performance against Floodscan SFED annual maxima,
+1998–2023 (n = 26 years). FAR = FP / (FP + TN).</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Benchmark</th>
+<th>Accuracy</th>
+<th>Detection rate</th>
+<th>FAR</th>
+<th>Precision</th>
+<th>F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2025 (endorsed)</td>
+<td>3-yr RP</td>
+<td>88%</td>
+<td>67%</td>
+<td>18%†</td>
+<td>100%</td>
+<td>80%</td>
+</tr>
+<tr>
+<td>2025 (endorsed)</td>
+<td>4-yr RP</td>
+<td>77%†</td>
+<td>50%†</td>
+<td>15%†</td>
+<td>50%†</td>
+<td>50%†</td>
+</tr>
+<tr>
+<td>2025 (endorsed)</td>
+<td>5-yr RP</td>
+<td>81%</td>
+<td>60%</td>
+<td>10%†</td>
+<td>50%</td>
+<td>55%</td>
+</tr>
+<tr>
+<td><strong>2026</strong></td>
+<td><strong>3-yr RP</strong></td>
+<td><strong>88%</strong></td>
+<td><strong>67%</strong></td>
+<td><strong>0%</strong></td>
+<td><strong>100%</strong></td>
+<td><strong>80%</strong></td>
+</tr>
+<tr>
+<td><strong>2026</strong></td>
+<td><strong>4-yr RP</strong></td>
+<td><strong>85%</strong></td>
+<td><strong>67%</strong></td>
+<td><strong>10%</strong></td>
+<td><strong>67%</strong></td>
+<td><strong>67%</strong></td>
+</tr>
+<tr>
+<td><strong>2026</strong></td>
+<td><strong>5-yr RP</strong></td>
+<td><strong>81%</strong></td>
+<td><strong>60%</strong></td>
+<td><strong>14%</strong></td>
+<td><strong>50%</strong></td>
+<td><strong>55%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>† 2025 figures at 3-yr and 5-yr RP are taken from the endorsed
+framework PDF and reflect a different evaluation period. The 2025 4-yr
+row is computed here using the same 1998–2023 evaluation period as the
+2026 rows for direct comparability.</p>
+<p>Event year sets (Weibull, n = 26): 3-yr RP → {1998, 1999, 2003, 2012,
+2015, 2018, 2019, 2022, 2023}; 4-yr RP → {1999, 2012, 2015, 2018, 2022,
+2023}; 5-yr RP → {1999, 2012, 2015, 2022, 2023}.</p>
+<h3 id="readiness-trigger-performance">Readiness trigger
+performance</h3>
+<p>Readiness trigger configuration: <strong>GloFAS ensemble mean &gt;
+3,132 m³/s at Wuroboki (G5004), lead time ≤ 13 days</strong>. Evaluated
+over 2003–2022 (n = 20 complete reforecast years), benchmarked against
+the 2026 action trigger fire years within that window: {2012, 2018,
+2019, 2022}.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Evaluation period</td>
+<td>2003–2022 (n = 20 years)</td>
+</tr>
+<tr>
+<td>Benchmark</td>
+<td>2026 action trigger years in window: {2012, 2018, 2019, 2022}</td>
+</tr>
+<tr>
+<td>TP — readiness fires, action fires</td>
+<td>3 (2012, 2019, 2022)</td>
+</tr>
+<tr>
+<td>FP — readiness fires, no action</td>
+<td>4 (2003, 2008, 2014, 2016)</td>
+</tr>
+<tr>
+<td>FN — readiness misses, action fires</td>
+<td>1 (2018)</td>
+</tr>
+<tr>
+<td>TN — neither fires</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Detection rate (POD)</td>
+<td>75%</td>
+</tr>
+<tr>
+<td>False alarm rate (FAR = FP / FP+TN)</td>
+<td>25%</td>
+</tr>
+<tr>
+<td>Precision</td>
+<td>43%</td>
+</tr>
+<tr>
+<td>F1</td>
+<td>55%</td>
+</tr>
+<tr>
+<td>Activation return period</td>
+<td>~3 years</td>
+</tr>
+</tbody>
+</table>
+<p>Lead time from readiness to action trigger in confirmed TP years:</p>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Lead time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2012</td>
+<td>+2 days</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>+46 days</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>+13 days</td>
+</tr>
+</tbody>
+</table>
+<p>The 2019 lead of 46 days reflects an unusually early GloFAS signal
+rather than a reliable early warning; the operationally expected advance
+notice is 2–13 days. The 2018 miss cannot be resolved by threshold or
+lead time adjustment — the GloFAS ensemble systematically underforecast
+the 2018 event at all short lead times.</p>
+<hr />
+<h3 id="summary-of-2026-improvements">Summary of 2026 improvements</h3>
+<p>The 2026 action trigger replaces the 2025 dual-model OR design
+(GloFAS at Wuroboki OR GRRR at Kangli) with a spatially distributed
+consensus condition within a single model: at least 6 of 10 upstream
+GRRR gauges must simultaneously exceed their individual 4-year empirical
+RP threshold. This corrects the main weakness of the 2025 design: the
+2025 trigger missed the 2018 Floodscan event (a genuine ≥4-year flood
+year) while firing in 2003 (a 3-year event below the intended design
+threshold). The 2026 trigger fires in 2018 and not in 2003, improving F1
+at the 4-year benchmark from 0.50 to 0.67. The trigger’s overall return
+period (4.5 years) and activation frequency (22%) are unchanged.</p>
+<p>A new readiness trigger is introduced — absent from the 2025
+framework — using the GloFAS ensemble reforecast at Wuroboki (&gt; 3,132
+m³/s, lead time ≤ 13 days). It fires approximately every 3 years and
+detected 3 of 4 action trigger years in the 2003–2022 evaluation window
+at lead times of 2–13 days, enabling pre-positioning decisions ahead of
+the GRRR-based action trigger. The 2025 GloFAS component — which used
+reanalysis, not reforecast, and had no explicit lead time requirement —
+was not suitable as a readiness trigger in the operational sense; the
+2026 design makes this preparedness function explicit and independently
+evaluable.</p>
+<hr />
+<h2 id="what-was-not-resolved">What was not resolved</h2>
+<p><strong>GloFAS reanalysis as a supplementary readiness
+component</strong> was evaluated and not recommended. Adding a condition
+that fires if the GloFAS ERA5 reanalysis exceeds 3,132 m³/s (as a
+near-real-time nowcast proxy) produces no additional event detections
+within the 2003–2022 evaluation window — the reanalysis only adds 2022
+and 2003, both already captured by the reforecast component — and
+provides only a 2-day earlier signal in 2022. Its main theoretical value
+is as a safety net for years where the reforecast fails, but realising
+this benefit would require a reliable near-real-time GloFAS data feed
+that is not currently operational in this workflow.</p>
+<p><strong>2015 and 2023 remain unexplained misses.</strong> Both are
+genuine 4–5-year Floodscan events that neither trigger configuration
+detects. Whether this reflects a different flood pathway (e.g. Lagdo dam
+release timing, upper Benue vs tributary contributions), gaps in GRRR
+gauge coverage for those years, or a model deficiency is not yet
+determined. Investigating these years is a priority before operational
+deployment.</p>
+<p><strong>Benue state</strong> trigger thresholds were not finalised.
+Notebooks <code>05_trigger_assessment.ipynb</code> and
+<code>06_trigger_definition.ipynb</code> are ready to run with
+<code>STATE = "Benue"</code>, but the optimal RP threshold and gauge
+count for Makurdi remain unconfirmed in <code>STATE_CONFIG</code>. The
+same workflow applies directly to Benue once these values are
+calibrated.</p>
+</body>
+</html>

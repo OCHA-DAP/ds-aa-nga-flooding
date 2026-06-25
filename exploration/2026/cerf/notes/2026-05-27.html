@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>CERF Nigeria Flooding — Working Notes</title>
+  <title>Session: 2026-05-27</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -87,16 +87,9 @@
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.css" />
-  <style>
-      body { background: #f6f8fa; }
-      .markdown-body { max-width: 900px; margin: 40px auto; padding: 24px 32px;
-                       background: white; border-radius: 8px;
-                       box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-    </style>
+  <link rel="stylesheet" href="notes.css" />
 </head>
 <body>
-<div class="markdown-body">
 <h1 id="session-2026-05-27">Session: 2026-05-27</h1>
 <p><a href="index.html">← Index</a></p>
 <hr />
@@ -185,15 +178,20 @@ id="threshold_selection.ipynb-benue-threshold-grid-search"><code>17_threshold_se
 for the Benue (Makurdi) trigger. Currently <code>glofas_thresh</code>
 and <code>google_thresh</code> are <code>None</code> in
 <code>STATE_CONFIG["Benue"]</code>.</p>
-<p><strong>Approach:</strong> - Loads GloFAS reanalysis (Makurdi),
-Google GRRR reanalysis (Makurdi HYBAS), Floodscan pixels for Benue state
-- Floodscan flood years computed from all-months annual max (consistent
-with notebook 08) - Wet-season (Aug–Nov) annual max for both models,
-inner-joined on common years - Grid search over all (GloFAS rank, Google
-rank) pairs; rank 0 = never trigger; OR trigger logic - Outputs:
-performance heatmaps (POD / Precision / F1) per Floodscan RP level,
-implied combined RP heatmap, threshold selection cells, year-by-year
-table, performance summary</p>
+<p><strong>Approach:</strong></p>
+<ul>
+<li>Loads GloFAS reanalysis (Makurdi), Google GRRR reanalysis (Makurdi
+HYBAS), Floodscan pixels for Benue state</li>
+<li>Floodscan flood years computed from all-months annual max
+(consistent with notebook 08)</li>
+<li>Wet-season (Aug–Nov) annual max for both models, inner-joined on
+common years</li>
+<li>Grid search over all (GloFAS rank, Google rank) pairs; rank 0 =
+never trigger; OR trigger logic</li>
+<li>Outputs: performance heatmaps (POD / Precision / F1) per Floodscan
+RP level, implied combined RP heatmap, threshold selection cells,
+year-by-year table, performance summary</li>
+</ul>
 <p><strong>Usage:</strong> run heatmaps, set
 <code>SELECTED_GF_RANK</code> and <code>SELECTED_GOOGLE_RANK</code>,
 then update <code>STATE_CONFIG["Benue"]</code> in
@@ -204,19 +202,23 @@ id="trigger_summary_performance.ipynb-end-to-end-trigger-evaluation"><code>18_tr
 <p>Evaluates GloFAS trigger performance (accuracy, detection rate, FAR,
 precision, F1) for both the action and readiness triggers as configured
 in <code>STATE_CONFIG</code>, against all Floodscan RP levels.</p>
-<p><strong>Key design:</strong> - <strong>Reanalysis as
-leadtime=0</strong>: GloFAS reanalysis daily discharge is prepended to
-the reforecast as <code>leadtime=0</code>. A year activates if any
-signal at leadtime ≤ cutoff exceeds the threshold — covering both
-real-time observations and short-range forecasts in a single
-cumulative-max framework. - <strong>Consistent denominator</strong>:
-evaluation restricted to reforecast years (2003–2022) so all years have
-both reanalysis and forecast signal. - Readiness trigger is skipped if
+<p><strong>Key design:</strong></p>
+<ul>
+<li><strong>Reanalysis as leadtime=0</strong>: GloFAS reanalysis daily
+discharge is prepended to the reforecast as <code>leadtime=0</code>. A
+year activates if any signal at leadtime ≤ cutoff exceeds the threshold
+— covering both real-time observations and short-range forecasts in a
+single cumulative-max framework.</li>
+<li><strong>Consistent denominator</strong>: evaluation restricted to
+reforecast years (2003–2022) so all years have both reanalysis and
+forecast signal.</li>
+<li>Readiness trigger is skipped if
 <code>glofas_leadtime_readiness</code> is <code>None</code>; the
-notebook asserts action leadtime and threshold are set. - Outputs:
-per-trigger summary table, year-by-year activation table with
-TP/FP/FN/TN classification, metric-vs-leadtime plot for all leadtimes
-0–16.</p>
+notebook asserts action leadtime and threshold are set.</li>
+<li>Outputs: per-trigger summary table, year-by-year activation table
+with TP/FP/FN/TN classification, metric-vs-leadtime plot for all
+leadtimes 0–16.</li>
+</ul>
 <hr />
 <h2 id="notebook-index">Notebook index</h2>
 <table>
@@ -331,6 +333,5 @@ inconsistency</h3>
 model evaluation filters to the core flood season) but worth documenting
 explicitly in a shared constants cell if the notebooks are later
 consolidated.</p>
-</div>
 </body>
 </html>

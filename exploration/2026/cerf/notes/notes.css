@@ -1,0 +1,88 @@
+body {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+h1 { font-size: 1.6rem; font-weight: 700; margin-top: 0; border-bottom: 2px solid #007ce0; padding-bottom: 0.3rem; }
+h2 { font-size: 1.15rem; font-weight: 600; margin-top: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.2rem; }
+h3 { font-size: 1rem; font-weight: 600; margin-top: 1.4rem; }
+h4 { font-size: 0.9rem; font-weight: 600; margin-top: 1rem; color: #555; }
+
+a { color: #007ce0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+hr { border: none; border-top: 1px solid #e0e0e0; margin: 1.8rem 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin: 1rem 0; display: block; overflow-x: auto; }
+th { padding: 0.4rem 0.7rem; text-align: left; font-weight: 600; border-bottom: 2px solid #007ce0; }
+td { padding: 0.35rem 0.7rem; border-bottom: 1px solid #e0e0e0; }
+
+ul, ol { padding-left: 1.4rem; margin: 0.4rem 0 0.8rem; }
+li { margin: 0.15rem 0; }
+
+code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.83em;
+  background: #f4f4f4;
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+}
+
+pre { background: #f4f4f4; padding: 0.9rem; overflow-x: auto; border-radius: 3px; }
+pre code { background: none; padding: 0; font-size: 0.85rem; }
+
+blockquote { border-left: 3px solid #007ce0; margin: 1rem 0; padding: 0.4rem 1rem; color: #555; }
+
+img { max-width: 100%; height: auto; display: block; margin: 1rem 0; }
+
+@media print {
+  body { max-width: 100%; padding: 0; }
+  a { color: inherit; }
+}
+
+/* ── heatmap ── */
+.heatmap-wrap { overflow-x: auto; margin: 1rem 0 1.4rem; }
+
+.heatmap {
+  border-collapse: separate !important;
+  border-spacing: 2px !important;
+  width: auto !important;
+  min-width: max-content;
+  display: table !important;
+}
+
+.heatmap thead tr { background: transparent !important; color: inherit; }
+.heatmap tbody     { border: none !important; }
+.heatmap tbody tr  { background: transparent !important; }
+.heatmap tbody tr:hover { background: transparent !important; }
+.heatmap th, .heatmap td { padding: 0 !important; border: none !important; vertical-align: middle; }
+
+.heatmap-year {
+  font-size: 9px; font-weight: normal; color: #666;
+  text-align: center; white-space: nowrap;
+  min-width: 22px; width: 22px; padding-bottom: 3px !important;
+}
+
+.heatmap-label {
+  font-size: 11px; color: #333; white-space: nowrap;
+  padding-right: 10px !important; text-align: right;
+  font-weight: 500; min-width: 160px;
+}
+
+.heatmap-cell {
+  width: 22px; min-width: 22px; height: 22px; border-radius: 3px;
+  text-align: center; line-height: 22px; font-size: 7px; font-weight: 700;
+  color: rgba(255,255,255,0.92); letter-spacing: -0.02em; overflow: hidden;
+}
+
+.heatmap-spacer td { height: 6px; padding: 0 !important; border: none !important; background: transparent !important; }
+
+.heatmap-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.5rem; font-size: 11px; color: #555; }
+.heatmap-legend-item { display: flex; align-items: center; gap: 5px; }
+.heatmap-caption { font-size: 11px; color: #777; margin-top: 0.4rem; font-style: italic; }
+.heatmap-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }

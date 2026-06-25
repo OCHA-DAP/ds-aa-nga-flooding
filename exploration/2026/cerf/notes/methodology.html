@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Methodology Reference</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="notes.css" />
+</head>
+<body>
+<h1 id="methodology-reference">Methodology Reference</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>This workflow develops a <strong>dual-trigger anticipatory action
+system</strong> for riverine flooding, structured around two independent
+signals:</p>
+<ul>
+<li><strong>Action trigger</strong> — fires when a sufficient fraction
+of upstream streamflow gauges simultaneously exceed their empirical
+return period threshold, as measured in the Google Flood Forecasting
+reanalysis and reforecast. Gauges are selected purely by forecast skill
+from a combined GRRR and GloFAS candidate pool; in practice all selected
+gauges have been GRRR for Adamawa, but a GloFAS gauge would be included
+if it outperformed the GRRR alternatives.</li>
+<li><strong>Readiness trigger (GloFAS)</strong> — fires when a GloFAS
+ensemble reforecast at a key station exceeds a discharge threshold
+within a set lead time window.</li>
+</ul>
+<p>The approach is data-driven and non-parametric throughout: all return
+periods use empirical Weibull plotting positions, and all thresholds are
+calibrated against satellite-derived flood observations (Floodscan
+SFED). This makes it directly transferable to other river systems in
+Nigeria where the same data sources have coverage.</p>
+<hr />
+<h2 id="analysis-steps">Analysis steps</h2>
+<h3
+id="step-1-identify-candidate-reporting-points-01_reporting_points">Step
+1 — Identify candidate reporting points
+(<code>01_reporting_points</code>)</h3>
+<p>Starting from a set of <strong>target LGAs</strong> (the geographic
+scope of intended action), identify all Google GRRR streamflow gauges
+whose catchments intersect the target area. Include the GloFAS reference
+station for the river basin. This produces a candidate list of gauges
+(typically 40–50 for a state-level analysis).</p>
+<p><strong>Key inputs:</strong> target LGA p-codes, GloFAS station
+coordinates <strong>Key output:</strong>
+<code>{state}_gauges.parquet</code></p>
+<hr />
+<h3 id="step-2-establish-flood-ground-truth-02_floodscan_benchmark">Step
+2 — Establish flood ground truth
+(<code>02_floodscan_benchmark</code>)</h3>
+<p>Aggregate Floodscan SFED (Surface Fraction Exposed to Flooding) pixel
+values to a daily mean for the target area, restricted to a 10 km river
+buffer. Compute wet-season annual maxima and apply the Weibull plotting
+position formula:</p>
+<p><code>RP = (n + 1) / k</code></p>
+<p>where <em>n</em> is the number of years in the record and <em>k</em>
+is the rank of the year in ascending order of the annual maximum. This
+gives empirical flood-event years at 3, 4, and 5-year return periods,
+which serve as ground truth throughout all subsequent evaluation.</p>
+<p><strong>Key inputs:</strong> Floodscan SFED parquet (pixel-level, ~10
+km river buffer), analysis period <strong>Key output:</strong> annual
+event flags per RP level (1998–2023)</p>
+<figure>
+<img src="figures/methodology_step2_floodscan_rp.png"
+alt="Floodscan annual maxima plotted against empirical return period; the 4-yr RP threshold line separates event years from non-event years." />
+<figcaption aria-hidden="true">Floodscan annual maxima plotted against
+empirical return period; the 4-yr RP threshold line separates event
+years from non-event years.</figcaption>
+</figure>
+<hr />
+<h3
+id="step-3-rank-gauges-by-forecast-skill-03_forecast_correlation">Step 3
+— Rank gauges by forecast skill
+(<code>03_forecast_correlation</code>)</h3>
+<p>For each candidate gauge, compute the Spearman rank correlation
+between wet-season daily streamflow and Floodscan SFED across a lag
+range of −3 to +14 days. Record the best (lag, correlation) pair per
+gauge. The lag-adjusted correlation captures how many days in advance a
+gauge’s streamflow predicts observed flooding in the target area.</p>
+<p><strong>Key inputs:</strong> GRRR reanalysis streamflow, Floodscan
+SFED timeseries <strong>Key output:</strong>
+<code>{state}_gauge_correlations.parquet</code> (ranked by best Spearman
+ρ)</p>
+<figure>
+<img src="figures/methodology_step3_lag_correlation.png"
+alt="Lag–correlation profiles for three representative gauges. The best (lag, ρ) pair is recorded per gauge; gauges with negative best-lag peak after the flood and are deprioritised." />
+<figcaption aria-hidden="true">Lag–correlation profiles for three
+representative gauges. The best (lag, ρ) pair is recorded per gauge;
+gauges with negative best-lag peak after the flood and are
+deprioritised.</figcaption>
+</figure>
+<hr />
+<h3
+id="step-4-select-top-performing-gauges-04_gauge_selection_assessment">Step
+4 — Select top-performing gauges
+(<code>04_gauge_selection_assessment</code>)</h3>
+<p>Retain the top <code>TOP_N</code> gauges (default: 10) ranked by best
+Spearman ρ, drawn from the combined GRRR and GloFAS candidate pool. The
+selection is purely performance-based: no source-level filtering is
+applied, and a GloFAS gauge will be selected if it outperforms the GRRR
+alternatives in a given context. Gauges with poor correlation are
+excluded regardless of data source or geographic position.</p>
+<p><strong>Key inputs:</strong> gauge correlation rankings <strong>Key
+output:</strong> <code>{state}_selected_gauges.parquet</code></p>
+<hr />
+<h3
+id="step-5-grid-search-over-trigger-configurations-05_trigger_assessment">Step
+5 — Grid search over trigger configurations
+(<code>05_trigger_assessment</code>)</h3>
+<p>For each combination of:</p>
+<ul>
+<li><strong>RP threshold</strong> (per-gauge exceedance level: 2, 3, 4,
+or 5-year)</li>
+<li><strong>Minimum fraction of gauges</strong> required to fire
+simultaneously (varied across all selected gauges)</li>
+</ul>
+<p>count the years in which the trigger condition is met (≥ fraction of
+gauges exceed their RP threshold on the same wet-season day). Score each
+configuration against Floodscan event years at each RP level using POD,
+FAR, and F1. This grid search identifies configurations that balance
+detection rate against false alarms.</p>
+<p><strong>Key inputs:</strong> wet-season streamflow annual maxima,
+Floodscan event flags <strong>Key output:</strong>
+<code>{state}_trigger_grid.parquet</code> (POD/FAR/F1 per
+configuration)</p>
+<figure>
+<img src="figures/methodology_step5_grid_search.png"
+alt="Grid search heatmap: F1 score for each (RP threshold, minimum gauges required) combination. The selected configuration (circled) balances POD against false alarm rate." />
+<figcaption aria-hidden="true">Grid search heatmap: F1 score for each
+(RP threshold, minimum gauges required) combination. The selected
+configuration (circled) balances POD against false alarm
+rate.</figcaption>
+</figure>
+<hr />
+<h3
+id="step-6-define-and-evaluate-the-action-trigger-06_trigger_definition">Step
+6 — Define and evaluate the action trigger
+(<code>06_trigger_definition</code>)</h3>
+<p>Fix a specific trigger configuration (RP threshold, minimum gauge
+count) based on the grid search results and operational considerations.
+Evaluate performance separately for:</p>
+<ul>
+<li><strong>Reanalysis period</strong> (1998–2023): full historical
+record</li>
+<li><strong>Reforecast period</strong> (2003–2022): uses operational
+forecast data, accounting for only those wet seasons with complete
+valid-time coverage through October</li>
+</ul>
+<p>Report POD and false alarm rate (FAR = FP / (FP + TN)) against
+Floodscan 4-year RP events. The reforecast evaluation is the
+operationally relevant figure.</p>
+<p>The current Adamawa configuration is <strong>≥ 60% of 10 gauges
+exceed their 4-year RP threshold</strong> (action trigger fires if ≥ 6
+of 10 gauges exceed threshold on any wet-season day).</p>
+<p><strong>Key inputs:</strong> selected gauge streamflow, Floodscan
+event flags <strong>Key output:</strong> performance table, heatmap of
+trigger-fire years, gauge contribution matrix</p>
+<figure>
+<img src="figures/methodology_step6_trigger_years.png"
+alt="Year-by-year action trigger evaluation: green = hit, red = miss, amber = false alarm, light = correct negative. Two-digit year labels shown in each cell." />
+<figcaption aria-hidden="true">Year-by-year action trigger evaluation:
+green = hit, red = miss, amber = false alarm, light = correct negative.
+Two-digit year labels shown in each cell.</figcaption>
+</figure>
+<hr />
+<h3
+id="step-7-evaluate-the-glofas-readiness-trigger-07_readiness_trigger">Step
+7 — Evaluate the GloFAS readiness trigger
+(<code>07_readiness_trigger</code>)</h3>
+<p>Assess a single-station GloFAS readiness trigger independently of the
+GRRR action trigger. For a range of lead times (1–16 days), count the
+years where the GloFAS ensemble mean discharge exceeds a threshold
+(<code>RP_THRESH</code>) at any point during the wet season. Score
+against Floodscan event years to identify the best lead time setting for
+each RP level.</p>
+<p>The readiness trigger is designed to fire <em>before</em> the action
+trigger — it gives humanitarian partners advance notice that conditions
+are developing. The operational version uses the GloFAS ensemble
+reforecast (available in near-real-time) rather than reanalysis.</p>
+<p>The current Adamawa configuration is <strong>GloFAS ensemble mean
+&gt; 3,132 m³/s at lead time ≤ 13 days</strong>, targeting 4-year RP
+Floodscan events.</p>
+<p><strong>Key inputs:</strong> GloFAS reanalysis (threshold
+calibration), GloFAS reforecast (evaluation) <strong>Key
+output:</strong> performance curves by lead time, best configuration per
+RP level</p>
+<figure>
+<img src="figures/methodology_step7_readiness_leadtime.png"
+alt="POD and FPR as a function of maximum lead time. The selected cut-off (teal dashed line) is chosen where POD levels off before FPR rises steeply." />
+<figcaption aria-hidden="true">POD and FPR as a function of maximum lead
+time. The selected cut-off (teal dashed line) is chosen where POD levels
+off before FPR rises steeply.</figcaption>
+</figure>
+<hr />
+<h2 id="configuration-levers-for-a-new-context">Configuration levers for
+a new context</h2>
+<p>To apply this workflow to a different river system in Nigeria, the
+following parameters are the primary adapters:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Where set</th>
+<th>What to change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STATE</code></td>
+<td><code>constants.py</code></td>
+<td>State name (e.g., <code>"Benue"</code>, <code>"Kogi"</code>)</td>
+</tr>
+<tr>
+<td><code>lga_pcodes</code></td>
+<td><code>constants.py</code></td>
+<td>P-codes for target LGAs in the new context</td>
+</tr>
+<tr>
+<td>Floodscan pixel file</td>
+<td><code>constants.py</code></td>
+<td>Path to pixel-level SFED parquet for the new area</td>
+</tr>
+<tr>
+<td>GloFAS station ID</td>
+<td><code>constants.py</code></td>
+<td>Key into the GloFAS reanalysis for the nearest calibrated
+station</td>
+</tr>
+<tr>
+<td>Google HYBAS catchments</td>
+<td><code>01_reporting_points</code></td>
+<td>Re-run with new LGA boundary to get candidate gauges</td>
+</tr>
+<tr>
+<td><code>WET_MONTHS</code></td>
+<td><code>constants.py</code></td>
+<td>Wet season months (default <code>[8,9,10,11]</code>; may shift
+upstream)</td>
+</tr>
+<tr>
+<td><code>ANALYSIS_START_YEAR</code></td>
+<td><code>constants.py</code></td>
+<td>Earliest year with Floodscan and streamflow overlap</td>
+</tr>
+</tbody>
+</table>
+<p>The notebooks are otherwise self-contained: running them in sequence
+from 01 through 07 with updated constants will produce a calibrated
+dual-trigger system for the new context. Steps 3–5 in particular
+(correlation ranking and grid search) require no manual intervention —
+they automatically identify the best-performing gauge set and threshold
+combination for the target area.</p>
+<hr />
+<h2 id="data-sources-summary">Data sources summary</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Coverage</th>
+<th>Role in workflow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google GRRR reanalysis</td>
+<td>~1980–2023</td>
+<td>Gauge ranking (NB 03), trigger calibration (NB 05–06)</td>
+</tr>
+<tr>
+<td>Google GRRR reforecast</td>
+<td>2003–2022</td>
+<td>Operational trigger evaluation (NB 06)</td>
+</tr>
+<tr>
+<td>GloFAS reanalysis (ERA5)</td>
+<td>1979–2023</td>
+<td>Readiness threshold calibration (NB 07)</td>
+</tr>
+<tr>
+<td>GloFAS ensemble reforecast</td>
+<td>2003–2022</td>
+<td>Readiness trigger evaluation (NB 07)</td>
+</tr>
+<tr>
+<td>Floodscan SFED</td>
+<td>1998–2025</td>
+<td>Flood ground truth throughout (NB 02–07)</td>
+</tr>
+<tr>
+<td>HYBAS outlet locations</td>
+<td>—</td>
+<td>Gauge lat/lon (separate from streamflow zarr)</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="context.html">Context &amp; background</a> for full
+dataset paths and processing notes.</p>
+</body>
+</html>
