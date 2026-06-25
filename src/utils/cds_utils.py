@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 from typing import Literal
 
@@ -29,9 +30,11 @@ def download_raw_cds_api_to_blob(
     keep_local_copy: bool = True,
     cds_url: str = None,
 ):
-    local_filepath = "temp" / Path(blob_name)
-    if not local_filepath.parent.exists():
-        os.makedirs(local_filepath.parent)
+    # Use /tmp on Databricks (repo checkout dir is read-only);
+    # respect CDS_TEMP_DIR env var or fall back to "temp" locally.
+    base = Path(os.getenv("CDS_TEMP_DIR", tempfile.gettempdir()))
+    local_filepath = base / Path(blob_name)
+    local_filepath.parent.mkdir(parents=True, exist_ok=True)
     c = _make_cds_client(url=cds_url)
     response = c.retrieve(dataset, request)
     response.download(local_filepath)
