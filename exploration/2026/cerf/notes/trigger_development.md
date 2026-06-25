@@ -19,7 +19,7 @@
 
 *All performance metrics are indicative given small sample sizes (n < 10 events). See [Performance summary](#performance-summary) for full detail.*
 
-*† The action trigger is calibrated and backtested using GRRR reanalysis (1998–2023) rather than reforecast because (a) the GRRR reforecast archive covers a shorter period and (b) the GRRR reanalysis has such strong forecast skill (Spearman ρ ≈ 0.71–0.74) that reanalysis is a valid historical proxy for calibration purposes. The reforecast is used for operational activation.*
+*† The action trigger is calibrated and backtested using GRRR reanalysis (1998–2023) rather than reforecast because (a) the GRRR reforecast archive covers a shorter period and (b) the GRRR reanalysis has such strong forecast skill that reanalysis is a valid historical proxy for calibration purposes. The reforecast is used for operational activation.*
 
 ---
 
