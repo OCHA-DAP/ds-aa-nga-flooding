@@ -11,7 +11,7 @@
 | **Data source** | Google GRRR reanalysis (calibration)† / reforecast (operational) | GloFAS ensemble reforecast |
 | **Monitoring point** | 10 gauges on the Benue, Adamawa | Wuroboki (G5004) |
 | **Condition** | ≥ 6 of 10 gauges simultaneously exceed their individual 4-yr empirical RP threshold | Ensemble mean > 3,132 m³/s at lead time ≤ 13 days |
-| **Threshold** | ~1,100–1,117 m³/s per gauge (empirical Weibull 4-yr RP from 26-yr reanalysis; note: well below Google's parametric 2-yr warning level of ~2,700 m³/s due to different methods — see below) | 3,132 m³/s (~5-yr GloFAS RP) |
+| **Threshold** | ~1,100–1,117 m³/s per gauge (empirical Weibull 4-yr RP from 26-yr reanalysis) | 3,132 m³/s (~5-yr GloFAS RP) |
 | **Return period** | ~4.5 years (22% annual probability) | ~3 years (33% annual probability) |
 | **Lead time to 4-yr RP exceedance** | −1 to +5d est. typical (reforecast + 5d offset); +46d in 1999 outlier | +2–7d (2 observed years) |
 | **Historical fire years** | 1998, 1999, 2012, 2018, 2019, 2022 (GRRR reanalysis†) | 2003, 2008, 2012, 2014, 2016, 2019, 2022 (GloFAS reforecast) |
@@ -20,8 +20,6 @@
 *All performance metrics are indicative given small sample sizes (n < 10 events). See [Performance summary](#performance-summary) for full detail.*
 
 *† The action trigger is calibrated and backtested using GRRR reanalysis (1998–2023) rather than reforecast because (a) the GRRR reforecast archive covers a shorter period and (b) the GRRR reanalysis has such strong forecast skill (Spearman ρ ≈ 0.71–0.74) that reanalysis is a valid historical proxy for calibration purposes. The reforecast is used for operational activation.*
-
-*‡ The ~1,100 m³/s empirical 4-yr Weibull threshold is not the same as Google's "2-year warning level." Google's parametric Gumbel-fitted thresholds give a 2-yr level of approximately 2,700 m³/s for these gauges — roughly 2.4× higher. The gap is a known consequence of comparing non-parametric Weibull (sensitive to the 26-year sample) against parametric Gumbel extrapolation on a longer record. Both are internally consistent within their respective methods.*
 
 ---
 
