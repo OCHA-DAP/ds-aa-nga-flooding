@@ -42,7 +42,8 @@
    - [Historical event and trigger year overview](#historical-event-and-trigger-year-overview)
    - [Year-by-year peak timing](#year-by-year-peak-timing)
    - [Summary of 2026 improvements](#summary-of-2026-improvements)
-7. [What was not resolved](#what-was-not-resolved)
+7. [NHF flash flood trigger](#nhf-flash-flood-trigger)
+8. [What was not resolved](#what-was-not-resolved)
 
 ---
 
@@ -571,6 +572,32 @@ Per-event detail plots showing Floodscan SFED (amber), GloFAS reanalysis (blue),
 The 2026 action trigger replaces the 2025 dual-model OR design (GloFAS at Wuroboki OR GRRR at Kangli) with a spatially distributed consensus condition within a single model: at least 6 of 10 upstream GRRR gauges must simultaneously exceed their individual 4-year empirical RP threshold. This corrects the main weakness of the 2025 design: the 2025 trigger missed the 2018 Floodscan event (a genuine ≥4-year flood year) while firing in 2003 (a 3-year event below the intended design threshold). The 2026 trigger fires in 2018 and not in 2003, improving F1 at the 4-year benchmark from 0.50 to 0.67. The trigger's overall return period (4.5 years) and activation frequency (22%) are unchanged.
 
 A new readiness trigger is introduced — absent from the 2025 framework — using the GloFAS ensemble reforecast at Wuroboki (> 3,132 m³/s, lead time ≤ 13 days). It fires approximately every 3 years and detected 3 of 4 action trigger years in the 2003–2022 evaluation window at lead times of 2–13 days, enabling pre-positioning decisions ahead of the GRRR-based action trigger. The 2025 GloFAS component — which used reanalysis, not reforecast, and had no explicit lead time requirement — was not suitable as a readiness trigger in the operational sense; the 2026 design makes this preparedness function explicit and independently evaluable.
+
+---
+
+## NHF flash flood trigger
+
+The NHF trigger targets **flash flooding** in BAY states (Borno, Adamawa, Yobe) — a distinct flood type and funding mechanism from the CERF riverine trigger above. Flash flood risk is based on the **NiHSA 2026 (Nigeria Humanitarian Snapshot Assessment)** at-risk communities dataset, which classifies 7,210 communities across BAY states into high, medium, and low inundation depth zones (high: 1,190; medium: 5,545; low: 475).
+
+### LGA targeting methodology
+
+LGAs are ranked by a weighted composite count of NiHSA at-risk communities, where the composite score = (High-risk × 3) + (Medium-risk × 2) + (Low-risk × 1). Weights reflect relative severity: high-depth zones carry three times the weight of low-depth zones. HNRP (Humanitarian Needs Revised Priority) status from OCHA's 2026 prioritisation is shown as a contextual indicator but does not influence the quantitative ranking.
+
+### Candidate LGAs
+
+Seven LGAs are identified as candidates for 2026 NHF targeting; **4 are expected to be selected following an ongoing LGA review**. Ranked by composite score:
+
+| Rank | LGA | State | High-risk | Medium-risk | Low-risk | Composite score | HNRP priority |
+|---|---|---|---|---|---|---|---|
+| 1 | Mobbar | Borno | 377 | 309 | 0 | 1,395 | Yes |
+| 2 | Geidam | Yobe | 207 | 133 | 0 | 747 | — |
+| 3 | Gubio | Borno | 105 | 221 | 77 | 712 | Yes |
+| 4 | Ngala | Borno | 76 | 188 | 0 | 452 | Yes |
+| 5 | Maiduguri | Borno | 73 | 196 | 0 | 442 | Yes |
+| 6 | Numan | Adamawa | 125 | 31 | 0 | 406 | — |
+| 7 | Yola North | Adamawa | 102 | 128 | 0 | 358 | — |
+
+4 of the 7 candidates (Mobbar, Gubio, Ngala, Maiduguri) are HNRP-prioritised, indicating good alignment between the quantitative flash flood ranking and OCHA's humanitarian prioritisation framework. Of these, **Maiduguri and Ngala** also appeared in the 2025 NHF trigger, providing continuity; the other four 2025 trigger LGAs (Bade, Bama, Karasuwa, Madagali) do not appear in the 2026 top-7 under the revised scoring.
 
 ---
 
