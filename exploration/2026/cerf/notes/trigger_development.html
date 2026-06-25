@@ -154,37 +154,10 @@ fires in 2003 (a 3-year Floodscan event, not a 4-year event) but not in
 2018. The 2026 trigger fires in 2018 (a genuine 4-year Floodscan event)
 but not in 2003. This directly reflects the design target shift from
 5-year RP (2025) to 4-year RP (2026).</p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>2025 POD / FAR / F1</th>
-<th>2026 POD / FAR / F1</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>3-yr RP events</td>
-<td>0.67 / 0.00 / 0.80</td>
-<td>0.67 / 0.00 / 0.80</td>
-</tr>
-<tr>
-<td><strong>4-yr RP events</strong></td>
-<td><strong>0.50 / 0.15 / 0.50</strong></td>
-<td><strong>0.67 / 0.10 / 0.67</strong></td>
-</tr>
-<tr>
-<td>5-yr RP events</td>
-<td>0.60 / 0.14 / 0.55</td>
-<td>0.60 / 0.14 / 0.55</td>
-</tr>
-</tbody>
-</table>
-<p>FAR = FP / (FP + TN). The improvement at the 4-year level is
-material: POD rises from 0.50 to 0.67 and F1 from 0.50 to 0.67. At
-3-year and 5-year benchmarks the triggers perform identically. Both miss
-2015 and 2023, which are genuine 4–5-year flood years not captured by
-either design.</p>
+<p>The improvement is concentrated at the 4-year RP benchmark (POD: 50%
+→ 67%, F1: 0.50 → 0.67); performance at 3-year and 5-year levels is
+identical across both designs. Both miss 2015 and 2023, which are
+genuine 4–5-year flood years not captured by either design.</p>
 <p>The 2026 design trades the 2025 trigger’s two-model redundancy
 (GloFAS + GRRR) for spatial redundancy within a single model (10
 geographically distributed GRRR gauges). This makes it more robust to
@@ -791,14 +764,13 @@ Gauges are ordered by Spearman ρ (descending); all are GRRR source.</p>
 trigger years. It is retained in the pool because a single anomalous
 gauge cannot dominate the ≥6/10 voting rule.</p>
 <hr />
-<h3 id="trigger-mechanism-statistics">Trigger mechanism statistics</h3>
+<h3 id="performance-summary">Performance summary</h3>
 <p>The 2026 action trigger was explicitly designed to preserve the
 <strong>same activation frequency as 2025</strong> — both fire 6 times
-in 26 reanalysis years, giving a Weibull RP of 4.5 years and an annual
-activation probability of 22%. The revision changes <em>which</em> years
-the trigger fires in (improving alignment with the 4-year RP design
-target) without altering the overall intervention frequency expected by
-the AA framework.</p>
+in 26 reanalysis years (RP = 4.5 yr, 22% annual probability). The
+revision changes <em>which</em> years fire, improving alignment with the
+4-year RP design target without altering the intervention frequency
+expected by the AA framework.</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -814,7 +786,7 @@ the AA framework.</p>
 </thead>
 <tbody>
 <tr>
-<td>Return period</td>
+<td>Action trigger RP</td>
 <td>4.5 years</td>
 <td>4.5 years</td>
 </tr>
@@ -824,14 +796,24 @@ the AA framework.</p>
 <td>22%</td>
 </tr>
 <tr>
-<td>Years activated (reanalysis, 1998–2023)</td>
+<td>Fire years (reanalysis, 1998–2023)</td>
 <td>1998, 1999, 2003, 2012, 2019, 2022</td>
 <td>1998, 1999, 2012, 2018, 2019, 2022</td>
 </tr>
 <tr>
-<td>Historical lead time (action)</td>
-<td>14–25 days</td>
-<td>≤ 7 days (GRRR reforecast horizon)</td>
+<td>Detection rate (POD) at 4-yr RP</td>
+<td>50%†</td>
+<td><strong>67%</strong></td>
+</tr>
+<tr>
+<td>FAR at 4-yr RP</td>
+<td>15%†</td>
+<td><strong>10%</strong></td>
+</tr>
+<tr>
+<td>F1 at 4-yr RP</td>
+<td>50%†</td>
+<td><strong>67%</strong></td>
 </tr>
 <tr>
 <td>Readiness trigger RP</td>
@@ -839,110 +821,24 @@ the AA framework.</p>
 <td>~3 years</td>
 </tr>
 <tr>
-<td>Readiness trigger years (2003–2022)</td>
+<td>Readiness fire years (2003–2022)</td>
 <td>—</td>
 <td>2003, 2008, 2012, 2014, 2016, 2019, 2022</td>
 </tr>
-<tr>
-<td>Readiness trigger lead time to action</td>
-<td>—</td>
-<td>up to 13 days</td>
-</tr>
 </tbody>
 </table>
-<h3 id="accuracy-metrics">Accuracy metrics</h3>
-<p>Action trigger performance against Floodscan SFED annual maxima,
-1998–2023 (n = 26 years). FAR = FP / (FP + TN).</p>
-<table style="width:100%;">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
-<thead>
-<tr>
-<th>Trigger</th>
-<th>Benchmark</th>
-<th>Accuracy</th>
-<th>Detection rate</th>
-<th>FAR</th>
-<th>Precision</th>
-<th>F1</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2025 (endorsed)</td>
-<td>3-yr RP</td>
-<td>88%</td>
-<td>67%</td>
-<td>18%†</td>
-<td>100%</td>
-<td>80%</td>
-</tr>
-<tr>
-<td>2025 (endorsed)</td>
-<td>4-yr RP</td>
-<td>77%†</td>
-<td>50%†</td>
-<td>15%†</td>
-<td>50%†</td>
-<td>50%†</td>
-</tr>
-<tr>
-<td>2025 (endorsed)</td>
-<td>5-yr RP</td>
-<td>81%</td>
-<td>60%</td>
-<td>10%†</td>
-<td>50%</td>
-<td>55%</td>
-</tr>
-<tr>
-<td><strong>2026</strong></td>
-<td><strong>3-yr RP</strong></td>
-<td><strong>88%</strong></td>
-<td><strong>67%</strong></td>
-<td><strong>0%</strong></td>
-<td><strong>100%</strong></td>
-<td><strong>80%</strong></td>
-</tr>
-<tr>
-<td><strong>2026</strong></td>
-<td><strong>4-yr RP</strong></td>
-<td><strong>85%</strong></td>
-<td><strong>67%</strong></td>
-<td><strong>10%</strong></td>
-<td><strong>67%</strong></td>
-<td><strong>67%</strong></td>
-</tr>
-<tr>
-<td><strong>2026</strong></td>
-<td><strong>5-yr RP</strong></td>
-<td><strong>81%</strong></td>
-<td><strong>60%</strong></td>
-<td><strong>14%</strong></td>
-<td><strong>50%</strong></td>
-<td><strong>55%</strong></td>
-</tr>
-</tbody>
-</table>
-<p>† 2025 figures at 3-yr and 5-yr RP are taken from the endorsed
-framework PDF and reflect a different evaluation period. The 2025 4-yr
-row is computed here using the same 1998–2023 evaluation period as the
-2026 rows for direct comparability.</p>
-<p>Event year sets (Weibull, n = 26): 3-yr RP → {1998, 1999, 2003, 2012,
-2015, 2018, 2019, 2022, 2023}; 4-yr RP → {1999, 2012, 2015, 2018, 2022,
-2023}; 5-yr RP → {1999, 2012, 2015, 2022, 2023}.</p>
-<p><strong>Small sample caveat:</strong> The positive event counts are
-small — 9 events at 3-yr RP, 6 at 4-yr RP, and 5 at 5-yr RP. Each
-individual year shifts POD by 11–20 percentage points and F1 by a
-similar margin. All metrics should be treated as indicative rather than
-statistically robust estimates of true trigger skill.</p>
+<p>Accuracy evaluated against Floodscan SFED annual maxima, 1998–2023 (n
+= 26 years) at the <strong>4-year RP</strong> design target. FAR = FP /
+(FP + TN). At 3-yr and 5-yr RP benchmarks, both triggers perform
+identically.</p>
+<p>† 2025 4-yr metrics computed here on the same 1998–2023 period for
+direct comparability; 2025 figures at 3-yr and 5-yr RP are from the
+endorsed framework PDF and may reflect a different evaluation
+period.</p>
+<p><strong>Small sample caveat:</strong> With only 6 positive events at
+the 4-yr RP level, each individual year shifts POD and F1 by ~17
+percentage points. All metrics should be treated as indicative rather
+than statistically robust.</p>
 <h3 id="readiness-trigger-performance">Readiness trigger
 performance</h3>
 <p>Readiness trigger configuration: <strong>GloFAS ensemble mean &gt;
@@ -1008,34 +904,13 @@ the 2026 action trigger fire years within that window: {2012, 2018,
 </tr>
 </tbody>
 </table>
-<p>Lead time from readiness to action trigger in confirmed TP years:</p>
-<table>
-<thead>
-<tr>
-<th>Year</th>
-<th>Lead time</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2012</td>
-<td>+2 days</td>
-</tr>
-<tr>
-<td>2019</td>
-<td>+46 days</td>
-</tr>
-<tr>
-<td>2022</td>
-<td>+13 days</td>
-</tr>
-</tbody>
-</table>
-<p>The 2019 lead of 46 days reflects an unusually early GloFAS signal
-rather than a reliable early warning; the operationally expected advance
-notice is 2–13 days. The 2018 miss cannot be resolved by threshold or
-lead time adjustment — the GloFAS ensemble systematically underforecast
-the 2018 event at all short lead times.</p>
+<p>Lead times ahead of the action trigger were +2d (2012), +46d (2019),
+and +13d (2022). The 2019 figure reflects an unusually early GloFAS
+signal; the operationally expected window is 2–13 days. Full lead time
+detail relative to flood onset is in the Trigger timing performance
+section below. The 2018 miss cannot be resolved by threshold or lead
+time adjustment — the GloFAS ensemble systematically underforecast the
+2018 event at all short lead times.</p>
 <p><strong>Small sample caveat:</strong> The readiness trigger is
 benchmarked against only 4 action trigger years in the 2003–2022
 evaluation window. Each year shifts POD by 25 percentage points; the 75%
