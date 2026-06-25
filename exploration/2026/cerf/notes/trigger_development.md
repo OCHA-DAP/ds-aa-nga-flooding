@@ -4,6 +4,23 @@
 
 ---
 
+## Proposed trigger — summary
+
+| | Action trigger | Readiness trigger |
+|---|---|---|
+| **Data source** | Google GRRR reforecast | GloFAS ensemble reforecast |
+| **Monitoring point** | 10 gauges on the Benue, Adamawa | Wuroboki (G5004) |
+| **Condition** | ≥ 6 of 10 gauges simultaneously exceed their individual 4-yr empirical RP threshold | Ensemble mean > 3,132 m³/s at lead time ≤ 13 days |
+| **Threshold** | ~1,100–1,117 m³/s per gauge (~2-yr Google warning level) | 3,132 m³/s (~5-yr GloFAS RP) |
+| **Return period** | ~4.5 years (22% annual probability) | ~3 years (33% annual probability) |
+| **Lead time to flood peak** | +23–34 days est. (reanalysis + 5d forecast offset) | ~31 days (2 observed years) |
+| **Fire years (reanalysis)** | 1998, 1999, 2012, 2018, 2019, 2022 | 2003, 2008, 2012, 2014, 2016, 2019, 2022 |
+| **Detection rate at 4-yr RP** | 67% (4 of 6 events) | 75% of action years in 2003–2022 (3 of 4) |
+
+*All performance metrics are indicative given small sample sizes (n < 10 events). See [Performance summary](#performance-summary) for full detail.*
+
+---
+
 ## Starting point
 
 The 2025 Adamawa trigger was a single-station OR trigger: it fired if either GloFAS reanalysis (≥ 3,132 m³/s) or Google GRRR reanalysis (≥ 1,195 m³/s) exceeded its threshold at Wuroboki on any wet-season day. Both thresholds were calibrated to approximately 5.4-year empirical RP and evaluated against Floodscan 5-year RP events.
