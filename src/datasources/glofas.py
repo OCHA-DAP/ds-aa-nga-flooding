@@ -1,5 +1,6 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
@@ -579,6 +580,26 @@ def process_glofas_reforecast(
     stratus.upload_parquet_to_blob(df, out_blob)
 
 
+PROGRESS_BLOB = (
+    f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+    "reforecast_country_progress.parquet"
+)
+
+
+def _load_progress(prod_dev: Literal["prod", "dev"] = "dev") -> pd.DataFrame:
+    if blob.check_blob_exists(PROGRESS_BLOB, prod_dev=prod_dev):
+        return blob.load_parquet_from_blob(PROGRESS_BLOB, prod_dev=prod_dev)
+    return pd.DataFrame(
+        columns=["product_type", "year", "lt_start", "lt_end", "downloaded_at"]
+    )
+
+
+def _save_progress(
+    progress: pd.DataFrame, prod_dev: Literal["prod", "dev"] = "dev"
+) -> None:
+    blob.upload_parquet_to_blob(PROGRESS_BLOB, progress, prod_dev=prod_dev)
+
+
 def get_blob_name_country(
     year: int,
     product_type: Literal["ensemble", "control"],
@@ -692,24 +713,65 @@ def download_glofas_reforecast_country(
     clobber: bool = False,
     max_workers: int = 4,
     cds_url: str = None,
+    prod_dev: Literal["prod", "dev"] = "dev",
 ) -> None:
-    """Download whole-Nigeria GloFAS reforecast for multiple years.
+    """Download whole-Nigeria GloFAS reforecast, iterating leadtime chunks first.
 
-    Processes years in order (lowest first) so the blob store fills up
-    progressively and partial runs can resume without re-downloading.
-    Within each year, up to max_workers leadtime chunks run concurrently.
+    Iterates leadtime chunks in the outer loop and years in the inner loop so
+    the full historical record for short leadtimes is available before longer
+    ones begin. Up to max_workers years run concurrently per chunk. After each
+    successful download the progress parquet is updated in blob so a crash
+    mid-run doesn't lose track of completed files.
     """
-    for year in tqdm(years, desc=f"country reforecast ({product_type})"):
-        download_glofas_reforecast_country_year(
-            year=year,
-            product_type=product_type,
-            max_leadtime_days=max_leadtime_days,
-            max_leadtime_chunk=max_leadtime_chunk,
-            rainy_season_only=rainy_season_only,
-            clobber=clobber,
-            max_workers=max_workers,
-            cds_url=cds_url,
-        )
+    months = RAINY_SEASON_MONTHS_NUM if rainy_season_only else ALL_MONTHS_NUM
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+
+    progress = _load_progress(prod_dev)
+
+    for lt_chunk in tqdm(leadtime_chunks, desc=f"lt chunks ({product_type})"):
+        lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(
+                    _download_country_chunk,
+                    year,
+                    lt_chunk,
+                    product_type,
+                    months,
+                    clobber,
+                    cds_url,
+                ): year
+                for year in years
+            }
+            for future in tqdm(
+                as_completed(futures),
+                total=len(futures),
+                desc=f"lt{lt_start}-{lt_end}",
+            ):
+                year = futures[future]
+                try:
+                    future.result()
+                    row = pd.DataFrame(
+                        [
+                            {
+                                "product_type": product_type,
+                                "year": year,
+                                "lt_start": lt_start,
+                                "lt_end": lt_end,
+                                "downloaded_at": datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
+                            }
+                        ]
+                    )
+                    progress = pd.concat([progress, row], ignore_index=True)
+                    _save_progress(progress, prod_dev)
+                except Exception as e:
+                    print(f"Failed year={year} lt={lt_start}-{lt_end}: {e}")
 
 
 def load_glofas_reforecast_country_pixel(
