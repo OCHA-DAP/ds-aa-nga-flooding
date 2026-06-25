@@ -63,7 +63,7 @@ resources:
         - name: rainy_season_only
           default: "true"
         - name: cds_url
-          default: ""
+          default: "https://ewds.climate.copernicus.eu/api"
 
       job_clusters:
         - job_cluster_key: main
