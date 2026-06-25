@@ -1,0 +1,104 @@
+# Databricks Asset Bundle — ds-aa-nga-flooding
+#
+# Currently defines one job: download_glofas_reforecast_country
+# (long-running one-shot download of the whole-Nigeria GloFAS reforecast).
+#
+# Common commands:
+#   databricks bundle validate -t dev -p DEFAULT
+#   databricks bundle deploy   -t dev -p DEFAULT
+#   databricks bundle run download_glofas_reforecast_country -t dev -p DEFAULT
+#
+# Override parameters at run time with --python-named-params:
+#   databricks bundle run download_glofas_reforecast_country -t dev -p DEFAULT \
+#       --python-named-params "product_type=control,start_year=2003,end_year=2024"
+
+bundle:
+  name: ds-aa-nga-flooding
+
+variables:
+  git_branch:
+    description: Repo branch the cluster pulls source from
+    default: main
+
+resources:
+  jobs:
+
+    download_glofas_reforecast_country:
+      name: Download GloFAS Reforecast (Country)
+      description: >
+        Download whole-Nigeria GloFAS reforecast from CDS API and save to blob.
+        Idempotent — skips files already present. Expected runtime: days.
+
+      permissions:
+        - group_name: dsci
+          level: CAN_MANAGE
+
+      git_source:
+        git_url: https://github.com/OCHA-DAP/ds-aa-nga-flooding.git
+        git_provider: gitHub
+        git_branch: ${var.git_branch}
+
+      # No schedule — trigger manually via UI or `databricks bundle run`.
+      # max_concurrent_runs: 1 prevents accidental double-kicks.
+      max_concurrent_runs: 1
+
+      # Full run:
+      #   databricks bundle run download_glofas_reforecast_country -t dev -p DEFAULT
+      #
+      # Smoke test (1 year, 1 leadtime chunk — ~30-60 min):
+      #   databricks bundle run download_glofas_reforecast_country -t dev -p DEFAULT \
+      #     --python-named-params "start_year=2003,end_year=2003,max_leadtime_days=4,max_leadtime_chunk=4"
+
+      parameters:
+        - name: product_type
+          default: "ensemble"
+        - name: start_year
+          default: "2003"
+        - name: end_year
+          default: "2024"
+        - name: max_leadtime_days
+          default: "16"
+        - name: max_leadtime_chunk
+          default: "4"
+        - name: rainy_season_only
+          default: "true"
+
+      job_clusters:
+        - job_cluster_key: main
+          new_cluster:
+            # Job Compute policy injects CDSAPI_KEY + DSCI_AZ_* from the dsci
+            # secret scope. CDSAPI_URL is not in that scope, so set it here.
+            policy_id: "000C79D951EAF0D6"
+            apply_policy_default_values: true
+            spark_env_vars:
+              CDSAPI_URL: "https://ewds.climate.copernicus.eu/api"
+
+      tasks:
+        - task_key: download
+          job_cluster_key: main
+          spark_python_task:
+            python_file: pipelines/download_glofas_reforecast_country.py
+            source: GIT
+            parameters:
+              - "--product-type"
+              - "{{job.parameters.product_type}}"
+              - "--start-year"
+              - "{{job.parameters.start_year}}"
+              - "--end-year"
+              - "{{job.parameters.end_year}}"
+              - "--max-leadtime-days"
+              - "{{job.parameters.max_leadtime_days}}"
+              - "--max-leadtime-chunk"
+              - "{{job.parameters.max_leadtime_chunk}}"
+              - "--rainy-season-only"
+              - "{{job.parameters.rainy_season_only}}"
+
+targets:
+  dev:
+    mode: development
+
+  prod:
+    mode: production
+    run_as:
+      # TODO: replace with a service principal once one is provisioned for this repo
+      user_name: adm.tdowning@global.un.org
