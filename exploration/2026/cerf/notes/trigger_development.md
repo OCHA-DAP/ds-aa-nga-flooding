@@ -244,7 +244,7 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 <tr>
 <td class="heatmap-label">Action trigger (2026)</td>
 <td class="heatmap-cell" style="background:#F2645A" title="1998"></td>
-<td class="heatmap-cell" style="background:#F2645A" title="1999">+41</td>
+<td class="heatmap-cell" style="background:#F2645A" title="1999"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2000"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2001"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2002"></td>
@@ -257,17 +257,17 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 <td class="heatmap-cell" style="background:#eef1f4" title="2009"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2010"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2011"></td>
-<td class="heatmap-cell" style="background:#F2645A" title="2012">0</td>
+<td class="heatmap-cell" style="background:#F2645A" title="2012"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2013"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2014"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2015"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2016"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2017"></td>
-<td class="heatmap-cell" style="background:#F2645A" title="2018">−1</td>
+<td class="heatmap-cell" style="background:#F2645A" title="2018"></td>
 <td class="heatmap-cell" style="background:#F2645A" title="2019"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2020"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2021"></td>
-<td class="heatmap-cell" style="background:#F2645A" title="2022">−6</td>
+<td class="heatmap-cell" style="background:#F2645A" title="2022"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2023"></td>
 </tr>
 <tr>
@@ -286,7 +286,7 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 <td class="heatmap-cell" style="background:#eef1f4" title="2009"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2010"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2011"></td>
-<td class="heatmap-cell" style="background:#1EBFB3" title="2012">+2</td>
+<td class="heatmap-cell" style="background:#1EBFB3" title="2012"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2013"></td>
 <td class="heatmap-cell" style="background:#1EBFB3" title="2014"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2015"></td>
@@ -296,7 +296,7 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 <td class="heatmap-cell" style="background:#1EBFB3" title="2019"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2020"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2021"></td>
-<td class="heatmap-cell" style="background:#1EBFB3" title="2022">+7</td>
+<td class="heatmap-cell" style="background:#1EBFB3" title="2022"></td>
 <td class="heatmap-cell" style="background:#d8dde3" title="2023"></td>
 </tr>
 </tbody>
@@ -309,7 +309,7 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#1EBFB3;"></span>Readiness trigger fired</span>
 <span class="heatmap-legend-item"><span class="heatmap-swatch" style="background:#d8dde3; border:1px solid #bbc4ce;"></span>Outside eval. period</span>
 </div>
-<p class="heatmap-caption">Numbers in trigger rows show days between trigger activation and first Floodscan ≥4-yr RP crossing that wet season (positive = trigger fired before flood; only shown when 4-yr RP was reached). Readiness values computed from GloFAS reforecast first issue date; action trigger values from GRRR reanalysis first exceedance date.</p>
+<p class="heatmap-caption">Coloured cells indicate trigger activation (action trigger: coral; readiness trigger: teal). Floodscan flood event years are shown at three RP levels. Grey cells in the readiness row indicate years outside the GloFAS reforecast evaluation period (2003–2022). Lead time detail is in the Trigger timing performance section below.</p>
 </div>
 <!-- markdownlint-enable MD033 -->
 
