@@ -100,7 +100,7 @@ reanalysis)</td>
 </tr>
 <tr>
 <td><strong>Lead time to 4-yr RP exceedance</strong></td>
-<td>−1 to +5d est. typical (reforecast + 5d offset); +46d in 1999
+<td>−1 to +5d est. typical (reanalysis date − 5d); +46d in 1999
 outlier</td>
 <td>+2–7d (2 observed years)</td>
 </tr>
@@ -513,32 +513,34 @@ lead) substantially affect any summary statistic. Individual year values
 are more meaningful than averages.</p>
 <h4 id="action-trigger-timing">Action trigger timing</h4>
 <p>Lead times are from the <strong>GRRR reanalysis</strong> (historical
-proxy). The GRRR reforecast adds approximately <strong>+5 days</strong>
-of advance warning — estimated operational lead times (reanalysis lead +
-5d) are shown in the final two columns. These are illustrative
-estimates: in practice, reforecast lead will vary by year depending on
-how quickly the upstream flood signal develops.</p>
-<table>
+proxy). The estimated reforecast fire date is the reanalysis date minus
+5 days — i.e. the reforecast is expected to detect the signal 5 days
+earlier. These are illustrative estimates; in practice, reforecast lead
+will vary by year.</p>
+<table style="width:100%;">
 <colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
 </colgroup>
 <thead>
 <tr>
 <th>Year</th>
 <th>Reanalysis fires</th>
+<th>Est. reforecast fires (−5d)</th>
 <th>FS 4yr RP first crosses</th>
-<th>Lead to RP</th>
-<th>Lead to RP (est. +5d)</th>
+<th>Lead to RP (reanalysis)</th>
+<th>Lead to RP (est. reforecast)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>1999</td>
 <td>7 Sep</td>
+<td>2 Sep</td>
 <td>18 Oct</td>
 <td>+41d</td>
 <td><strong>+46d</strong></td>
@@ -546,12 +548,14 @@ how quickly the upstream flood signal develops.</p>
 <tr>
 <td>2012</td>
 <td>23 Aug</td>
+<td>18 Aug</td>
 <td>23 Aug</td>
 <td>0d</td>
 <td><strong>+5d</strong></td>
 </tr>
 <tr>
 <td>2015</td>
+<td>—</td>
 <td>—</td>
 <td>1 Sep</td>
 <td><em>miss</em></td>
@@ -560,6 +564,7 @@ how quickly the upstream flood signal develops.</p>
 <tr>
 <td>2018</td>
 <td>13 Sep</td>
+<td>8 Sep</td>
 <td>12 Sep</td>
 <td>−1d</td>
 <td><strong>+4d</strong></td>
@@ -567,12 +572,14 @@ how quickly the upstream flood signal develops.</p>
 <tr>
 <td>2022</td>
 <td>3 Sep</td>
+<td>29 Aug</td>
 <td>28 Aug</td>
 <td>−6d</td>
 <td><strong>−1d</strong></td>
 </tr>
 <tr>
 <td>2023</td>
+<td>—</td>
 <td>—</td>
 <td>6 Oct</td>
 <td><em>miss</em></td>
@@ -582,18 +589,20 @@ how quickly the upstream flood signal develops.</p>
 </table>
 <p>Excluding the atypical 1999 season (an early upstream signal 41 days
 before RP exceedance), the GRRR reanalysis fires at roughly the same
-time the flood threshold is first crossed (0 to −6 days). With the +5d
+time the flood threshold is first crossed (0 to −6 days). With the −5d
 reforecast offset, the estimated operational lead to the 4yr RP crossing
 is <strong>+4 to +5 days</strong> (2012, 2018) or approximately −1 day
 in 2022 (flood rose unusually fast). The 1999 figure (+41d reanalysis,
-estimated <strong>+46d</strong> with forecast) is an outlier — an
-unusually early upstream signal — and is not representative of the
-typical operational window.</p>
+estimated <strong>+46d</strong> with forecast) is an outlier and not
+representative of the typical operational window.</p>
 <h4 id="readiness-trigger-glofas-reforecast">Readiness trigger (GloFAS
 reforecast)</h4>
 <p>Lead times are from the <strong>GloFAS reforecast first fire
 date</strong> (first issue date with ensemble mean &gt; 3,132 m³/s at LT
 ≤ 13d). Evaluated against Floodscan 4-year RP event years only.</p>
+<p>Lead to action trigger is relative to the <strong>estimated
+reforecast fire date</strong> (reanalysis − 5d): 18 Aug in 2012, 29 Aug
+in 2022.</p>
 <table>
 <colgroup>
 <col style="width: 20%" />
@@ -607,7 +616,7 @@ date</strong> (first issue date with ensemble mean &gt; 3,132 m³/s at LT
 <th>Year</th>
 <th>Readiness fires</th>
 <th>Lead to RP exceedance</th>
-<th>Lead to action trigger</th>
+<th>Lead to est. action trigger</th>
 <th>Notes</th>
 </tr>
 </thead>
@@ -616,8 +625,8 @@ date</strong> (first issue date with ensemble mean &gt; 3,132 m³/s at LT
 <td>2012</td>
 <td>21 Aug</td>
 <td>+2d</td>
-<td>+2d</td>
-<td>TP — both triggers fire</td>
+<td>−3d</td>
+<td>TP — readiness fires 3d <em>after</em> est. action</td>
 </tr>
 <tr>
 <td>2018</td>
@@ -630,16 +639,18 @@ date</strong> (first issue date with ensemble mean &gt; 3,132 m³/s at LT
 <td>2022</td>
 <td>21 Aug</td>
 <td>+7d</td>
-<td>+13d</td>
-<td>TP — readiness fires 13d before action</td>
+<td>+8d</td>
+<td>TP — readiness fires 8d before est. action</td>
 </tr>
 </tbody>
 </table>
 <p>In both detected years the readiness trigger fires on 21 August,
-providing <strong>2–7 days</strong> ahead of the 4yr RP exceedance and
-<strong>2–13 days</strong> ahead of the action trigger. No forecast
-offset is added — the GloFAS reforecast is already an operational
-product. The 2018 miss is irreducible within the LT ≤ 13d
+providing <strong>2–7 days</strong> ahead of the 4yr RP exceedance.
+Relative to the estimated reforecast action trigger, the readiness fires
+3 days <em>after</em> in 2012 (the action trigger’s estimated reforecast
+date is 18 Aug, before readiness) and 8 days <em>before</em> in 2022. No
+forecast offset is needed here — the GloFAS reforecast is already an
+operational product. The 2018 miss is irreducible within the LT ≤ 13d
 constraint.</p>
 <hr />
 <h2 id="trigger-specifications">Trigger specifications</h2>

@@ -35,7 +35,7 @@ The 2026 work revisited this design with two goals: to evaluate whether a spatia
 | **Condition** | ≥ 6 of 10 gauges simultaneously exceed their individual 4-yr empirical RP threshold | Ensemble mean > 3,132 m³/s at lead time ≤ 13 days |
 | **Threshold** | ~1,100–1,117 m³/s per gauge (empirical Weibull 4-yr RP from 26-yr reanalysis) | 3,132 m³/s (~5-yr GloFAS RP) |
 | **Return period** | ~4.5 years (22% annual probability) | ~3 years (33% annual probability) |
-| **Lead time to 4-yr RP exceedance** | −1 to +5d est. typical (reforecast + 5d offset); +46d in 1999 outlier | +2–7d (2 observed years) |
+| **Lead time to 4-yr RP exceedance** | −1 to +5d est. typical (reanalysis date − 5d); +46d in 1999 outlier | +2–7d (2 observed years) |
 | **Historical fire years** | 1998, 1999, 2012, 2018, 2019, 2022 (GRRR reanalysis†) | 2003, 2008, 2012, 2014, 2016, 2019, 2022 (GloFAS reforecast) |
 | **Detection rate at 4-yr RP** | 67% (4 of 6 events) | 75% of action years in 2003–2022 (3 of 4) |
 
@@ -207,30 +207,32 @@ Timing is measured relative to the **first day Floodscan SFED exceeds the 4-year
 
 #### Action trigger timing
 
-Lead times are from the **GRRR reanalysis** (historical proxy). The GRRR reforecast adds approximately **+5 days** of advance warning — estimated operational lead times (reanalysis lead + 5d) are shown in the final two columns. These are illustrative estimates: in practice, reforecast lead will vary by year depending on how quickly the upstream flood signal develops.
+Lead times are from the **GRRR reanalysis** (historical proxy). The estimated reforecast fire date is the reanalysis date minus 5 days — i.e. the reforecast is expected to detect the signal 5 days earlier. These are illustrative estimates; in practice, reforecast lead will vary by year.
 
-| Year | Reanalysis fires | FS 4yr RP first crosses | Lead to RP | Lead to RP (est. +5d) |
-|---|---|---|---|---|
-| 1999 | 7 Sep | 18 Oct | +41d | **+46d** |
-| 2012 | 23 Aug | 23 Aug | 0d | **+5d** |
-| 2015 | — | 1 Sep | *miss* | — |
-| 2018 | 13 Sep | 12 Sep | −1d | **+4d** |
-| 2022 | 3 Sep | 28 Aug | −6d | **−1d** |
-| 2023 | — | 6 Oct | *miss* | — |
+| Year | Reanalysis fires | Est. reforecast fires (−5d) | FS 4yr RP first crosses | Lead to RP (reanalysis) | Lead to RP (est. reforecast) |
+|---|---|---|---|---|---|
+| 1999 | 7 Sep | 2 Sep | 18 Oct | +41d | **+46d** |
+| 2012 | 23 Aug | 18 Aug | 23 Aug | 0d | **+5d** |
+| 2015 | — | — | 1 Sep | *miss* | — |
+| 2018 | 13 Sep | 8 Sep | 12 Sep | −1d | **+4d** |
+| 2022 | 3 Sep | 29 Aug | 28 Aug | −6d | **−1d** |
+| 2023 | — | — | 6 Oct | *miss* | — |
 
-Excluding the atypical 1999 season (an early upstream signal 41 days before RP exceedance), the GRRR reanalysis fires at roughly the same time the flood threshold is first crossed (0 to −6 days). With the +5d reforecast offset, the estimated operational lead to the 4yr RP crossing is **+4 to +5 days** (2012, 2018) or approximately −1 day in 2022 (flood rose unusually fast). The 1999 figure (+41d reanalysis, estimated **+46d** with forecast) is an outlier — an unusually early upstream signal — and is not representative of the typical operational window.
+Excluding the atypical 1999 season (an early upstream signal 41 days before RP exceedance), the GRRR reanalysis fires at roughly the same time the flood threshold is first crossed (0 to −6 days). With the −5d reforecast offset, the estimated operational lead to the 4yr RP crossing is **+4 to +5 days** (2012, 2018) or approximately −1 day in 2022 (flood rose unusually fast). The 1999 figure (+41d reanalysis, estimated **+46d** with forecast) is an outlier and not representative of the typical operational window.
 
 #### Readiness trigger (GloFAS reforecast)
 
 Lead times are from the **GloFAS reforecast first fire date** (first issue date with ensemble mean > 3,132 m³/s at LT ≤ 13d). Evaluated against Floodscan 4-year RP event years only.
 
-| Year | Readiness fires | Lead to RP exceedance | Lead to action trigger | Notes |
-|---|---|---|---|---|
-| 2012 | 21 Aug | +2d | +2d | TP — both triggers fire |
-| 2018 | — | — | — | FN — GloFAS underforecast at LT ≤ 13d |
-| 2022 | 21 Aug | +7d | +13d | TP — readiness fires 13d before action |
+Lead to action trigger is relative to the **estimated reforecast fire date** (reanalysis − 5d): 18 Aug in 2012, 29 Aug in 2022.
 
-In both detected years the readiness trigger fires on 21 August, providing **2–7 days** ahead of the 4yr RP exceedance and **2–13 days** ahead of the action trigger. No forecast offset is added — the GloFAS reforecast is already an operational product. The 2018 miss is irreducible within the LT ≤ 13d constraint.
+| Year | Readiness fires | Lead to RP exceedance | Lead to est. action trigger | Notes |
+|---|---|---|---|---|
+| 2012 | 21 Aug | +2d | −3d | TP — readiness fires 3d *after* est. action |
+| 2018 | — | — | — | FN — GloFAS underforecast at LT ≤ 13d |
+| 2022 | 21 Aug | +7d | +8d | TP — readiness fires 8d before est. action |
+
+In both detected years the readiness trigger fires on 21 August, providing **2–7 days** ahead of the 4yr RP exceedance. Relative to the estimated reforecast action trigger, the readiness fires 3 days *after* in 2012 (the action trigger's estimated reforecast date is 18 Aug, before readiness) and 8 days *before* in 2022. No forecast offset is needed here — the GloFAS reforecast is already an operational product. The 2018 miss is irreducible within the LT ≤ 13d constraint.
 
 ---
 
