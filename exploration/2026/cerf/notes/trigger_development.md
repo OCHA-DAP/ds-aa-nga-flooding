@@ -99,6 +99,8 @@ A grid search was run over two parameters: the per-gauge return period threshold
 
 The selected configuration is: **≥ 6 of 10 gauges simultaneously exceed their individual 4-year empirical Weibull RP threshold on at least one wet-season day.** Empirical 4-year thresholds range from 1,101 to 1,117 m³/s across the main-channel gauges (and 143 m³/s for the outlier). The ≥6/10 requirement (60%) balances spatial corroboration against sensitivity: lower fractions pick up isolated gauge noise, higher fractions miss events where flooding is spatially concentrated.
 
+The ≥8/10 configuration achieved a higher F1 score in the grid search but was not selected. Requiring 8 gauges fires fewer times historically, which raises the overall framework return period and would reduce activation frequency relative to the 2025 trigger. Maintaining **6 fire years in 26** (RP ≈ 4.5 yr) was an explicit design constraint to keep the 2026 trigger consistent with the intervention frequency endorsed in the 2025 framework.
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary>Figure: Grid search results (POD/FAR/F1 by gauge RP threshold and count)</summary>
