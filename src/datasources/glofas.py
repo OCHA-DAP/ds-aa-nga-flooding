@@ -755,30 +755,31 @@ def download_glofas_reforecast_country(
                 year = futures[future]
                 try:
                     future.result()
-                    already = (
-                        (progress["product_type"] == product_type)
-                        & (progress["year"] == year)
-                        & (progress["lt_start"] == lt_start)
-                        & (progress["lt_end"] == lt_end)
-                    ).any()
-                    if not already:
-                        row = pd.DataFrame(
-                            [
-                                {
-                                    "product_type": product_type,
-                                    "year": year,
-                                    "lt_start": lt_start,
-                                    "lt_end": lt_end,
-                                    "downloaded_at": datetime.now(
-                                        timezone.utc
-                                    ).isoformat(),
-                                }
-                            ]
-                        )
-                        progress = pd.concat([progress, row], ignore_index=True)
-                        _save_progress(progress, prod_dev)
                 except Exception as e:
                     print(f"Failed year={year} lt={lt_start}-{lt_end}: {e}")
+                    continue
+                already = (
+                    (progress["product_type"] == product_type)
+                    & (progress["year"] == year)
+                    & (progress["lt_start"] == lt_start)
+                    & (progress["lt_end"] == lt_end)
+                ).any()
+                if not already:
+                    row = pd.DataFrame(
+                        [
+                            {
+                                "product_type": product_type,
+                                "year": year,
+                                "lt_start": lt_start,
+                                "lt_end": lt_end,
+                                "downloaded_at": datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
+                            }
+                        ]
+                    )
+                    progress = pd.concat([progress, row], ignore_index=True)
+                    _save_progress(progress, prod_dev)
 
 
 def load_glofas_reforecast_country_pixel(
