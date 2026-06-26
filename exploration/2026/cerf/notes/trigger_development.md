@@ -4,6 +4,28 @@
 
 ---
 
+## Contents
+
+1. [Background](#background)
+2. [Proposed trigger — summary](#proposed-trigger--summary)
+3. [Data and methods](#data-and-methods)
+4. [Action trigger](#action-trigger)
+5. [Readiness trigger](#readiness-trigger)
+6. [Performance evaluation](#performance-evaluation)
+7. [Trigger specifications](#trigger-specifications)
+8. [NHF flash flood trigger](#nhf-flash-flood-trigger)
+9. [Appendix](#appendix)
+
+---
+
+## Background
+
+The 2025 Adamawa trigger was a single-station OR trigger: it fired if either GloFAS reanalysis (≥ 3,132 m³/s) or Google GRRR reanalysis (≥ 1,195 m³/s) exceeded its threshold at Wuroboki on any wet-season day. Both thresholds were calibrated to approximately 5.4-year empirical RP and evaluated against Floodscan 5-year RP events.
+
+The 2026 work revisited this design with two goals: to evaluate whether a spatially distributed, multi-gauge action trigger would be more robust than a single-station approach, and to develop an independent GloFAS reforecast readiness trigger that could provide advance warning ahead of the action trigger.
+
+---
+
 ## Proposed trigger — summary
 
 | | Action trigger | Readiness trigger |
@@ -20,27 +42,6 @@
 *All performance metrics are indicative given small sample sizes (n < 10 events). See [Performance summary](#performance-summary) for full detail.*
 
 *† The action trigger is calibrated and backtested using GRRR reanalysis (1998–2023) rather than reforecast because (a) the GRRR reforecast archive covers a shorter period and (b) the GRRR reanalysis has such strong forecast skill that reanalysis is a valid historical proxy for calibration purposes. The reforecast is used for operational activation.*
-
----
-
-## Contents
-
-1. [Background](#background)
-2. [Data and methods](#data-and-methods)
-3. [Action trigger](#action-trigger)
-4. [Readiness trigger](#readiness-trigger)
-5. [Performance evaluation](#performance-evaluation)
-6. [Trigger specifications](#trigger-specifications)
-7. [NHF flash flood trigger](#nhf-flash-flood-trigger)
-8. [Appendix](#appendix)
-
----
-
-## Background
-
-The 2025 Adamawa trigger was a single-station OR trigger: it fired if either GloFAS reanalysis (≥ 3,132 m³/s) or Google GRRR reanalysis (≥ 1,195 m³/s) exceeded its threshold at Wuroboki on any wet-season day. Both thresholds were calibrated to approximately 5.4-year empirical RP and evaluated against Floodscan 5-year RP events.
-
-The 2026 work revisited this design with two goals: to evaluate whether a spatially distributed, multi-gauge action trigger would be more robust than a single-station approach, and to develop an independent GloFAS reforecast readiness trigger that could provide advance warning ahead of the action trigger.
 
 ---
 
