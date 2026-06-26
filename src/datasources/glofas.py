@@ -597,7 +597,12 @@ def _load_progress(prod_dev: Literal["prod", "dev"] = "dev") -> pd.DataFrame:
 def _save_progress(
     progress: pd.DataFrame, prod_dev: Literal["prod", "dev"] = "dev"
 ) -> None:
-    blob.upload_parquet_to_blob(PROGRESS_BLOB, progress, prod_dev=prod_dev)
+    import io
+
+    buf = io.BytesIO()
+    progress.to_parquet(buf, index=False)
+    buf.seek(0)
+    stratus.upload_blob_data(buf, PROGRESS_BLOB, stage=prod_dev)
 
 
 def get_blob_name_country(
