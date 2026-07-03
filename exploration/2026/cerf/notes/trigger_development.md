@@ -32,11 +32,11 @@ The 2026 work revisited this design with two goals: to evaluate whether a spatia
 |---|---|---|
 | **Data source** | Google GRRR reanalysis (calibration)† / reforecast (operational) | GloFAS ensemble reforecast |
 | **Monitoring point** | 10 gauges on the Benue, Adamawa | Wuroboki (G5004) |
-| **Condition** | ≥ 6 of 10 gauges simultaneously exceed their individual 4-yr empirical RP threshold | Ensemble mean > 3,132 m³/s at lead time ≤ 13 days |
+| **Condition** | ≥ 6 of 10 gauges simultaneously exceed their individual 4-yr empirical RP threshold | Reforecast ensemble mean > 3,132 m³/s at LT ≤ 13d, **or** reanalysis > 3,132 m³/s (LT = 0) |
 | **Threshold** | ~1,100–1,117 m³/s per gauge (empirical Weibull 4-yr RP from 26-yr reanalysis) | 3,132 m³/s (~5-yr GloFAS RP) |
 | **Return period** | ~4.5 years (22% annual probability) | ~3 years (33% annual probability) |
-| **Lead time to 4-yr RP exceedance** | −1 to +5d est. typical (reanalysis date − 5d); +46d in 1999 outlier | +2–7d (2 observed years) |
-| **Historical fire years** | 1998, 1999, 2012, 2018, 2019, 2022 (GRRR reanalysis†) | 2003, 2008, 2012, 2014, 2016, 2019, 2022 (GloFAS reforecast) |
+| **Lead time** | To 4-yr RP exceedance: −1 to +5d est. typical (reanalysis date − 5d); +46d in 1999 outlier | To est. action trigger: −3 to +10d (2 TP years; excludes 2019 outlier at +41d) |
+| **Historical fire years** | 1998, 1999, 2012, 2018, 2019, 2022 (GRRR reanalysis†) | 2003, 2008, 2012, 2014, 2016, 2019, 2022 (GloFAS reforecast + reanalysis) |
 | **Detection rate at 4-yr RP** | 67% (4 of 6 events) | 75% of action years in 2003–2022 (3 of 4) |
 
 *All performance metrics are indicative given small sample sizes (n < 10 events). See [Performance summary](#performance-summary) for full detail.*
@@ -126,7 +126,7 @@ Over the full reanalysis period 1998–2023, the trigger fires in: **1998, 1999,
 
 ## Readiness trigger
 
-The readiness trigger uses the GloFAS ensemble reforecast at Wuroboki, evaluated over 2003–2022 (n = 20 years). A year fires if the ensemble mean exceeds the discharge threshold at any lead time within the maximum lead time window (Aug–Nov). The discharge threshold is fixed at the 2025 value of **3,132 m³/s** (~5-year GloFAS reanalysis RP), which sits above the 4-year reanalysis RP (3,009 m³/s) to reduce false alarms. Two lead time configurations were evaluated:
+The readiness trigger uses both the GloFAS ensemble reforecast and the GloFAS reanalysis at Wuroboki, evaluated over 2003–2022 (n = 20 years). A year fires if either the reforecast ensemble mean exceeds the discharge threshold at any lead time within the maximum lead time window (Aug–Nov), or the reanalysis discharge exceeds the threshold on any wet-season day (LT = 0). The discharge threshold is fixed at the 2025 value of **3,132 m³/s** (~5-year GloFAS reanalysis RP), which sits above the 4-year reanalysis RP (3,009 m³/s) to reduce false alarms. Two lead time configurations were evaluated for the reforecast component:
 
 - **Option A — 3,132 m³/s, LT ≤ 13 days:** fires in 2003, 2008, 2012, 2014, 2016, 2019, 2022 (k = 7, RP = 3.0 yr). POD = 3/4 action years (misses 2018). Lead times vs action trigger: 2012 +2d, 2019 +46d, 2022 +13d.
 - **Option B — 3,250 m³/s, LT ≤ 12 days:** fires in 2003, 2014, 2016, 2019, 2022 (k = 6, RP = 3.5 yr). POD = 2/4 (misses 2012 and 2018). Lead times vs action trigger: 2012 −15d (fires after), 2019 +46d, 2022 +3d. The higher threshold means the GloFAS signal in 2012 (max 3,142 m³/s) never crosses the bar.
@@ -179,7 +179,7 @@ Accuracy evaluated against Floodscan SFED annual maxima, 1998–2023 (n = 26 yea
 
 ### Readiness trigger performance
 
-Readiness trigger configuration: **GloFAS ensemble mean > 3,132 m³/s at Wuroboki (G5004), lead time ≤ 13 days**. Evaluated over 2003–2022 (n = 20 complete reforecast years), benchmarked against the 2026 action trigger fire years within that window: {2012, 2018, 2019, 2022}.
+Readiness trigger configuration: **GloFAS > 3,132 m³/s at Wuroboki (G5004), either in the reforecast ensemble mean at lead time ≤ 13 days, or in the GloFAS reanalysis (LT = 0) on any wet-season day**. The reanalysis component acts as a same-day "observed conditions" signal alongside the short-range forecast. Evaluated over 2003–2022 (n = 20 complete reforecast years), benchmarked against the 2026 action trigger fire years within that window: {2012, 2018, 2019, 2022}.
 
 | Metric | Value |
 |---|---|
@@ -195,7 +195,7 @@ Readiness trigger configuration: **GloFAS ensemble mean > 3,132 m³/s at Wurobok
 | F1 | 55% |
 | Activation return period | ~3 years |
 
-Lead times ahead of the action trigger were +2d (2012), +46d (2019), and +13d (2022). The 2019 figure reflects an unusually early GloFAS signal; the operationally expected window is 2–13 days. Full lead time detail relative to flood onset is in the Trigger timing performance section below. The 2018 miss cannot be resolved by threshold or lead time adjustment — the GloFAS ensemble systematically underforecast the 2018 event at all short lead times.
+Lead times ahead of the estimated action trigger were −3d (2012), +41d (2019), and +10d (2022). The 2022 figure benefits from the reanalysis component firing 2 days before the reforecast (19 Aug vs 21 Aug). The 2019 figure reflects an unusually early GloFAS signal; excluding that outlier, the observed range is −3 to +10 days. Full lead time detail relative to flood onset is in the Trigger timing performance section below. The 2018 miss cannot be resolved by threshold or lead time adjustment — the GloFAS ensemble and reanalysis both fall short of the 3,132 m³/s threshold in 2018.
 
 **Small sample caveat:** The readiness trigger is benchmarked against only 4 action trigger years in the 2003–2022 evaluation window. Each year shifts POD by 25 percentage points; the 75% POD figure rests on 3 detections out of 4 opportunities and should not be read as a stable estimate of operational reliability.
 
@@ -220,19 +220,37 @@ Lead times are from the **GRRR reanalysis** (historical proxy). The estimated re
 
 Excluding the atypical 1999 season (an early upstream signal 41 days before RP exceedance), the GRRR reanalysis fires at roughly the same time the flood threshold is first crossed (0 to −6 days). With the −5d reforecast offset, the estimated operational lead to the 4yr RP crossing is **+4 to +5 days** (2012, 2018) or approximately −1 day in 2022 (flood rose unusually fast). The 1999 figure (+41d reanalysis, estimated **+46d** with forecast) is an outlier and not representative of the typical operational window.
 
-#### Readiness trigger (GloFAS reforecast)
+#### Readiness trigger (GloFAS reforecast + reanalysis)
 
-Lead times are from the **GloFAS reforecast first fire date** (first issue date with ensemble mean > 3,132 m³/s at LT ≤ 13d). Evaluated against Floodscan 4-year RP event years only.
+Lead times are from the **first readiness fire date**, which is the earlier of: the GloFAS reforecast (first issue date with ensemble mean > 3,132 m³/s at LT ≤ 13d), or the GloFAS reanalysis (first day reanalysis discharge > 3,132 m³/s). Evaluated against Floodscan 4-year RP event years only.
 
 Lead to action trigger is relative to the **estimated reforecast fire date** (reanalysis − 5d): 18 Aug in 2012, 29 Aug in 2022.
 
-| Year | Readiness fires | Lead to RP exceedance | Lead to est. action trigger | Notes |
-|---|---|---|---|---|
-| 2012 | 21 Aug | +2d | −3d | TP — readiness fires 3d *after* est. action |
-| 2018 | — | — | — | FN — GloFAS underforecast at LT ≤ 13d |
-| 2022 | 21 Aug | +7d | +8d | TP — readiness fires 8d before est. action |
+| Year | Readiness fires | Source | Lead to RP exceedance | Lead to est. action trigger | Notes |
+|---|---|---|---|---|---|
+| 2012 | 21 Aug | Reforecast | +2d | −3d | TP — readiness fires 3d *after* est. action |
+| 2018 | — | — | — | — | FN — GloFAS underforecast and reanalysis below threshold |
+| 2022 | 19 Aug | Reanalysis | +9d | +10d | TP — readiness fires 10d before est. action |
 
-In both detected years the readiness trigger fires on 21 August, providing **2–7 days** ahead of the 4yr RP exceedance. Relative to the estimated reforecast action trigger, the readiness fires 3 days *after* in 2012 (the action trigger's estimated reforecast date is 18 Aug, before readiness) and 8 days *before* in 2022. No forecast offset is needed here — the GloFAS reforecast is already an operational product. The 2018 miss is irreducible within the LT ≤ 13d constraint.
+In 2022 the reanalysis fires 2 days before the reforecast (19 Aug vs 21 Aug), giving **9 days** ahead of the RP exceedance and **10 days** ahead of the estimated action trigger. In 2012 the reanalysis does not reach the threshold, so the fire date remains 21 Aug from the reforecast alone, still 3 days after the estimated action trigger date. The 2018 miss is irreducible — neither the reforecast at LT ≤ 13d nor the reanalysis exceeds 3,132 m³/s in 2018. No forecast offset is needed for the reforecast component; the reanalysis is an ERA5-driven product available with a short lag in near-real-time.
+
+#### Lead to flood peak — all triggered years
+
+Lead from first GloFAS issue date to the Floodscan wet-season annual maximum. Includes false positive years where the readiness fires but flood intensity did not reach the 4-yr RP level. 4-yr RP event years that the readiness missed (2015, 2018) are shown for reference.
+
+| Year | Readiness fires | Source | FS peak date | Lead to FS peak | FS 4-yr event |
+|---|---|---|---|---|---|
+| 2003 | 28 Aug | Reforecast | 21 Sep | +24d | FP |
+| 2008 | 07 Sep | Reforecast | 17 Sep | +10d | FP |
+| 2012 | 21 Aug | Reforecast | 21 Sep | +31d | TP |
+| 2014 | 28 Aug | Reforecast | 31 Aug | +3d | FP |
+| 2015 | — | — | 05 Sep | — | FN |
+| 2016 | 04 Sep | Reforecast | 25 Sep | +21d | FP |
+| 2018 | — | — | 12 Sep | — | FN |
+| 2019 | 31 Aug | Reforecast | 30 Oct | +60d | FP |
+| 2022 | 19 Aug | Reanalysis | 21 Sep | +33d | TP |
+
+In the two TP years the readiness trigger fires roughly a month before the Floodscan peak: 31 days in 2012, and 33 days in 2022 (with the reanalysis firing 2 days earlier than the reforecast would have). Even in most FP years there is meaningful lead time — the only exception is 2014 where the readiness fires just 3 days before a minor wet-season peak that did not reach the 4-yr level.
 
 ---
 
@@ -253,7 +271,8 @@ In both detected years the readiness trigger fires on 21 August, providing **2�
 
 **2026 readiness trigger (new — not in 2025 framework):**
 
-- GloFAS ensemble mean > 3,132 m³/s at Wuroboki within lead time ≤ 13 days
+- GloFAS reforecast ensemble mean > 3,132 m³/s at Wuroboki within lead time ≤ 13 days, **or**
+- GloFAS reanalysis > 3,132 m³/s at Wuroboki (LT = 0, near-real-time)
 - Designed to fire ahead of the action trigger and enable pre-positioning
 
 ### Action trigger gauge thresholds
