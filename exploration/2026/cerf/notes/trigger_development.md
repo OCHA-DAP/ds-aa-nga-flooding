@@ -420,7 +420,7 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 </tr>
 <tr class="heatmap-spacer"><td colspan="27"></td></tr>
 <tr>
-<td class="heatmap-label">Action trigger (2026)</td>
+<td class="heatmap-label">Action trigger</td>
 <td class="heatmap-cell" style="background:#F2645A" title="1998"></td>
 <td class="heatmap-cell" style="background:#F2645A" title="1999"></td>
 <td class="heatmap-cell" style="background:#eef1f4" title="2000"></td>
@@ -449,7 +449,7 @@ The heatmap below shows Floodscan flood event years and trigger activation years
 <td class="heatmap-cell" style="background:#eef1f4" title="2023"></td>
 </tr>
 <tr>
-<td class="heatmap-label">Readiness trigger (A)</td>
+<td class="heatmap-label">Readiness trigger</td>
 <td class="heatmap-cell" style="background:#d8dde3" title="1998"></td>
 <td class="heatmap-cell" style="background:#d8dde3" title="1999"></td>
 <td class="heatmap-cell" style="background:#d8dde3" title="2000"></td>

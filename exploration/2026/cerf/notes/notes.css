@@ -65,7 +65,11 @@ img { max-width: 100%; height: auto; display: block; margin: 1rem 0; }
 .heatmap-year {
   font-size: 9px; font-weight: normal; color: #666;
   text-align: center; white-space: nowrap;
-  min-width: 22px; width: 22px; padding-bottom: 3px !important;
+  min-width: 22px; width: 22px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding-top: 4px !important; padding-bottom: 0 !important;
+  height: 40px; vertical-align: bottom;
 }
 
 .heatmap-label {
