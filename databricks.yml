@@ -55,7 +55,7 @@ resources:
         - name: start_year
           default: "2003"
         - name: end_year
-          default: "2024"
+          default: "2023"
         - name: max_leadtime_days
           default: "16"
         - name: max_leadtime_chunk
