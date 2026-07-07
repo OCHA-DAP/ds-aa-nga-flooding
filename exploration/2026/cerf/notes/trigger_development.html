@@ -55,6 +55,21 @@ more robust than a single-station approach, and to develop an
 independent GloFAS reforecast readiness trigger that could provide
 advance warning ahead of the action trigger.</p>
 <hr />
+<h2 id="geographic-coverage">Geographic coverage</h2>
+<p>The 2026 framework covers two distinct flood types and funding
+mechanisms. The CERF riverine trigger covers 7 LGAs along the Benue
+River in Adamawa state. The NHF flash flood trigger covers 4 LGAs in
+Borno and Yobe states selected by composite NiHSA at-risk community
+score.</p>
+<figure>
+<img src="../workflow/figures/adamawa/00_summary_map.png"
+style="width:100.0%"
+alt="Summary map of 2026 AA trigger coverage. Blue: Adamawa riverine flooding LGAs (CERF). Orange: selected NHF flash flood LGAs in Borno and Yobe." />
+<figcaption aria-hidden="true">Summary map of 2026 AA trigger coverage.
+Blue: Adamawa riverine flooding LGAs (CERF). Orange: selected NHF flash
+flood LGAs in Borno and Yobe.</figcaption>
+</figure>
+<hr />
 <h2 id="proposed-trigger-summary">Proposed trigger — summary</h2>
 <table>
 <colgroup>
@@ -184,11 +199,11 @@ Figure: Gauge correlation ranking (Spearman ρ vs Floodscan SFED)
 </summary>
 <figure>
 <img src="../workflow/figures/adamawa/03_corr_dot_plot.png"
-alt="Best Spearman ρ per gauge (all 42 candidates + GloFAS), ranked by correlation with Floodscan SFED. GRRR gauges cluster at the top; the GloFAS point at Wuroboki sits mid-table." />
+alt="Best Spearman ρ per gauge (all 42 candidates + GloFAS), ranked by correlation with Floodscan SFED. GRRR gauges cluster at the top; the GloFAS point at Wuroboki (ρ = 0.679) sits in the upper quarter but below the top-10 cutoff." />
 <figcaption aria-hidden="true">Best Spearman ρ per gauge (all 42
 candidates + GloFAS), ranked by correlation with Floodscan SFED. GRRR
-gauges cluster at the top; the GloFAS point at Wuroboki sits
-mid-table.</figcaption>
+gauges cluster at the top; the GloFAS point at Wuroboki (ρ = 0.679) sits
+in the upper quarter but below the top-10 cutoff.</figcaption>
 </figure>
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -305,17 +320,19 @@ action years (misses 2018). Lead times vs action trigger: 2012 +2d, 2019
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary>
-Figure: Readiness trigger POD vs lead time at Wuroboki (4-yr RP
-threshold)
+Figure: Readiness trigger POD vs lead time at Wuroboki (exploratory —
+empirical 4-yr RP threshold, Floodscan benchmark)
 </summary>
 <figure>
 <img src="../workflow/figures/adamawa/07_readiness_trigger_rp4.png"
-alt="GloFAS readiness trigger performance vs lead time at Wuroboki (4-yr RP threshold). POD rises steeply between LT 8–13d and plateaus; FAR increases continuously. The selected cut-off at LT ≤ 13d sits just before FAR begins to climb sharply for the 4-yr RP benchmark." />
+alt="GloFAS readiness trigger performance vs lead time at Wuroboki, benchmarked against Floodscan 4-yr RP years using the empirical 4-yr RP discharge threshold (~2,962 m³/s). Note: the endorsed trigger uses 3,132 m³/s (~5-yr RP); this figure is exploratory and does not reflect the operational configuration. POD rises steeply between LT 8–13d and plateaus; FAR increases continuously. The LT ≤ 13d cut-off is selected before FAR climbs sharply." />
 <figcaption aria-hidden="true">GloFAS readiness trigger performance vs
-lead time at Wuroboki (4-yr RP threshold). POD rises steeply between LT
-8–13d and plateaus; FAR increases continuously. The selected cut-off at
-LT ≤ 13d sits just before FAR begins to climb sharply for the 4-yr RP
-benchmark.</figcaption>
+lead time at Wuroboki, benchmarked against Floodscan 4-yr RP years using
+the empirical 4-yr RP discharge threshold (~2,962 m³/s). Note: the
+endorsed trigger uses 3,132 m³/s (~5-yr RP); this figure is exploratory
+and does not reflect the operational configuration. POD rises steeply
+between LT 8–13d and plateaus; FAR increases continuously. The LT ≤ 13d
+cut-off is selected before FAR climbs sharply.</figcaption>
 </figure>
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -1349,19 +1366,19 @@ zones carry three times the weight of low-depth zones. HNRP
 prioritisation is shown as a contextual indicator but does not influence
 the quantitative ranking.</p>
 <h3 id="candidate-lgas">Candidate LGAs</h3>
-<p>Seven LGAs are identified as candidates for 2026 NHF targeting;
-<strong>4 are expected to be selected following an ongoing LGA
-review</strong>. Ranked by composite score:</p>
-<table>
+<p>The top 4 LGAs by composite score have been selected for 2026 NHF
+targeting. Full candidate rankings:</p>
+<table style="width:100%;">
 <colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
 </colgroup>
 <thead>
 <tr>
@@ -1373,6 +1390,7 @@ review</strong>. Ranked by composite score:</p>
 <th>Low-risk</th>
 <th>Composite score</th>
 <th>HNRP priority</th>
+<th>Selected</th>
 </tr>
 </thead>
 <tbody>
@@ -1383,78 +1401,85 @@ review</strong>. Ranked by composite score:</p>
 <td>377</td>
 <td>309</td>
 <td>0</td>
-<td>1,395</td>
+<td>1,749</td>
 <td>Yes</td>
+<td>✓</td>
 </tr>
 <tr>
 <td>2</td>
+<td>Maiduguri</td>
+<td>Borno</td>
+<td>0</td>
+<td>600</td>
+<td>0</td>
+<td>1,200</td>
+<td>Yes</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>3</td>
 <td>Geidam</td>
 <td>Yobe</td>
 <td>207</td>
 <td>133</td>
 <td>0</td>
-<td>747</td>
+<td>887</td>
 <td>—</td>
+<td>✓</td>
 </tr>
 <tr>
-<td>3</td>
+<td>4</td>
+<td>Jere</td>
+<td>Borno</td>
+<td>0</td>
+<td>428</td>
+<td>0</td>
+<td>856</td>
+<td>Yes</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>5</td>
 <td>Gubio</td>
 <td>Borno</td>
 <td>105</td>
 <td>221</td>
 <td>77</td>
-<td>712</td>
+<td>834</td>
 <td>Yes</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Ngala</td>
-<td>Borno</td>
-<td>76</td>
-<td>188</td>
-<td>0</td>
-<td>452</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Maiduguri</td>
-<td>Borno</td>
-<td>73</td>
-<td>196</td>
-<td>0</td>
-<td>442</td>
-<td>Yes</td>
+<td></td>
 </tr>
 <tr>
 <td>6</td>
-<td>Numan</td>
-<td>Adamawa</td>
-<td>125</td>
-<td>31</td>
+<td>Nganzai</td>
+<td>Borno</td>
 <td>0</td>
-<td>406</td>
+<td>334</td>
+<td>132</td>
+<td>800</td>
 <td>—</td>
+<td></td>
 </tr>
 <tr>
 <td>7</td>
-<td>Yola North</td>
-<td>Adamawa</td>
-<td>102</td>
-<td>128</td>
+<td>Magumeri</td>
+<td>Borno</td>
 <td>0</td>
-<td>358</td>
-<td>—</td>
+<td>270</td>
+<td>73</td>
+<td>613</td>
+<td>Yes</td>
+<td></td>
 </tr>
 </tbody>
 </table>
-<p>4 of the 7 candidates (Mobbar, Gubio, Ngala, Maiduguri) are
+<p>3 of the 4 selected LGAs (Mobbar, Maiduguri, Jere) are
 HNRP-prioritised, indicating good alignment between the quantitative
-flash flood ranking and OCHA’s humanitarian prioritisation framework. Of
-these, <strong>Maiduguri and Ngala</strong> also appeared in the 2025
-NHF trigger, providing continuity; the other four 2025 trigger LGAs
-(Bade, Bama, Karasuwa, Madagali) do not appear in the 2026 top-7 under
-the revised scoring.</p>
+ranking and OCHA’s humanitarian prioritisation framework.
+<strong>Maiduguri</strong> also appeared in the 2025 NHF trigger,
+providing continuity; the other 2025 trigger LGAs (Bade, Bama, Karasuwa,
+Madagali, Ngala) do not appear in the 2026 top-4 under the revised
+scoring.</p>
 <hr />
 <h2 id="appendix">Appendix</h2>
 <h3 id="what-was-not-resolved">What was not resolved</h3>
@@ -1555,16 +1580,18 @@ reforecast did not exceed threshold at LT≤13d</figcaption>
 <details>
 <summary>
 2022 — Floodscan ≥4-yr RP event · Action trigger TP (−6d to RP, +18d to
-peak) · Readiness TP (+7d to RP)
+peak) · Readiness TP (+9d to RP)
 </summary>
 <figure>
 <img
 src="../workflow/figures/adamawa/exploration_peak_timing_2022_detail.png"
 style="width:100.0%"
-alt="2022 peak timing detail — Floodscan RP exceedance 28 Aug, readiness fires 21 Aug, GRRR fires 3 Sep, annual peak 21 Sep" />
+alt="2022 peak timing detail — Floodscan RP exceedance 28 Aug, combined readiness fires 19 Aug (reanalysis; reforecast fires 21 Aug), GRRR fires 3 Sep, annual peak 21 Sep. Note: figure shows reforecast fire date only; reanalysis component fires 2 days earlier." />
 <figcaption aria-hidden="true">2022 peak timing detail — Floodscan RP
-exceedance 28 Aug, readiness fires 21 Aug, GRRR fires 3 Sep, annual peak
-21 Sep</figcaption>
+exceedance 28 Aug, combined readiness fires 19 Aug (reanalysis;
+reforecast fires 21 Aug), GRRR fires 3 Sep, annual peak 21 Sep. Note:
+figure shows reforecast fire date only; reanalysis component fires 2
+days earlier.</figcaption>
 </figure>
 </details>
 <details>
