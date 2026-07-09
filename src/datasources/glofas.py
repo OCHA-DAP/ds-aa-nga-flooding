@@ -850,6 +850,79 @@ def load_glofas_reforecast_country_pixel(
     return df.sort_values(sort_cols).reset_index(drop=True)
 
 
+def process_glofas_reforecast_country(
+    product_type: Literal["ensemble", "control"] = "ensemble",
+    years: range = range(2003, 2024),
+    max_leadtime_days: int = 16,
+    max_leadtime_chunk: int = 4,
+    rainy_season_only: bool = True,
+    prod_dev: Literal["prod", "dev"] = "dev",
+) -> None:
+    """Process country-wide GRIBs into per-station processed parquets.
+
+    Reads each GRIB once and extracts all station pixels in a single pass,
+    then deletes the local copy to keep disk usage to ~1 GRIB at a time.
+    Output blob paths match process_glofas_reforecast so downstream code
+    is unchanged.
+    """
+    months = RAINY_SEASON_MONTHS_NUM if rainy_season_only else ALL_MONTHS_NUM
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+    base = Path(os.getenv("CDS_TEMP_DIR", tempfile.gettempdir()))
+    station_dfs: dict[str, list] = {name: [] for name in GF_STATIONS}
+
+    for year in tqdm(years, desc="years"):
+        for lt_chunk in tqdm(leadtime_chunks, desc="lt_chunks", leave=False):
+            lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+            blob_name = get_blob_name_country(year, product_type, lt_start, lt_end)
+            local_path = base / Path(blob_name)
+            local_path.parent.mkdir(parents=True, exist_ok=True)
+            if not local_path.exists():
+                blob_data = blob.load_blob_data(blob_name)
+                local_path.write_bytes(blob_data)
+            try:
+                ds = xr.open_dataset(
+                    local_path, engine="cfgrib",
+                    backend_kwargs={"indexpath": ""},
+                )
+            except Exception as e:
+                print(f"Warning: skipping {blob_name}: {e}")
+                os.remove(local_path)
+                continue
+            for station_name, station in GF_STATIONS.items():
+                glofas_lon, glofas_lat = get_glofas_grid_coords(
+                    station["lon"], station["lat"]
+                )
+                da = ds["dis24"].sel(
+                    latitude=glofas_lat, longitude=glofas_lon, method="nearest"
+                )
+                df_in = da.to_dataframe().reset_index()
+                keep = [
+                    c
+                    for c in ["number", "time", "step", "valid_time", "dis24"]
+                    if c in df_in.columns
+                ]
+                df_in = df_in[keep]
+                df_in["leadtime"] = df_in["step"].dt.days
+                df_in = df_in.drop(columns=["step"])
+                station_dfs[station_name].append(df_in)
+            ds.close()
+            os.remove(local_path)
+
+    for station_name, dfs in tqdm(station_dfs.items(), desc="saving"):
+        df = pd.concat(dfs, ignore_index=True)
+        sort_cols = [c for c in ["time", "leadtime", "number"] if c in df.columns]
+        df = df.sort_values(sort_cols).reset_index(drop=True)
+        out_blob = (
+            f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+            f"glofas_reforecast_{station_name}_{product_type}.parquet"
+        )
+        stratus.upload_parquet_to_blob(df, out_blob, stage=prod_dev)
+
+
 def load_glofas_reforecast(
     station_name: str,
     product_type: Literal["ensemble", "control"] = "ensemble",
