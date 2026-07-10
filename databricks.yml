@@ -158,6 +158,8 @@ resources:
           job_cluster_key: main
           libraries:
             - pypi:
+                package: cdsapi
+            - pypi:
                 package: ocha-stratus
             - pypi:
                 package: cfgrib
