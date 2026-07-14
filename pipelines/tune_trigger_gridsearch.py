@@ -41,6 +41,7 @@ from pipelines.build_trigger_config import (  # noqa: E402
     _season_year,
     _threshold_at_rp,
     _weibull_rp,
+    _wet_months,
     load_gauge_daily,
 )
 from src.config import load_gauge_registry, load_state_params  # noqa: E402
@@ -140,10 +141,13 @@ def tune_state(state, cfg, gauge_reg, target_fires=None):
 
     def _daily_corr(rp):
         """Spearman ρ between the DAILY fraction of selected gauges over their
-        threshold and the daily Floodscan SFED (rank-Pearson, no scipy)."""
+        threshold and the daily Floodscan SFED (rank-Pearson, no scipy),
+        wet-season window only — consistent with the per-gauge correlations."""
+        wet = _wet_months(fs)
         ex = pd.DataFrame(exceed[rp]).fillna(False)
         frac = ex.mean(axis=1).rename("frac")
         m = pd.concat([frac, fs_daily], axis=1).dropna()
+        m = m[m.index.month.isin(wet)]
         if len(m) < 30:
             return None
         return round(m["frac"].rank().corr(m["sfed"].rank()), 3)

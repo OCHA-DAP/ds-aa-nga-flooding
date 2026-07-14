@@ -4,12 +4,16 @@ For each state, reproduces the canonical workflow (methodology.md steps 3-6) on
 Google GRRR reanalysis vs the state's Floodscan benchmark:
 
   3. rank each gauge by best lag-adjusted Spearman ρ (RAW daily streamflow vs
-     daily-mean SFED, lag -3..+14 — per the canonical method, not anomalies)
+     daily-mean SFED, lag -3..+14 — per the canonical method, not anomalies),
+     on WET-SEASON days only: a per-state 4-month window anchored on the
+     climatological Floodscan peak (reproduces the canonical Aug–Nov for
+     Adamawa, shifts with flood timing on each river branch)
   4. select the top-N gauges (default 10)
   5-6. per-gauge Weibull RP threshold at the target RP; evaluate the
      ≥consensus-fraction-of-N action trigger against Floodscan event years.
 
-Monitoring is year-round, so annual maxima / correlation use all months.
+Monitoring/annual maxima are year-round (seasons Apr–Mar); only the
+correlation ranking is wet-season restricted.
 
 Writes the enriched gauge registry (best_r, best_lag, rp_threshold, is_selected,
 lead_time filled for GRRR gauges) and a per-state trigger-performance table.
@@ -33,7 +37,10 @@ warnings.filterwarnings("ignore")
 import ocha_stratus as stratus  # noqa: E402
 
 from src.config import load_gauge_registry, load_state_params  # noqa: E402
-from src.config.registry import GAUGE_REGISTRY_BLOB  # noqa: E402
+from src.config.registry import (  # noqa: E402
+    GAUGE_REGISTRY_BLOB,
+    STATE_PARAMS_BLOB,
+)
 from src.constants import PROJECT_PREFIX  # noqa: E402
 from src.datasources import grrr  # noqa: E402
 
@@ -74,6 +81,18 @@ def _annual_max(df, value, date="date"):
     y = df.copy()
     y["year"] = _season_year(y[date])
     return y.groupby("year")[value].max()
+
+
+def _wet_months(fs):
+    """Per-state correlation window: 4 months anchored on the climatological
+    peak (peak-1 .. peak+2). Reproduces the canonical Aug–Nov (methodology
+    step 3) for Adamawa (peak Sep) and shifts with the flood-wave timing on
+    each river branch. Correlations on year-round values are inflated by the
+    shared dry-season zero regime, so ρ is computed on these months only."""
+    d = fs.set_index("date")["sfed"]
+    clim = d.groupby(d.index.month).mean()
+    p = int(clim.idxmax())
+    return sorted(((p + o - 1) % 12) + 1 for o in (-1, 0, 1, 2))
 
 
 _GF_CACHE = {}
@@ -160,6 +179,8 @@ def process_state(state, cfg, gauge_reg):
     fs = _fs_daily(state)
     fs_years = _annual_max(fs, "sfed")
     events = _event_years(fs_years, cfg["rp_target"])
+    wet = _wet_months(fs)
+    print(f"  wet-season correlation window: months {wet}", flush=True)
 
     # score EVERY candidate (informational best_r even for gauges the pin
     # excludes from selection, e.g. wuroboki for Adamawa)
@@ -180,6 +201,8 @@ def process_state(state, cfg, gauge_reg):
         g_sy = _season_year(g["date"])
         g = g[(g_sy >= y0) & (g_sy <= y1)]
         m = g.merge(fs_w, on="date")
+        # wet-season daily values only (canonical step 3), per-state window
+        m = m[m["date"].dt.month.isin(wet)]
         if len(m) < MIN_OBS:
             continue
         # best lag-adjusted Spearman on raw daily values
@@ -220,7 +243,8 @@ def process_state(state, cfg, gauge_reg):
     fn = len(ev - fire_years)
     tn = len(eval_years - fire_years - ev)
     perf = {
-        "state": state, "n_gauges_selected": len(sel), "n_required": n_req,
+        "state": state, "corr_months": ",".join(map(str, wet)),
+        "n_gauges_selected": len(sel), "n_required": n_req,
         "rp_target": cfg["rp_target"], "consensus_frac": cfg["consensus_frac"],
         "event_years": ",".join(map(str, sorted(ev))),
         "fire_years": ",".join(map(str, sorted(fire_years))),
@@ -275,7 +299,13 @@ def main():
     if not args.no_upload:
         stratus.upload_parquet_to_blob(gr, GAUGE_REGISTRY_BLOB, stage=args.stage)
         stratus.upload_parquet_to_blob(perf_df, PERF_BLOB, stage=args.stage)
-        print(f"\nUploaded enriched gauge registry + {PERF_BLOB}", flush=True)
+        # persist per-state correlation windows where the app reads config
+        sp_full = load_state_params()
+        cm = dict(zip(perf_df["state"], perf_df["corr_months"]))
+        sp_full["corr_months"] = sp_full["state"].map(cm)
+        stratus.upload_parquet_to_blob(sp_full, STATE_PARAMS_BLOB, stage=args.stage)
+        print(f"\nUploaded enriched gauge registry + {PERF_BLOB} + corr_months",
+              flush=True)
 
 
 if __name__ == "__main__":
