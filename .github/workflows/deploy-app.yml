@@ -48,6 +48,7 @@ jobs:
 
       - name: Export app data from blob
         env:
+          PYTHONPATH: .
           DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
           DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
