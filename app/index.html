@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Niger / Benue flood-trigger monitor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Niger / Benue flood-trigger monitor</h1>
+    <p id="subtitle" class="muted">Loading data…</p>
+  </header>
+
+  <main>
+    <section id="map-panel">
+      <div id="map"></div>
+      <p class="caption">
+        State fill = trigger viability (<span class="sw" style="background:#1a9850"></span> strong ·
+        <span class="sw" style="background:#fdae61"></span> moderate ·
+        <span class="sw" style="background:#d73027"></span> weak).
+        Gauge colour = correlation with Floodscan:
+        <span class="sw" style="background:#d73027"></span> ρ&lt;0.5 ·
+        <span class="sw" style="background:#fec44f"></span> 0.5–0.6 ·
+        <span class="sw" style="background:#1a9850"></span> ≥0.6.
+        Large black-ringed dots are included trigger gauges; blue-ringed dots are GloFAS stations.
+      </p>
+    </section>
+
+    <section id="detail-panel">
+      <div class="picker-row">
+        <label for="state-select">Focus state</label>
+        <select id="state-select"></select>
+      </div>
+      <div id="detail"></div>
+    </section>
+  </main>
+
+  <section id="compare-panel">
+    <h2>Season-peak comparison</h2>
+    <div class="compare-grid">
+      <div>
+        <h3>Floodscan seasonal peak — state vs state</h3>
+        <div class="picker-row">
+          <select id="cmp-x"></select>
+          <span class="muted">vs</span>
+          <select id="cmp-y"></select>
+        </div>
+        <div id="scatter-states"></div>
+        <p class="caption">One point per flood season (Apr–Mar). Peaks co-move along the river,
+          but magnitudes aren't comparable across states — SFED scales with local floodplain width.</p>
+      </div>
+      <div>
+        <h3 id="scatter-gauges-title">Gauges over threshold vs Floodscan peak</h3>
+        <div id="scatter-gauges"></div>
+        <p class="caption">One point per season; dashed line = consensus fraction needed to fire.
+          A clean trigger puts 4-yr floods (top) right of the line and quiet seasons left of it.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="muted" id="stamp"></p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

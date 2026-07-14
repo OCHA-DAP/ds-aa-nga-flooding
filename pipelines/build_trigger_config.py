@@ -40,6 +40,9 @@ from src.datasources import grrr  # noqa: E402
 LAG_MIN, LAG_MAX = -3, 14   # canonical lag range (gauge leads = positive)
 TOP_N = 10
 MIN_OBS = 60
+GAUGE_SOURCES = ("grrr", "glofas")
+GF_REFORECAST_BLOB_FMT = (PROJECT_PREFIX + "/processed/glofas/"
+                          "glofas_reforecast_{station}_ensemble.parquet")
 # Flood seasons run Apr→Mar country-wide, labelled by start year (Apr 2022–Mar
 # 2023 → season 2022). The Mar–Apr trough is the annual low everywhere (worst
 # state sits at 4% of its climatological peak on Apr 1), so a Dec–Feb
@@ -73,6 +76,63 @@ def _annual_max(df, value, date="date"):
     return y.groupby("year")[value].max()
 
 
+_GF_CACHE = {}
+
+
+def _glofas_daily(station):
+    """Daily forecast proxy for a GloFAS station: ensemble-median dis24 at the
+    shortest available lead per valid day. Loads the country-derived reforecast
+    parquet directly (not load_glofas_reforecast, whose STATE_CONFIG override
+    would give wuroboki/makurdi older, differently-scoped files). The archive
+    holds Jun–Dec issues only (rainy-season download), so seasonal maxima come
+    from that window — Jan–Feb black-flood tails are not observable here."""
+    if station not in _GF_CACHE:
+        df = stratus.load_parquet_from_blob(
+            GF_REFORECAST_BLOB_FMT.format(station=station))
+        med = df.groupby(["valid_time", "leadtime"])["dis24"].median().reset_index()
+        med = med.sort_values("leadtime").drop_duplicates("valid_time")
+        med["date"] = pd.to_datetime(med["valid_time"]).dt.normalize()
+        _GF_CACHE[station] = (med.rename(columns={"dis24": "streamflow"})
+                              [["date", "streamflow"]].sort_values("date")
+                              .reset_index(drop=True))
+    return _GF_CACHE[station].copy()
+
+
+def candidate_gauges(state, gauge_reg):
+    """Candidate rows for a state's trigger (GRRR + GloFAS). Adamawa stays
+    pinned to the endorsed framework: in-state Google gauges only — it anchors
+    the target activation frequency for all other states."""
+    sub = gauge_reg[(gauge_reg["state"] == state)
+                    & (gauge_reg["source"].isin(GAUGE_SOURCES))]
+    if state == "Adamawa":
+        sub = sub[sub["source"] == "grrr"]
+        if "in_state" in sub.columns:
+            sub = sub[sub["in_state"].fillna(True)]
+    return sub
+
+
+def load_gauge_daily(sub):
+    """Long daily series (date, gauge_id, streamflow) for registry rows `sub`,
+    mixing GRRR reanalysis and GloFAS reforecast daily proxies."""
+    parts = []
+    grrr_ids = sub[sub["source"] == "grrr"]["gauge_id"].tolist()
+    if grrr_ids:
+        ra = grrr.process_reanalysis(grrr.load_reanalysis(gauge=grrr_ids))
+        ra["date"] = pd.to_datetime(ra["valid_time"]).dt.normalize()
+        parts.append(ra[["date", "gauge_id", "streamflow"]])
+    for station in sub[sub["source"] == "glofas"]["gauge_id"]:
+        try:
+            g = _glofas_daily(station)
+        except Exception as e:
+            print(f"  ! no GloFAS reforecast for {station}: {e}", flush=True)
+            continue
+        g["gauge_id"] = station
+        parts.append(g[["date", "gauge_id", "streamflow"]])
+    if not parts:
+        return pd.DataFrame(columns=["date", "gauge_id", "streamflow"])
+    return pd.concat(parts, ignore_index=True)
+
+
 def _weibull_rp(annual_max):
     """Empirical Weibull RP per year: RP = (n+1)/rank (rank 1 = largest)."""
     s = annual_max.dropna().sort_values(ascending=False)
@@ -99,19 +159,11 @@ def process_state(state, cfg, gauge_reg):
     fs_years = _annual_max(fs, "sfed")
     events = _event_years(fs_years, cfg["rp_target"])
 
-    sub = gauge_reg[(gauge_reg["state"] == state)
-                    & (gauge_reg["source"] == "grrr")]
-    # Adamawa stays pinned to the endorsed framework: its gauge pool is
-    # in-state only (no cross-river buffer), like its pinned LGAs and config —
-    # it anchors the target activation frequency for all other states.
-    if state == "Adamawa" and "in_state" in sub.columns:
-        sub = sub[sub["in_state"].fillna(True)]
+    sub = candidate_gauges(state, gauge_reg)
     gauges = sub["gauge_id"].tolist()
     if not gauges:
         return None, None
-    ds = grrr.load_reanalysis(gauge=gauges)
-    ra = grrr.process_reanalysis(ds)
-    ra["date"] = pd.to_datetime(ra["valid_time"]).dt.normalize()
+    ra = load_gauge_daily(sub)
 
     y0, y1 = cfg["analysis_start_year"], cfg["analysis_end_year"]
     fs_sy = _season_year(fs["date"])

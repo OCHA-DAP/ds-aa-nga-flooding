@@ -131,8 +131,9 @@ lga_reg, gauge_reg, state_params, perf, year_detail_all, skill_all, codab_riveri
 sp = state_params.set_index("state")
 perf_i = perf.set_index("state") if not perf.empty else pd.DataFrame()
 
-# ── Scope: all riverine states, GRRR action-trigger gauges ────────────────────
-sel = resolve_selection("all_riverine", lga_reg, gauge_reg, gauge_sources=("grrr",))
+# ── Scope: all riverine states, GRRR + GloFAS candidate gauges ────────────────
+sel = resolve_selection("all_riverine", lga_reg, gauge_reg,
+                        gauge_sources=("grrr", "glofas"))
 scope_states = sorted(sel.lgas["state"].unique())
 sel_gauge_ids = set(sel.gauges["gauge_id"])
 
@@ -197,6 +198,7 @@ with map_col:
                   roles=("role", ", ".join)))
     for _, g in gdisp.iterrows():
         is_sel = bool(g["is_selected"])
+        is_gf = g["source"] == "glofas"
         r = g["best_r"]
         band, fill = corr_band(r)
         popup = (f"<b>{g['gauge_id']}</b><br>{g['source']} · "
@@ -207,8 +209,8 @@ with map_col:
         folium.CircleMarker(
             [g["lat"], g["lon"]],
             radius=7 if is_sel else 3.5,
-            color="#000000" if is_sel else "#888888",
-            weight=2.2 if is_sel else 0.6,
+            color="#1f6fb4" if is_gf else ("#000000" if is_sel else "#888888"),
+            weight=2.4 if is_gf else (2.2 if is_sel else 0.6),
             fill=True, fill_color=fill,
             fill_opacity=0.95 if is_sel else 0.55,
             popup=popup).add_to(m)
@@ -264,14 +266,15 @@ with detail_col:
         c2.metric("FPR", f"{row['FPR']:.2f}")
         c3.metric("F1", f"{row['F1']:.2f}")
 
-        # --- live Google status ---
+        # --- live Google status (GRRR gauges only; no GloFAS live feed here) ---
         st.markdown("**Live status — Google Flood Hub**")
-        peak, ts, issued = fetch_live(tuple(gsel["gauge_id"]))
+        gsel_live = gsel[gsel["source"] == "grrr"]
+        peak, ts, issued = fetch_live(tuple(gsel_live["gauge_id"]))
         if peak.empty:
             st.warning("No live forecasts returned for these gauges "
                        "(the forecast API only covers Oct 2023 onward).")
         else:
-            live = gsel.merge(peak, on="gauge_id", how="left")
+            live = gsel_live.merge(peak, on="gauge_id", how="left")
             live["exceeds"] = live["forecast_peak"] > live["rp_threshold"]
             n_exc = int(live["exceeds"].sum())
             firing = n_exc >= n_req
@@ -281,7 +284,7 @@ with detail_col:
             st.caption(f"Latest forecast issued {pd.to_datetime(issued):%Y-%m-%d %H:%M} UTC")
 
             # normalized forecast timeseries: value / gauge threshold (1.0 = at threshold)
-            thr = dict(zip(gsel["gauge_id"], gsel["rp_threshold"]))
+            thr = dict(zip(gsel_live["gauge_id"], gsel_live["rp_threshold"]))
             plot = ts.copy()
             plot["pct_of_threshold"] = plot["value"] / plot["gauge_id"].map(thr)
             plot["forecast_start"] = pd.to_datetime(plot["forecast_start"])
@@ -359,11 +362,19 @@ with detail_col:
                 st.info("Not computed yet — run "
                         "`pipelines/check_reforecast_skill.py`.")
             else:
+                if "source" in sk.columns and (sk["source"] == "glofas").any():
+                    gf_sk = sk[sk["source"] == "glofas"]
+                    pv_gf = gf_sk.pivot_table(index="gauge_id", columns="leadtime",
+                                              values="peak_rank_corr")
+                    pv_gf.columns = [f"L{int(c)}d" for c in pv_gf.columns]
+                    st.markdown("GloFAS (vs its own lead-1, seasons 2003–2022):")
+                    st.dataframe(pv_gf.round(2), width="stretch")
+                    sk = sk[sk["source"] == "grrr"]
                 pv = sk.pivot_table(index="gauge_id", columns="leadtime",
                                     values="peak_rank_corr")
                 pv.columns = [f"lead {int(c)}d" for c in pv.columns]
                 st.markdown("Rank correlation of **seasonal peak flows** "
-                            "(reforecast vs reanalysis, Apr–Mar seasons "
+                            "(Google reforecast vs reanalysis, Apr–Mar seasons "
                             "2016–2022):")
                 def _corr_cell(v):
                     if pd.isna(v):

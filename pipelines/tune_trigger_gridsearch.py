@@ -34,17 +34,18 @@ warnings.filterwarnings("ignore")
 import ocha_stratus as stratus  # noqa: E402
 
 from pipelines.build_trigger_config import (  # noqa: E402
+    GAUGE_SOURCES,
     _annual_max,
     _event_years,
     _fs_daily,
     _season_year,
     _threshold_at_rp,
     _weibull_rp,
+    load_gauge_daily,
 )
 from src.config import load_gauge_registry, load_state_params  # noqa: E402
 from src.config.registry import GAUGE_REGISTRY_BLOB, STATE_PARAMS_BLOB  # noqa: E402
 from src.constants import PROJECT_PREFIX  # noqa: E402
-from src.datasources import grrr  # noqa: E402
 
 # Search the per-gauge (individual) RP threshold freely; the OVERALL trigger
 # return period is held constant by matching Adamawa's fire count (see main()).
@@ -101,15 +102,14 @@ def tune_state(state, cfg, gauge_reg, target_fires=None):
     events &= all_years
 
     sub = gauge_reg[(gauge_reg["state"] == state)
-                    & (gauge_reg["source"] == "grrr")
+                    & (gauge_reg["source"].isin(GAUGE_SOURCES))
                     & (gauge_reg["is_selected"] == True)]  # noqa: E712
     gauges = sub["gauge_id"].tolist()
     gauge_basin = dict(zip(sub["gauge_id"], sub["basin"]))
     if not gauges or not events:
         return None
 
-    ra = grrr.process_reanalysis(grrr.load_reanalysis(gauge=gauges))
-    ra["date"] = pd.to_datetime(ra["valid_time"]).dt.normalize()
+    ra = load_gauge_daily(sub)
     ra_sy = _season_year(ra["date"])
     ra = ra[(ra_sy >= y0) & (ra_sy <= y1)]
 

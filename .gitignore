@@ -168,3 +168,4 @@ exploration/2026/figures/*
 *.grib
 *.idx
 exploration/2026/cerf/shapefiles/*
+app/data/

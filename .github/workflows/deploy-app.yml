@@ -1,0 +1,81 @@
+# Deploys the static monitoring app (app/) to GitHub Pages with data exported
+# from blob at deploy time (KB: methods/static-data-apps.md). The artifact
+# bundles the whole checkout so the existing Pages content (exploration notes,
+# web map) keeps its URLs; the app lives at /app/.
+#
+# NOTE: schedule + workflow_dispatch only register once this file is on the
+# default branch; the push trigger below covers pre-merge testing.
+
+name: deploy-app
+
+on:
+  push:
+    branches: [feat/niger-benue-multistate-monitoring, govt-2026-prep]
+    paths:
+      - "app/**"
+      - "pipelines/export_app_data.py"
+      - ".github/workflows/deploy-app.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */6 * * *"   # every 6 h — refreshes live Google forecasts
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install export dependencies
+        run: |
+          pip install --quiet ocha-stratus geopandas pyarrow python-dotenv \
+            xarray requests
+
+      - name: Export app data from blob
+        env:
+          DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+          DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: python pipelines/export_app_data.py
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.venv' --exclude '_site' \
+            --exclude '__pycache__' --exclude '.quarto' ./ _site/
+          # legacy Pages rendered README.md as the root index; workflow mode
+          # serves raw files, so provide a small landing page
+          if [ ! -f _site/index.html ]; then
+            cat > _site/index.html <<'HTML'
+          <!DOCTYPE html><html><head><meta charset="utf-8">
+          <title>ds-aa-nga-flooding</title></head><body style="font-family:sans-serif;margin:3em">
+          <h1>Nigeria flooding — anticipatory action</h1>
+          <ul>
+            <li><a href="app/">Niger/Benue flood-trigger monitoring app</a></li>
+            <li><a href="exploration/2026/cerf/notes/">2026 CERF analysis notes</a></li>
+            <li><a href="exploration/2026/cerf/web/">2026 CERF web map</a></li>
+          </ul></body></html>
+          HTML
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
