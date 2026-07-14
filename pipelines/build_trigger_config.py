@@ -99,9 +99,11 @@ def _glofas_daily(station):
 
 
 def candidate_gauges(state, gauge_reg):
-    """Candidate rows for a state's trigger (GRRR + GloFAS). Adamawa stays
-    pinned to the endorsed framework: in-state Google gauges only — it anchors
-    the target activation frequency for all other states."""
+    """Rows *eligible for selection* in a state's trigger (GRRR + GloFAS).
+    Adamawa stays pinned to the endorsed framework: in-state Google gauges
+    only — it anchors the target activation frequency for all other states.
+    (All candidates still get scored for correlation; the pin only restricts
+    which gauges the top-N selection may draw from.)"""
     sub = gauge_reg[(gauge_reg["state"] == state)
                     & (gauge_reg["source"].isin(GAUGE_SOURCES))]
     if state == "Adamawa":
@@ -159,7 +161,10 @@ def process_state(state, cfg, gauge_reg):
     fs_years = _annual_max(fs, "sfed")
     events = _event_years(fs_years, cfg["rp_target"])
 
-    sub = candidate_gauges(state, gauge_reg)
+    # score EVERY candidate (informational best_r even for gauges the pin
+    # excludes from selection, e.g. wuroboki for Adamawa)
+    sub = gauge_reg[(gauge_reg["state"] == state)
+                    & (gauge_reg["source"].isin(GAUGE_SOURCES))]
     gauges = sub["gauge_id"].tolist()
     if not gauges:
         return None, None
@@ -194,8 +199,10 @@ def process_state(state, cfg, gauge_reg):
         return None, None
     res = pd.DataFrame(rows).sort_values("best_r", ascending=False).reset_index(drop=True)
     res.insert(0, "state", state)  # registry is keyed (gauge_id, state)
+    selectable = set(candidate_gauges(state, gauge_reg)["gauge_id"])
     res["is_selected"] = False
-    res.loc[: TOP_N - 1, "is_selected"] = True
+    elig = res.index[res["gauge_id"].isin(selectable)][:TOP_N]
+    res.loc[elig, "is_selected"] = True
     res["lead_time"] = res["best_lag"].clip(lower=0)
 
     # evaluate the ≥consensus-of-N action trigger (reanalysis, year-round)
