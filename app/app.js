@@ -12,14 +12,15 @@ function viability(f1, fpr) {
   if (f1 == null || isNaN(f1)) return "none";
   if (fpr != null && !isNaN(fpr) && fpr > 0.2) return "weak";
   if (f1 >= 0.7) return "strong";
-  if (f1 >= 0.55) return "moderate";
+  if (f1 >= 0.5) return "moderate";   // endorsed Adamawa sits at 0.545
   return "weak";
 }
 
+// Bands fitted to the wet-season ρ distribution (n=464, quartiles .65/.70/.74)
 function corrColor(r) {
   if (r == null || isNaN(r)) return "#999999";
-  if (r >= 0.6) return "#1a9850";
-  if (r >= 0.5) return "#fec44f";
+  if (r >= 0.7) return "#1a9850";
+  if (r >= 0.6) return "#fec44f";
   return "#d73027";
 }
 
@@ -271,8 +272,10 @@ function gaugeSection(s, nSel) {
          `<td class="num">${fmt(g.rp_threshold, 0)}</td><td>${esc(g.basin ?? "–")}</td>` +
          (anyCross ? `<td>${g.in_state === false ? "yes" : ""}</td>` : "") + `</tr>`;
   });
+  const cm = cfgBy[s]?.corr_months;
   h += `</table></div>` +
-       `<p class="caption">Ranked by correlation with the state's Floodscan benchmark; ` +
+       `<p class="caption">Ranked by Spearman ρ vs the state's Floodscan benchmark on ` +
+       `wet-season daily values${cm ? ` (months ${esc(cm)})` : ""}; ` +
        `the top ${nSel} (★, green rows) form the trigger — the rest were assessed ` +
        `and excluded. ρ "–" = insufficient overlapping data.` +
        (anyCross ? ` <b>cross-river</b> gauges sit outside the state's own LGAs ` +

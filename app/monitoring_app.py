@@ -44,10 +44,9 @@ STATE_COLORS = {
 TIER_COLOR = {"strong": "#1a9850", "moderate": "#fdae61",
               "weak": "#d73027", "none": "#cccccc"}
 
-# Correlation bands fitted to the actual best_r distribution (raw daily Spearman
-# is seasonally inflated, so the 285 gauges all fall between 0.38–0.70 — bands
-# like <0.3/>0.5 would make almost everything green).
-CORR_BANDS = [(0.6, "high", "#1a9850"), (0.5, "medium", "#fec44f"),
+# Correlation bands fitted to the wet-season best_r distribution
+# (n=464, quartiles 0.65/0.70/0.74).
+CORR_BANDS = [(0.7, "high", "#1a9850"), (0.6, "medium", "#fec44f"),
               (-1.0, "low", "#d73027")]
 
 
@@ -67,7 +66,7 @@ def viability(f1, fpr):
         return "weak"
     if f1 >= 0.70:
         return "strong"
-    if f1 >= 0.55:
+    if f1 >= 0.50:  # endorsed Adamawa sits at 0.545
         return "moderate"
     return "weak"
 
@@ -232,11 +231,10 @@ with map_col:
     out = st_folium(m, use_container_width=True, height=620,
                     returned_objects=["last_object_clicked"])
     st.caption("State fill = trigger viability (green strong · amber moderate · red "
-               "weak). Gauge **colour = correlation with Floodscan**: "
-               "🔴 ρ < 0.5 · 🟡 0.5–0.6 · 🟢 ≥ 0.6 (bands fit the observed 0.38–0.70 "
-               "range — raw daily ρ is seasonally inflated). "
+               "weak). Gauge **colour = wet-season correlation with Floodscan**: "
+               "🔴 ρ < 0.6 · 🟡 0.6–0.7 · 🟢 ≥ 0.7. "
                "**Large black-ringed dots are the included trigger gauges**, "
-               "small thin dots are unused candidates.")
+               "small thin dots are unused candidates; blue rings are GloFAS.")
 
     # click → focus state (point-in-polygon)
     click = (out or {}).get("last_object_clicked")
@@ -369,8 +367,11 @@ with detail_col:
                 lambda r: ["background-color:#d7f0d7" if r["is_selected"] else ""]
                 * len(r), axis=1)
             st.dataframe(styler, hide_index=True, height=380, width="stretch")
+            _cm = cfg.get("corr_months")
             st.caption(
-                f"Ranked by correlation with the state's Floodscan benchmark; "
+                f"Ranked by Spearman ρ vs the state's Floodscan benchmark on "
+                f"wet-season daily values"
+                + (f" (months {_cm})" if _cm else "") + "; "
                 f"the top {n_sel} (green rows) form the trigger — the rest were "
                 "assessed and excluded. "
                 "**cross-river** gauges sit outside the state's own LGAs "
