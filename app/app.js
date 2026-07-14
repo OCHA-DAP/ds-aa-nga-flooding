@@ -31,6 +31,7 @@ let D = null;          // core.json
 let G = null;          // geo.json
 let stateLayer = null;
 let focus = null;
+const markerIndex = [];   // {marker, rows, best} per gauge, for focus restyling
 
 const byState = (arr, key = "state") => {
   const m = {};
@@ -114,7 +115,7 @@ function buildMap() {
       (r.rp_threshold != null ? ` (thr ${Math.round(r.rp_threshold)})` : "")
     ).join(", ");
     const gf = best.source === "glofas";
-    L.circleMarker([best.lat, best.lon], {
+    const marker = L.circleMarker([best.lat, best.lon], {
       radius: isSel ? 7 : 3.5,
       color: gf ? "#1f6fb4" : (isSel ? "#000" : "#888"),
       weight: gf ? 2.4 : (isSel ? 2.2 : 0.6),
@@ -125,6 +126,30 @@ function buildMap() {
       `LGA: ${esc(best.lga_name ?? "–")}<br>best ρ: ${fmt(best.best_r, 3)}<br>` +
       (isSel ? "★ INCLUDED (trigger gauge)" : "candidate (not used)")
     ).addTo(map);
+    markerIndex.push({ marker, rows, best });
+  });
+  restyleMarkers(focus);
+}
+
+function restyleMarkers(s) {
+  markerIndex.forEach(({ marker, rows, best }) => {
+    const inState = rows.filter(r => r.state === s);
+    const selHere = inState.some(r => r.is_selected);
+    const selAny = rows.some(r => r.is_selected);
+    const gf = best.source === "glofas";
+    if (selHere) {           // the focused state's trigger gauges: pop
+      marker.setStyle({ radius: 9, weight: 3.2, opacity: 1, fillOpacity: 1,
+                        color: gf ? "#1f6fb4" : "#000" });
+      marker.bringToFront();
+    } else if (inState.length) {   // candidates for this state: normal
+      marker.setStyle({ radius: selAny ? 6 : 3.5, weight: selAny ? 1.6 : 0.7,
+                        opacity: 0.9, fillOpacity: 0.75,
+                        color: gf ? "#1f6fb4" : (selAny ? "#333" : "#888") });
+    } else {                 // unrelated to the focused state: fade back
+      marker.setStyle({ radius: selAny ? 5 : 3, weight: selAny ? 1 : 0.5,
+                        opacity: 0.35, fillOpacity: 0.25,
+                        color: gf ? "#1f6fb4" : (selAny ? "#555" : "#999") });
+    }
   });
 }
 
@@ -143,6 +168,7 @@ function selectState(s) {
   focus = s;
   document.getElementById("state-select").value = s;
   if (stateLayer) stateLayer.setStyle(f => stateStyle(f.properties.ADM1_EN));
+  restyleMarkers(s);
   renderDetail(s);
   renderGaugeScatter(s);
 }
@@ -172,7 +198,7 @@ function renderDetail(s) {
 
   h += liveSection(s, sel, nReq);
   h += seasonSection(s, cfg, nSel);
-  h += gaugeSection(sel, nSel);
+  h += gaugeSection(s, nSel);
   h += skillSection(s);
   el.innerHTML = h;
   drawLiveChart(s, sel);
@@ -226,24 +252,31 @@ function seasonSection(s, cfg, nSel) {
   return h;
 }
 
-function gaugeSection(sel, nSel) {
-  if (!nSel) return "";
-  const anyCross = sel.some(g => g.in_state === false);
-  let h = `<details><summary>Selected trigger gauges (${nSel}) &amp; thresholds</summary>` +
-          `<table><tr><th>gauge</th><th>source</th><th class="num">ρ</th>` +
-          `<th class="num">lag</th><th class="num">threshold</th><th>basin</th>` +
-          (anyCross ? "<th>cross-river</th>" : "") + `</tr>`;
-  sel.slice().sort((a, b) => (b.best_r ?? -9) - (a.best_r ?? -9)).forEach(g => {
-    h += `<tr><td>${esc(g.gauge_id)}</td><td>${esc(g.source)}</td>` +
+function gaugeSection(s, nSel) {
+  const rows = (gaugesBy[s] || []);
+  if (!rows.length) return "";
+  const anyCross = rows.some(g => g.in_state === false);
+  const sorted = rows.slice().sort((a, b) =>
+    (b.is_selected - a.is_selected) || ((b.best_r ?? -9) - (a.best_r ?? -9)));
+  let h = `<details><summary>All candidate gauges (${rows.length}) — ` +
+          `${nSel} included</summary>` +
+          `<div class="scroll"><table><tr><th>included</th><th>gauge</th><th>source</th>` +
+          `<th class="num">ρ</th><th class="num">lag</th><th class="num">threshold</th>` +
+          `<th>basin</th>` + (anyCross ? "<th>cross-river</th>" : "") + `</tr>`;
+  sorted.forEach(g => {
+    h += `<tr${g.is_selected ? ' class="hit"' : ""}>` +
+         `<td>${g.is_selected ? "★" : ""}</td>` +
+         `<td>${esc(g.gauge_id)}</td><td>${esc(g.source)}</td>` +
          `<td class="num">${fmt(g.best_r, 3)}</td><td class="num">${g.best_lag ?? "–"}</td>` +
          `<td class="num">${fmt(g.rp_threshold, 0)}</td><td>${esc(g.basin ?? "–")}</td>` +
          (anyCross ? `<td>${g.in_state === false ? "yes" : ""}</td>` : "") + `</tr>`;
   });
-  h += `</table>`;
-  if (anyCross) {
-    h += `<p class="caption"><b>cross-river</b> gauges sit outside the state's own LGAs ` +
-         `(within a 10 km buffer) but inform its trigger.</p>`;
-  }
+  h += `</table></div>` +
+       `<p class="caption">Ranked by correlation with the state's Floodscan benchmark; ` +
+       `the top ${nSel} (★, green rows) form the trigger — the rest were assessed ` +
+       `and excluded. ρ "–" = insufficient overlapping data.` +
+       (anyCross ? ` <b>cross-river</b> gauges sit outside the state's own LGAs ` +
+                   `(within a 10 km buffer) but inform its trigger.` : "") + `</p>`;
   return h + `</details>`;
 }
 

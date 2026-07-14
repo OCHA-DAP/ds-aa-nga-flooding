@@ -196,6 +196,11 @@ with map_col:
                   is_selected=("is_selected", "any"),
                   rp_threshold=("rp_threshold", "first"),
                   roles=("role", ", ".join)))
+    # focus-aware styling: the focused state's trigger gauges pop, its other
+    # candidates stay normal, everything else fades back
+    focus_sel = set(gd[(gd["state"] == focus)
+                       & (gd["is_selected"] == True)]["gauge_id"])  # noqa: E712
+    focus_cand = set(gd[gd["state"] == focus]["gauge_id"])
     for _, g in gdisp.iterrows():
         is_sel = bool(g["is_selected"])
         is_gf = g["source"] == "glofas"
@@ -206,13 +211,22 @@ with map_col:
                  f"LGA: {g['lga_name']}<br>best correlation ρ: {r} ({band})<br>"
                  f"RP thresh: {g['rp_threshold']} m³/s<br>"
                  f"{'★ INCLUDED (trigger gauge)' if is_sel else 'candidate (not used)'}")
+        gid = g["gauge_id"]
+        if gid in focus_sel:
+            radius, weight, op, fop = 9, 3.2, 1.0, 1.0
+            ring = "#1f6fb4" if is_gf else "#000000"
+        elif gid in focus_cand:
+            radius = 6 if is_sel else 3.5
+            weight, op, fop = (1.6 if is_sel else 0.7), 0.9, 0.75
+            ring = "#1f6fb4" if is_gf else ("#333333" if is_sel else "#888888")
+        else:
+            radius = 5 if is_sel else 3
+            weight, op, fop = (1.0 if is_sel else 0.5), 0.35, 0.25
+            ring = "#1f6fb4" if is_gf else ("#555555" if is_sel else "#999999")
         folium.CircleMarker(
             [g["lat"], g["lon"]],
-            radius=7 if is_sel else 3.5,
-            color="#1f6fb4" if is_gf else ("#000000" if is_sel else "#888888"),
-            weight=2.4 if is_gf else (2.2 if is_sel else 0.6),
-            fill=True, fill_color=fill,
-            fill_opacity=0.95 if is_sel else 0.55,
+            radius=radius, color=ring, weight=weight, opacity=op,
+            fill=True, fill_color=fill, fill_opacity=fop,
             popup=popup).add_to(m)
 
     out = st_folium(m, use_container_width=True, height=620,
@@ -340,18 +354,27 @@ with detail_col:
                 f"season (fires when ≥ Needed). "
                 "Green = hit · red = missed flood · amber = false alarm.")
 
-        # --- selected gauges + thresholds ---
-        with st.expander(f"Selected trigger gauges ({n_sel}) & thresholds"):
-            gcols = ["gauge_id", "best_r", "best_lag", "rp_threshold", "basin"]
-            gt = gsel[gcols].copy()
-            if "in_state" in gsel.columns:
-                gt["cross-river"] = ~gsel["in_state"].fillna(True)
-            st.dataframe(gt.sort_values("best_r", ascending=False),
-                         hide_index=True, width="stretch")
-            if "cross-river" in gt.columns and gt["cross-river"].any():
-                st.caption("**cross-river** gauges sit outside the state's own "
-                           "LGAs (within a 10 km buffer, e.g. the far bank of a "
-                           "border river) but inform its trigger.")
+        # --- all candidate gauges (included + excluded) ---
+        gall = gauge_reg[(gauge_reg["state"] == s)
+                         & (gauge_reg["source"].isin(("grrr", "glofas")))]
+        with st.expander(f"All candidate gauges ({len(gall)}) — {n_sel} included"):
+            gcols = ["is_selected", "gauge_id", "source", "best_r", "best_lag",
+                     "rp_threshold", "basin"]
+            gt = gall[gcols].copy()
+            if "in_state" in gall.columns:
+                gt["cross-river"] = ~gall["in_state"].fillna(True)
+            gt = gt.sort_values(["is_selected", "best_r"],
+                                ascending=[False, False])
+            styler = gt.style.apply(
+                lambda r: ["background-color:#d7f0d7" if r["is_selected"] else ""]
+                * len(r), axis=1)
+            st.dataframe(styler, hide_index=True, height=380, width="stretch")
+            st.caption(
+                f"Ranked by correlation with the state's Floodscan benchmark; "
+                f"the top {n_sel} (green rows) form the trigger — the rest were "
+                "assessed and excluded. "
+                "**cross-river** gauges sit outside the state's own LGAs "
+                "(within a 10 km buffer) but inform its trigger.")
 
         # --- reforecast vs reanalysis skill ---
         with st.expander("Reforecast skill vs reanalysis (can we trust the "
