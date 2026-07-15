@@ -44,7 +44,7 @@ jobs:
       - name: Install export dependencies
         run: |
           pip install --quiet ocha-stratus geopandas pyarrow python-dotenv \
-            xarray requests
+            xarray requests cdsapi cfgrib eccodes tqdm
 
       - name: Export app data from blob
         env:
@@ -52,13 +52,16 @@ jobs:
           DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
           DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          CDSAPI_URL: ${{ secrets.CDSAPI_URL }}
+          CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
         run: python pipelines/export_app_data.py
 
       - name: Assemble site
         run: |
           mkdir -p _site
           rsync -a --exclude '.git' --exclude '.venv' --exclude '_site' \
-            --exclude '__pycache__' --exclude '.quarto' ./ _site/
+            --exclude '__pycache__' --exclude '.quarto' --exclude 'temp' \
+            ./ _site/
           # legacy Pages rendered README.md as the root index; workflow mode
           # serves raw files, so provide a small landing page
           if [ ! -f _site/index.html ]; then

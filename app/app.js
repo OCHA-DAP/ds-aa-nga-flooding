@@ -65,6 +65,7 @@ function init() {
     `forecast gauges (Google + GloFAS). Click a state or pick one for detail.`;
   const stamp = [`Data generated ${D.generated_at.slice(0, 16)}Z`];
   if (D.live_issued) stamp.push(`latest Google forecast issued ${D.live_issued.slice(0, 16)}Z`);
+  if (D.glofas_issued) stamp.push(`latest GloFAS forecast issued ${D.glofas_issued}`);
   stamp.push("Flood seasons run Apr–Mar, labelled by start year.");
   document.getElementById("stamp").textContent = stamp.join(" · ");
 
@@ -206,8 +207,9 @@ function renderDetail(s) {
 }
 
 function liveSection(s, sel, nReq) {
-  const withLive = sel.filter(g => g.source === "grrr" && D.live[g.gauge_id]);
-  let h = `<h3>Live status — Google Flood Hub</h3>`;
+  const withLive = sel.filter(g => D.live[g.gauge_id]);
+  const hasGf = withLive.some(g => g.source === "glofas");
+  let h = `<h3>Live status — Google Flood Hub${hasGf ? " + GloFAS" : ""}</h3>`;
   if (!withLive.length) {
     return h + `<p class="note">No live forecasts available for this state's gauges.</p>`;
   }
@@ -218,13 +220,16 @@ function liveSection(s, sel, nReq) {
        `gauges over threshold (need ${nReq})</div>`;
   h += `<div id="live-chart"></div>` +
        `<p class="caption">Each line = one selected gauge's live forecast as a share of its ` +
-       `trigger threshold; the red line is the threshold (100%).</p>`;
+       `trigger threshold; the red line is the threshold (100%).` +
+       (hasGf ? ` GloFAS lines are daily ensemble means over a 5-day horizon.` : "") +
+       `</p>`;
   h += `<details><summary>Live forecast peaks (${withLive.length} gauges)</summary>` +
-       `<table><tr><th>gauge</th><th class="num">forecast (m³/s)</th>` +
+       `<table><tr><th>gauge</th><th>source</th><th class="num">forecast (m³/s)</th>` +
        `<th class="num">threshold</th><th>over?</th></tr>` +
        withLive.map(g => {
          const pk = D.live[g.gauge_id].peak;
-         return `<tr><td>${esc(g.gauge_id)}</td><td class="num">${fmt(pk, 1)}</td>` +
+         return `<tr><td>${esc(g.gauge_id)}</td><td>${esc(g.source)}</td>` +
+                `<td class="num">${fmt(pk, 1)}</td>` +
                 `<td class="num">${fmt(g.rp_threshold, 1)}</td>` +
                 `<td>${pk > g.rp_threshold ? "⚠️ yes" : "no"}</td></tr>`;
        }).join("") + `</table></details>`;
@@ -334,7 +339,7 @@ function axis(w, h, m) {
 function drawLiveChart(s, sel) {
   const host = document.getElementById("live-chart");
   if (!host) return;
-  const series = sel.filter(g => g.source === "grrr" && D.live[g.gauge_id])
+  const series = sel.filter(g => D.live[g.gauge_id])
     .map(g => ({
       id: g.gauge_id,
       pts: D.live[g.gauge_id].ts.map(p => ({ t: new Date(p.t).getTime(),
