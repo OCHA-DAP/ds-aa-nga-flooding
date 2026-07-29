@@ -76,8 +76,7 @@ def send_email(msg, to_list, cc_list):
 
 def get_email_subject(trigger_status, test, monitoring_date):
     test_text = "TEST: " if test else ""
-    trigger_text = "ACTIVATED" if trigger_status else "NOT ACTIVATED"
     return (
-        f"{test_text}Nigeria AA: Benue Flooding"
-        f" - {trigger_text} {monitoring_date}"
+        f"{test_text}Nigeria AA: Adamawa Riverine Flooding"
+        f" - {trigger_status} {monitoring_date}"
     )

@@ -3,51 +3,28 @@ import io
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import ocha_stratus as stratus
-import pandas as pd
 from matplotlib.ticker import FuncFormatter
 
-from src.constants import PROJECT_PREFIX
+from src.constants import (
+    ACTION_GAUGE_THRESHOLDS,
+    ACTION_MIN_GAUGES,
+    PROJECT_PREFIX,
+    READINESS_GLOFAS_THRESH,
+)
+from src.monitoring import etl
 
 
-def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
-
-    # TODO: Some duplication here from etl.check_results
+def combined_plots(df, save_output=True):
     assert df.monitoring_date.nunique() == 1
     update_date = df.monitoring_date.unique()[0].strftime("%Y-%m-%d")
+    status = etl.evaluate_trigger(df)
 
-    df_forecast = df[df.src.str.contains("glofas_forecast")].reset_index()
-    df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
-    df_google = df[df.src.str.contains("grrr_hybas")].reset_index()
+    df_glofas = df[df.src.str.contains("glofas_forecast")].reset_index()
+    df_google = df[df.src.str.startswith("grrr_")].copy()
 
-    # We're taking the forecast issue date for GloFAS (not the reanalysis)
-    glofas_update = df_forecast.issued_date[0].strftime("%Y-%m-%d")
-    google_update = df_google.issued_time[0].strftime("%Y-%m-%d")
-
-    glofas_exceeds = (df_reanalysis.value > glofas_thresh).any() | (
-        df_forecast.value > glofas_thresh
-    ).any()
-    google_exceeds = (df_google.value > google_thresh).any()
-    overall_exceeds = glofas_exceeds | google_exceeds
-
-    forecast_subplot(
-        ax1,
-        df_forecast,
-        df_reanalysis,
-        glofas_exceeds,
-        glofas_thresh,
-        "GloFAS",
-        glofas_update,
-    )
-    forecast_subplot(
-        ax2,
-        df_google,
-        None,
-        google_exceeds,
-        google_thresh,
-        "Google",
-        google_update,
-    )
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+    readiness_subplot(ax1, df_glofas, status)
+    action_subplot(ax2, df_google, status)
 
     if save_output:
         buffer = io.BytesIO()
@@ -57,7 +34,8 @@ def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
             "projects", "dev", write=True
         )
         blob_name = (
-            f"{PROJECT_PREFIX}/monitoring/{update_date}_{overall_exceeds}.png"
+            f"{PROJECT_PREFIX}/monitoring/{update_date}_"
+            f"{status['action']}.png"
         )
 
         container_client.upload_blob(
@@ -67,24 +45,28 @@ def combined_plots(df, glofas_thresh, google_thresh, save_output=True):
         buffer.close()
 
 
-def forecast_subplot(
-    ax, df_forecast, df_reanalysis, exceeds, thresh, dataset, date
-):
+def _format_dates(ax):
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%B %-d"))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    ax.tick_params(axis="x", rotation=45)
+
+
+def readiness_subplot(ax, df_glofas, status):
+    issue_date = df_glofas.issued_date[0].strftime("%Y-%m-%d")
     ax.plot(
-        df_forecast["valid_date"],
-        df_forecast["value"],
+        df_glofas["valid_date"],
+        df_glofas["value"],
         marker="o",
         linestyle="-",
         linewidth=2,
         markersize=4,
-        label="Forecast",
+        label="GloFAS ensemble mean",
         color="blue",
         alpha=0.8,
     )
-
-    for _, row in df_forecast.iterrows():
+    for _, row in df_glofas.iterrows():
         ax.annotate(
-            f'{row["value"]:.1f}',  # noqa
+            f'{row["value"]:.0f}',  # noqa
             (row["valid_date"], row["value"]),
             textcoords="offset points",
             xytext=(0, 10),
@@ -92,54 +74,71 @@ def forecast_subplot(
             fontsize=8,
             color="blue",
         )
-
-    # Add horizontal threshold line
     ax.axhline(
-        y=thresh,
+        y=READINESS_GLOFAS_THRESH,
         color="black",
         linestyle="--",
         linewidth=2,
-        label=f"Trigger Threshold ({thresh})",
-        alpha=0.8,  # noqa
+        label=f"Readiness threshold ({READINESS_GLOFAS_THRESH:,.0f})",
+        alpha=0.8,
     )
 
-    if isinstance(df_reanalysis, pd.DataFrame):
-        ax.plot(
-            df_reanalysis["valid_date"],
-            df_reanalysis["value"],
-            marker="s",
-            linestyle="-",
-            linewidth=2,
-            markersize=6,
-            label="Reanalysis",
-            color="red",
-            alpha=0.8,
-        )
-
-        # Add labels for reanalysis points
-        for _, row in df_reanalysis.iterrows():
-            ax.annotate(
-                f'{row["value"]:.1f}',  # noqa
-                (row["valid_date"], row["value"]),
-                textcoords="offset points",
-                xytext=(0, 10),
-                ha="center",
-                fontsize=8,
-                color="red",
-            )
-
-    # Format x-axis dates
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%B %-d"))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-
-    # Format y-axis with comma separators
     def format_thousands(x, pos):
         return f"{x:,.0f}"  # noqa
 
     ax.yaxis.set_major_formatter(FuncFormatter(format_thousands))
-    title = f"{dataset} Monitoring: {date} | Triggers = {exceeds}"
     ax.set_ylim(0, None)
     ax.set_ylabel("Discharge, daily average (m$^3$ / s)", fontsize=12)
-    ax.set_title(title, fontsize=12, fontweight="bold")
+    ax.set_title(
+        f"Readiness trigger — GloFAS at Wuroboki, issued {issue_date} | "
+        f"Triggered = {status['readiness']}",
+        fontsize=12,
+        fontweight="bold",
+    )
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
+    _format_dates(ax)
+
+
+def action_subplot(ax, df_google, status):
+    issue_date = df_google.issued_time.iloc[0].strftime("%Y-%m-%d")
+    df_google = df_google.copy()
+    df_google["gauge_id"] = df_google.src.str.removeprefix("grrr_")
+    df_google["threshold"] = df_google.gauge_id.map(ACTION_GAUGE_THRESHOLDS)
+    df_google["pct_of_threshold"] = (
+        df_google.value / df_google.threshold * 100
+    )
+
+    for gauge_id, df_gauge in df_google.groupby("gauge_id"):
+        ax.plot(
+            df_gauge["valid_date"],
+            df_gauge["pct_of_threshold"],
+            marker="o",
+            linestyle="-",
+            linewidth=1.5,
+            markersize=3,
+            label=gauge_id,
+            alpha=0.7,
+        )
+    ax.axhline(
+        y=100,
+        color="black",
+        linestyle="--",
+        linewidth=2,
+        label="Gauge 4-yr RP threshold",
+        alpha=0.8,
+    )
+    n_gauges = len(ACTION_GAUGE_THRESHOLDS)
+    ax.set_ylim(0, None)
+    ax.set_ylabel("Forecast, % of gauge threshold", fontsize=12)
+    ax.set_title(
+        f"Action trigger — Google gauges, issued {issue_date} | "
+        f"max {status['max_gauges_exceeding']}/{n_gauges} gauges over "
+        f"threshold on one day (needs ≥{ACTION_MIN_GAUGES}) | "
+        f"Triggered = {status['action']}",
+        fontsize=12,
+        fontweight="bold",
+    )
+    ax.legend(fontsize=8, ncols=2)
+    ax.grid(True, alpha=0.3)
+    _format_dates(ax)

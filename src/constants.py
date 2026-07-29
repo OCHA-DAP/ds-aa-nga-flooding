@@ -139,8 +139,36 @@ NHF_FLASH_LGAS = [
 
 PROJECT_PREFIX = "ds-aa-nga-flooding"
 
+# --- 2025 framework thresholds (superseded by the 2026 framework below;
+# kept for historical notebooks/analysis) ---
 GLOFAS_THRESH = 3132
 GOOGLE_THRESH = 1195
 
 GLOFAS_WARNING_THRESH = 2800
 GOOGLE_WARNING_THRESH = 1000
+
+# --- 2026 endorsed framework (Adamawa riverine) ---
+# Action trigger: fires when >= ACTION_MIN_GAUGES of the 10 selected Google
+# GRRR gauges simultaneously exceed their individual 4-yr empirical Weibull
+# RP threshold (wet-season Aug-Nov annual maxima, GRRR reanalysis 1998-2023)
+# on the same valid day. Thresholds from
+# exploration/2026/cerf/workflow/06_trigger_definition.ipynb.
+ACTION_GAUGE_THRESHOLDS = {
+    "hybas_1120842990": 1110.8,
+    "hybas_1120843610": 1101.5,
+    "hybas_1120845060": 1102.2,
+    "hybas_1120849600": 1113.7,
+    "hybas_1120848550": 1106.0,
+    "hybas_1121970280": 1110.1,
+    "hybas_1120842550": 1114.0,  # Wuroboki / Kangli (quality-verified)
+    "hybas_1120840700": 1112.6,
+    "hybas_1120840560": 1117.1,
+    "hybas_1120840690": 142.7,  # small-tributary outlier, retained by design
+}
+ACTION_MIN_GAUGES = 6
+
+# Readiness trigger (Option A): GloFAS ensemble-mean forecast at Wuroboki
+# exceeds 3,132 m3/s at lead time <= 13 days. From
+# exploration/2026/cerf/workflow/07_readiness_trigger.ipynb.
+READINESS_GLOFAS_THRESH = 3132.0
+READINESS_MAX_LEADTIME = 13  # days

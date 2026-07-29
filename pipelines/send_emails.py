@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from html2text import html2text
 from jinja2 import Environment, FileSystemLoader
 
+from src.constants import ACTION_MIN_GAUGES
 from src.monitoring import etl, utils
 
 load_dotenv()
@@ -25,12 +26,25 @@ if __name__ == "__main__":
 
     monitoring_date_obj = datetime.strptime(monitoring_date, "%Y-%m-%d")
 
-    activation = etl.check_results(monitoring_date, activation=True)
-    warning = etl.check_results(monitoring_date, activation=False)
-    trigger_status = "ACTIVATED" if activation else "NOT ACTIVATED"
+    status = etl.check_trigger_status(monitoring_date)
+    action = status["action"]
+    readiness = status["readiness"]
 
-    # Send emails if activated, if within warning threshold, or if it is a Monday
-    if activation or warning or monitoring_date_obj.weekday() == 0:
+    if action:
+        trigger_status = "ACTION TRIGGER REACHED"
+        template_name = "action"
+        email_type = "trigger"
+    elif readiness:
+        trigger_status = "READINESS TRIGGER REACHED"
+        template_name = "readiness"
+        email_type = "info"
+    else:
+        trigger_status = "NOT ACTIVATED"
+        template_name = "informational"
+        email_type = "info"
+
+    # Send emails if a trigger has been reached, or if it is a Monday
+    if action or readiness or monitoring_date_obj.weekday() == 0:
         print(f"Sending emails for date: {monitoring_date}")
         stage = os.getenv("STAGE", "dev")
         test = False if stage == "prod" else True
@@ -41,17 +55,15 @@ if __name__ == "__main__":
         ocha_logo_cid = make_msgid(domain="humdata.org")
         chart_cid = make_msgid(domain="humdata.org")
 
-        template_name = "action" if activation else "informational"
         environment = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = environment.get_template(f"{template_name}.html")
 
-        email_type = "info" if not activation else "trigger"
         distribution = utils.process_distribution_list(test, email_type)
 
         msg = EmailMessage()
         msg.set_charset("utf-8")
         msg["Subject"] = utils.get_email_subject(
-            activation, test, monitoring_date
+            trigger_status, test, monitoring_date
         )
         msg["From"] = Address(
             "OCHA Centre for Humanitarian Data",
@@ -82,14 +94,17 @@ if __name__ == "__main__":
             chart_cid=chart_cid[1:-1],  # Don't need if triggering
             test_email=test,
             trigger_status=trigger_status,
+            max_gauges_exceeding=status["max_gauges_exceeding"],
+            n_gauges_reporting=status["n_gauges_reporting"],
+            min_gauges=ACTION_MIN_GAUGES,
         )
 
         text_str = html2text(html_str)
         msg.set_content(text_str)
         msg.add_alternative(html_str, subtype="html")
 
-        if not activation:
-            blob_name = utils.get_plot_blob_name(monitoring_date, activation)
+        if not action:
+            blob_name = utils.get_plot_blob_name(monitoring_date, action)
             image_data = io.BytesIO()
             blob_client = stratus.get_container_client().get_blob_client(
                 blob_name
