@@ -172,3 +172,27 @@ ACTION_MIN_GAUGES = 6
 # exploration/2026/cerf/workflow/07_readiness_trigger.ipynb.
 READINESS_GLOFAS_THRESH = 3132.0
 READINESS_MAX_LEADTIME = 13  # days
+
+# --- Listmonk email dispatch ---
+# Lists are resolved by tag at runtime (never by hardcoded id). Created by
+# pipelines/setup_nga_listmonk_lists.py.
+LISTMONK_PROJECT_TAG = "ds-aa-nga-flooding"
+LISTMONK_LISTS = {
+    "info": {
+        "name": "[AA framework] Nigeria flooding (informational)",
+        "tag": "nga:info",
+    },
+    "trigger": {
+        "name": "[AA framework] Nigeria flooding (trigger)",
+        "tag": "nga:trigger",
+    },
+    # Test recipients. Created by the setup script but NOT populated from the
+    # distribution list; add dev/test subscribers manually. When STAGE != prod
+    # the dispatch routes ALL sends here instead of info/trigger, so real
+    # sends can be exercised without reaching the real audience.
+    "test": {
+        "name": "[TEST] Nigeria flooding",
+        "tag": "nga:test",
+        "extra_tags": ["TEST"],
+    },
+}
