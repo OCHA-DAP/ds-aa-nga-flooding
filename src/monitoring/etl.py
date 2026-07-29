@@ -70,6 +70,43 @@ def get_glofas_forecast(
     )
 
 
+def get_glofas_reanalysis(
+    reanalysis_blob_name,
+    coords,
+    issued_date,
+    keep_local_copy=True,
+    overwrite=False,
+):
+    container = stratus.get_container_client("projects", "dev")
+    if (
+        container.get_blob_client(reanalysis_blob_name).exists()
+        and not overwrite
+    ):
+        print(
+            f"File already exists: {reanalysis_blob_name}. Skipping download"
+        )
+        return
+    reanalysis_dataset = "cems-glofas-historical"
+    reanalysis_request = {
+        "system_version": ["version_4_0"],
+        "hydrological_model": ["lisflood"],
+        "product_type": ["intermediate"],
+        "variable": ["river_discharge_in_the_last_24_hours"],
+        "hyear": [str(issued_date.year)],
+        "hmonth": [str(issued_date.month).zfill(2)],
+        "hday": [str(issued_date.day).zfill(2)],
+        "data_format": "grib2",
+        "download_format": "unarchived",
+        "area": coords,
+    }
+    cds_utils.download_raw_cds_api_to_blob(
+        reanalysis_dataset,
+        reanalysis_request,
+        reanalysis_blob_name,
+        keep_local_copy=keep_local_copy,
+    )
+
+
 def get_google_forecasts(gauge_ids, issued_date):
     """Get the latest Google forecast issued on ``issued_date`` for each
     gauge in ``gauge_ids``."""
@@ -168,11 +205,14 @@ def evaluate_trigger(df):
     - Action: >= ACTION_MIN_GAUGES of the selected GRRR gauges exceed their
       individual 4-yr RP threshold on the same forecast valid day.
     - Readiness: GloFAS ensemble-mean forecast at Wuroboki exceeds
-      READINESS_GLOFAS_THRESH at a lead time <= READINESS_MAX_LEADTIME days.
+      READINESS_GLOFAS_THRESH at a lead time <= READINESS_MAX_LEADTIME days,
+      OR the latest GloFAS reanalysis at Wuroboki exceeds the same threshold
+      (near-real-time supplementary condition).
     """
     assert df.monitoring_date.nunique() == 1
 
     df_glofas = df[df.src.str.contains("glofas_forecast")].copy()
+    df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].copy()
     df_google = df[df.src.str.startswith("grrr_")].copy()
 
     # Coerce as the database returns plain dates
@@ -181,7 +221,13 @@ def evaluate_trigger(df):
         - pd.to_datetime(df_glofas.issued_date)
     ).dt.days
     df_glofas = df_glofas[leadtime_days <= READINESS_MAX_LEADTIME]
-    readiness = bool((df_glofas.value > READINESS_GLOFAS_THRESH).any())
+    readiness_forecast = bool(
+        (df_glofas.value > READINESS_GLOFAS_THRESH).any()
+    )
+    readiness_reanalysis = bool(
+        (df_reanalysis.value > READINESS_GLOFAS_THRESH).any()
+    )
+    readiness = readiness_forecast | readiness_reanalysis
 
     df_google["threshold"] = (
         df_google.src.str.removeprefix("grrr_").map(ACTION_GAUGE_THRESHOLDS)
@@ -194,6 +240,8 @@ def evaluate_trigger(df):
     return {
         "action": max_gauges >= ACTION_MIN_GAUGES,
         "readiness": readiness,
+        "readiness_forecast": readiness_forecast,
+        "readiness_reanalysis": readiness_reanalysis,
         "max_gauges_exceeding": max_gauges,
         "max_gauges_date": (
             daily_counts.idxmax() if len(daily_counts) else None
@@ -201,6 +249,9 @@ def evaluate_trigger(df):
         "n_gauges_reporting": df_google.src.nunique(),
         "glofas_max": (
             float(df_glofas.value.max()) if len(df_glofas) else None
+        ),
+        "reanalysis_max": (
+            float(df_reanalysis.value.max()) if len(df_reanalysis) else None
         ),
     }
 

@@ -103,6 +103,8 @@ if __name__ == "__main__":
             max_gauges_exceeding=status["max_gauges_exceeding"],
             n_gauges_reporting=status["n_gauges_reporting"],
             min_gauges=ACTION_MIN_GAUGES,
+            readiness_forecast=status["readiness_forecast"],
+            readiness_reanalysis=status["readiness_reanalysis"],
         )
 
         # "[test]" in the campaign name switches on the base_campaign

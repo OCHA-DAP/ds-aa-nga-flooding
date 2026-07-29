@@ -20,10 +20,11 @@ def combined_plots(df, save_output=True):
     status = etl.evaluate_trigger(df)
 
     df_glofas = df[df.src.str.contains("glofas_forecast")].reset_index()
+    df_reanalysis = df[df.src.str.contains("glofas_reanalysis")].reset_index()
     df_google = df[df.src.str.startswith("grrr_")].copy()
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
-    readiness_subplot(ax1, df_glofas, status)
+    readiness_subplot(ax1, df_glofas, df_reanalysis, status)
     action_subplot(ax2, df_google, status)
 
     if save_output:
@@ -51,7 +52,7 @@ def _format_dates(ax):
     ax.tick_params(axis="x", rotation=45)
 
 
-def readiness_subplot(ax, df_glofas, status):
+def readiness_subplot(ax, df_glofas, df_reanalysis, status):
     issue_date = df_glofas.issued_date[0].strftime("%Y-%m-%d")
     ax.plot(
         df_glofas["valid_date"],
@@ -60,7 +61,7 @@ def readiness_subplot(ax, df_glofas, status):
         linestyle="-",
         linewidth=2,
         markersize=4,
-        label="GloFAS ensemble mean",
+        label="GloFAS forecast (ensemble mean)",
         color="blue",
         alpha=0.8,
     )
@@ -73,6 +74,27 @@ def readiness_subplot(ax, df_glofas, status):
             ha="center",
             fontsize=8,
             color="blue",
+        )
+    ax.plot(
+        df_reanalysis["valid_date"],
+        df_reanalysis["value"],
+        marker="s",
+        linestyle="-",
+        linewidth=2,
+        markersize=6,
+        label="GloFAS reanalysis",
+        color="red",
+        alpha=0.8,
+    )
+    for _, row in df_reanalysis.iterrows():
+        ax.annotate(
+            f'{row["value"]:.0f}',  # noqa
+            (row["valid_date"], row["value"]),
+            textcoords="offset points",
+            xytext=(0, 10),
+            ha="center",
+            fontsize=8,
+            color="red",
         )
     ax.axhline(
         y=READINESS_GLOFAS_THRESH,
