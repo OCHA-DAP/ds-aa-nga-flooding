@@ -12,6 +12,6 @@ xlrd
 python-dotenv
 cfgrib
 marimo==0.13.11
-eccodes==2.42.0
+eccodes==2.47.0
 html2text==2025.4.15
 ocha-relay @ git+https://github.com/OCHA-DAP/ocha-relay.git@v0.3.0
