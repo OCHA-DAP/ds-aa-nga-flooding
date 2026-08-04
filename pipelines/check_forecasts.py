@@ -26,25 +26,40 @@ if __name__ == "__main__":
     forecast_blob_name = etl.get_blob_name(
         "forecast", station_name, update_date
     )
-    # NOTE that we're saving the reanalysis data based on the day it was
-    # MONITORED and NOT for the day that it is valid! The reanalysis product
-    # lags by ~2 days.
-    reanalysis_update = update_date - timedelta(days=2)
-    reanalysis_blob_name = etl.get_blob_name(
-        "reanalysis", station_name, update_date
-    )
     etl.get_glofas_forecast(
         forecast_blob_name, coords, update_date, overwrite=overwrite
-    )
-    etl.get_glofas_reanalysis(
-        reanalysis_blob_name, coords, reanalysis_update, overwrite=overwrite
     )
     df_forecast = etl.process_glofas(
         forecast_blob_name, "glofas_forecast", station_name
     )
-    df_reanalysis = etl.process_glofas(
-        reanalysis_blob_name, "glofas_reanalysis", station_name
+
+    # NOTE that we're saving the reanalysis data based on the day it was
+    # MONITORED and NOT for the day that it is valid! The intermediate
+    # reanalysis lags by a few days (more during CDS product transitions),
+    # so walk back from -2 days until an available day is found. A missing
+    # reanalysis must never break the run — the readiness forecast branch
+    # and the action trigger still work without it.
+    reanalysis_blob_name = etl.get_blob_name(
+        "reanalysis", station_name, update_date
     )
+    df_reanalysis = pd.DataFrame()
+    for days_back in range(2, 8):
+        reanalysis_update = update_date - timedelta(days=days_back)
+        try:
+            etl.get_glofas_reanalysis(
+                reanalysis_blob_name,
+                coords,
+                reanalysis_update,
+                overwrite=overwrite,
+            )
+            df_reanalysis = etl.process_glofas(
+                reanalysis_blob_name, "glofas_reanalysis", station_name
+            )
+            break
+        except Exception as e:
+            print(f"No reanalysis for {reanalysis_update.date()}: {e}")
+    if df_reanalysis.empty:
+        print("WARNING: no GloFAS reanalysis available in the last 7 days")
 
     # --- 2. Google forecasts for the action-trigger gauges...
     df_google = etl.get_google_forecasts(

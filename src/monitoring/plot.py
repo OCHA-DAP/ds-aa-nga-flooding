@@ -75,27 +75,28 @@ def readiness_subplot(ax, df_glofas, df_reanalysis, status):
             fontsize=8,
             color="blue",
         )
-    ax.plot(
-        df_reanalysis["valid_date"],
-        df_reanalysis["value"],
-        marker="s",
-        linestyle="-",
-        linewidth=2,
-        markersize=6,
-        label="GloFAS reanalysis",
-        color="red",
-        alpha=0.8,
-    )
-    for _, row in df_reanalysis.iterrows():
-        ax.annotate(
-            f'{row["value"]:.0f}',  # noqa
-            (row["valid_date"], row["value"]),
-            textcoords="offset points",
-            xytext=(0, 10),
-            ha="center",
-            fontsize=8,
+    if len(df_reanalysis):
+        ax.plot(
+            df_reanalysis["valid_date"],
+            df_reanalysis["value"],
+            marker="s",
+            linestyle="-",
+            linewidth=2,
+            markersize=6,
+            label="GloFAS reanalysis (latest available)",
             color="red",
+            alpha=0.8,
         )
+        for _, row in df_reanalysis.iterrows():
+            ax.annotate(
+                f'{row["value"]:.0f}',  # noqa
+                (row["valid_date"], row["value"]),
+                textcoords="offset points",
+                xytext=(0, 10),
+                ha="center",
+                fontsize=8,
+                color="red",
+            )
     ax.axhline(
         y=READINESS_GLOFAS_THRESH,
         color="black",

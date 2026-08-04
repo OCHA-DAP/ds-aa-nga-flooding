@@ -87,14 +87,19 @@ def get_glofas_reanalysis(
         )
         return
     reanalysis_dataset = "cems-glofas-historical"
+    # New dataset schema since the GloFAS v5 rollout (Aug 2026): year/month/
+    # day instead of hyear/hmonth/hday, renamed variable, and a required
+    # timespan. Pinned to version_4_0 — the 3,132 m3/s readiness threshold is
+    # calibrated on the v4 reanalysis climatology.
     reanalysis_request = {
         "system_version": ["version_4_0"],
         "hydrological_model": ["lisflood"],
         "product_type": ["intermediate"],
-        "variable": ["river_discharge_in_the_last_24_hours"],
-        "hyear": [str(issued_date.year)],
-        "hmonth": [str(issued_date.month).zfill(2)],
-        "hday": [str(issued_date.day).zfill(2)],
+        "timespan": ["time_mean"],
+        "variable": ["average_river_discharge_in_the_last_24_hours"],
+        "year": [str(issued_date.year)],
+        "month": [str(issued_date.month).zfill(2)],
+        "day": [str(issued_date.day).zfill(2)],
         "data_format": "grib2",
         "download_format": "unarchived",
         "area": coords,
@@ -165,9 +170,14 @@ def process_glofas(blob_name, data_type, station_name):
             "indexpath": "",
         },
     )
+    # The discharge variable's GRIB name differs between products (dis24 for
+    # the forecast, a renamed average-discharge variable for the post-v5
+    # reanalysis), so take the single data variable generically
+    var_name = list(ds.data_vars)[0]
+    ds = ds[var_name]
     # Take the ensemble mean if forecast
     if data_type == "glofas_forecast":
-        ds = ds["dis24"].mean(dim="number")
+        ds = ds.mean(dim="number")
     df = (
         ds.assign_coords(valid_time=ds["valid_time"] - pd.Timedelta(hours=24))
         .to_dataframe()
@@ -175,7 +185,7 @@ def process_glofas(blob_name, data_type, station_name):
     )
     df["valid_date"] = pd.to_datetime(df["valid_time"])
     df["src"] = f"{data_type}_{station_name}"
-    df = df.rename(columns={"dis24": "value", "time": "issued_date"})
+    df = df.rename(columns={var_name: "value", "time": "issued_date"})
     return df[["issued_date", "valid_date", "value", "src"]]
 
 
