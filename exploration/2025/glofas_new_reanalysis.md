@@ -15,6 +15,8 @@ jupyter:
 
 # GloFAS new reanalysis
 
+Loading and processing GloFAS reanalysis
+
 ```python
 %load_ext jupyter_black
 %load_ext autoreload
@@ -30,6 +32,8 @@ import xarray as xr
 from src.datasources import nihsa, glofas
 from src.utils import blob
 ```
+
+## Download, process, load
 
 ```python
 station_name = "wuroboki"
@@ -66,6 +70,8 @@ df_compare = df_ra.merge(df_nh, how="left")
 ```python
 df_compare
 ```
+
+## Plot comparison
 
 ```python
 months = range(7, 11)
@@ -130,6 +136,8 @@ plt.savefig(
 )
 ```
 
+## Check correlations and yearly peaks
+
 ```python
 df_compare.corr()
 ```
@@ -148,20 +156,16 @@ df_peaks = df_compare.groupby(df_compare["time"].dt.year.rename("year")).agg(
 )
 ```
 
+For all years
+
 ```python
 df_peaks.corr()
 ```
 
+For complete years
+
 ```python
 df_peaks.loc[nihsa.WUROBOKI_COMPLETE_YEARS].corr()
-```
-
-```python
-df_plot["dis24_max"].quantile(1 - 1 / rp)
-```
-
-```python
-df_peaks.loc[2000:]
 ```
 
 ```python
@@ -193,3 +197,5 @@ ax.set_xlim(left=0, right=df_plot["dis24_max"].max() * 1.1)
 
 plt.tight_layout()
 ```
+
+Hard to say but doesn't look great - NiHSA data is just too patchy

@@ -17,7 +17,7 @@ jupyter:
 
 <!-- markdownlint-disable MD013 -->
 
-Grab Floodscan pixels along Benue in Adamawa.
+Grab Floodscan pixels along Benue in Adamawa. We need to do this because the NiHSA observational river level data is so patchy, so we can instead use the observed flood extent along the river as a proxy for the river level.
 
 ```python
 %load_ext jupyter_black

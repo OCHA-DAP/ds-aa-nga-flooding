@@ -1,0 +1,170 @@
+/* ==========================================================================
+   Quarto Book – Custom Theme (clean + consistent hover behavior)
+   ========================================================================== */
+
+/* ---- Color system ------------------------------------------------------- */
+:root {
+  --bs-primary: #3BB580ff;   /* brand green (sidebar bg) */
+  --bs-secondary: #ffffff;   /* white (sidebar text default) */
+  --accent-hover: #74D6AD;   /* lighter pale green for hover/active */
+
+  /* Neutral surfaces */
+  --surface-0: #ffffff;
+  --surface-1: #f8f9fa;
+
+  /* Borders */
+  --border-weak: #dddddd;
+}
+
+/* ---- Global links (body content, not sidebars) ------------------------- */
+a { color: var(--bs-primary); }
+a:visited { color: var(--bs-primary); }
+a:hover, a:focus { color: var(--accent-hover); }
+
+/* ---- Buttons ------------------------------------------------------------ */
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #3e8f6b;
+  border-color: #3e8f6b;
+}
+.btn-secondary {
+  background-color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+  color: #000; /* readable on white */
+}
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: #e6e6e6;
+  border-color: #e6e6e6;
+  color: #000;
+}
+
+/* ---- Headings ----------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 { color: var(--bs-primary); }
+
+/* ---- Blockquotes -------------------------------------------------------- */
+blockquote {
+  border-left: 4px solid var(--bs-secondary);
+  color: var(--bs-secondary);
+  background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+  padding: 0.75em 1em;
+}
+
+/* ---- Code (inline + blocks) -------------------------------------------- */
+pre, code {
+  background-color: var(--surface-1);
+  border: 1px solid var(--bs-primary);
+  border-radius: 4px;
+}
+pre { padding: 0.75em 1em; }
+code {
+  color: var(--bs-primary);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   LEFT SIDEBAR
+   ========================================================================== */
+
+#quarto-sidebar {
+  background-color: var(--bs-primary);
+  color: var(--bs-secondary);
+  margin-left: 0;
+  padding-left: 10px;
+  position: fixed;
+  left: 0;
+  width: 100%;
+  max-width: 250px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Default link/text color in sidebar */
+#quarto-sidebar a,
+#quarto-sidebar .nav-link,
+#quarto-sidebar .menu-text,
+#quarto-sidebar .chapter-title {
+  color: var(--bs-secondary);
+  text-decoration: none;
+}
+
+/* Ensure visited is still white (not purple) */
+#quarto-sidebar a:visited,
+#quarto-sidebar .nav-link:visited {
+  color: var(--bs-secondary);
+}
+
+/* Unified hover/focus/active states */
+#quarto-sidebar .nav-link:hover,
+#quarto-sidebar .nav-link:focus,
+#quarto-sidebar .nav-link.active,
+#quarto-sidebar .nav-link:hover .menu-text,
+#quarto-sidebar .nav-link:focus .menu-text,
+#quarto-sidebar .nav-link.active .menu-text,
+#quarto-sidebar .menu-text:hover,
+#quarto-sidebar .chapter-title:hover,
+#quarto-sidebar .chapter-title:focus {
+  text-decoration: underline;
+  /*text-decoration-thickness: 2px; !* a bit stronger *!*/
+}
+
+/* Chapter numbers stay white to keep structure visible */
+#quarto-sidebar .chapter-number { color: var(--bs-secondary); }
+
+/* ==========================================================================
+   RIGHT SIDEBAR (TOC / margin sidebar)
+   ========================================================================== */
+
+/* Right-side TOC styles */
+#quarto-sidebar-right .nav-link,
+#quarto-margin-sidebar .nav-link {
+  color: #000; /* default black for readability */
+}
+#quarto-sidebar-right .nav-link:hover,
+#quarto-sidebar-right .nav-link:focus,
+#quarto-sidebar-right .nav-link.active,
+#quarto-margin-sidebar .nav-link:hover,
+#quarto-margin-sidebar .nav-link:focus,
+#quarto-margin-sidebar .nav-link.active {
+  color: var(--accent-hover);
+}
+/* Keep visited/focus predictable */
+#quarto-sidebar-right .nav-link:visited,
+#quarto-margin-sidebar .nav-link:visited {
+  color: #000;
+}
+#quarto-margin-sidebar .header-section-number { color: #000; }
+
+/* ==========================================================================
+   Optional overlays / utilities
+   ========================================================================== */
+
+/* DRAFT watermark — comment out to remove */
+body::before {
+  content: "DRAFT";
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 8rem;
+  color: rgba(200, 0, 0, 0.15);
+  z-index: 9999;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* One scrollable box for all outputs of a cell */
+.q-output-wrapper {
+  max-height: 800px;
+  overflow: auto;
+  border: 1px solid var(--border-weak);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 0.4rem;
+  background: var(--surface-0);
+}

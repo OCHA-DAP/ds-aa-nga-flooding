@@ -15,6 +15,8 @@ jupyter:
 
 # Trigger plots
 
+Generate various plots to show which years triggered with which sources.
+
 ```python
 %load_ext jupyter_black
 %load_ext autoreload
@@ -43,9 +45,11 @@ grrr_thresh = 1195
 ### GloFAS reforecast
 
 ```python
-df_ref_ens = pd.read_parquet(
-    glofas.GF_PROC_DIR / "wuroboki_glofas_reforecast_ens.parquet"
-)
+# df_ref_ens = pd.read_parquet(
+#     glofas.GF_PROC_DIR / "wuroboki_glofas_reforecast_ens.parquet"
+# )
+# just use temp to avoid syncing Drive
+df_ref_ens = pd.read_parquet("temp/wuroboki_glofas_reforecast_ens.parquet")
 ```
 
 ```python
@@ -54,10 +58,6 @@ df_gf_ref = (
     .mean()
     .reset_index()
 )
-```
-
-```python
-df_gf_ref["valid_time"].max()
 ```
 
 ```python
@@ -78,18 +78,10 @@ df_gf_ref_peaks_any_lt = (
 )
 ```
 
-```python
-df_gf_ref_peaks_any_lt
-```
-
 ### GloFAS reanalysis
 
 ```python
 df_gf_rea = glofas.load_glofas_reanalysis(station_name="wuroboki")
-```
-
-```python
-df_gf_rea["time"].max()
 ```
 
 ```python
@@ -101,19 +93,11 @@ df_gf_rea_peaks = (
 )
 ```
 
-```python
-df_gf_rea_peaks
-```
-
 ### Google forecast
 
 ```python
 ds_rf = grrr.load_reforecast()
 df_grrr_ref = grrr.process_reforecast(ds_rf)
-```
-
-```python
-df_grrr_ref["valid_time"].max()
 ```
 
 ```python
@@ -127,17 +111,9 @@ df_grrr_ref_peaks = (
 ```
 
 ```python
-df_grrr_ref_peaks
-```
-
-```python
 df_grrr_ref_peaks_any_lt = (
     df_grrr_ref_peaks.groupby("year")["streamflow_f"].max().reset_index()
 )
-```
-
-```python
-df_grrr_ref_peaks_any_lt
 ```
 
 ### Google reanalysis
@@ -148,20 +124,12 @@ df_grrr_rea = grrr.process_reanalysis(ds_ra)
 ```
 
 ```python
-df_grrr_rea["valid_time"].max()
-```
-
-```python
 df_grrr_rea_peaks = (
     df_grrr_rea.groupby(df_grrr_rea["valid_time"].dt.year)["streamflow"]
     .max()
     .reset_index()
     .rename(columns={"valid_time": "year", "streamflow": "streamflow_a"})
 )
-```
-
-```python
-df_grrr_rea_peaks
 ```
 
 ### Floodscan
@@ -186,7 +154,6 @@ df_fs_peaks = (
 
 ```python
 df_fs_peaks = df_fs_peaks.rename(columns={"valid_time": "year"})
-df_fs_peaks
 ```
 
 ## Combine
@@ -201,10 +168,6 @@ df_compare = (
 ```
 
 ```python
-df_compare
-```
-
-```python
 for thresh, ind in [(grrr_thresh, "streamflow"), (gf_thresh, "dis24")]:
     for af in ["a", "f"]:
         df_compare[f"{ind}_{af}_rel"] = df_compare[f"{ind}_{af}"] / thresh
@@ -216,9 +179,7 @@ df_compare["max_rel"] = df_compare[
 ].max(axis=1)
 ```
 
-```python
-df_compare
-```
+Just have a look at all the yearly peaks:
 
 ```python
 df_compare.sort_values("dis24_a", ascending=False)
@@ -425,5 +386,5 @@ ax.set_title("Floodscan vs. combined flood forecast")
 ```
 
 ```python
-df_daily =
+
 ```

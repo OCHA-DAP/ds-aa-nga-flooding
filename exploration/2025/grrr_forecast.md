@@ -13,7 +13,11 @@ jupyter:
     name: ds-aa-nga-flooding
 ---
 
+<!-- #region editable=true slideshow={"slide_type": ""} -->
 # Google forecast
+<!-- markdownlint-disable MD013 -->
+Check to see how many leadtimes of forecast we can include using the same threshold as for the reanalysis, without triggering for any different years.
+<!-- #endregion -->
 
 ```python
 %load_ext jupyter_black
@@ -27,6 +31,8 @@ import ocha_stratus as stratus
 from src.datasources import grrr
 from src.utils.rp_calc import calculate_groups_rp, calculate_one_group_rp
 ```
+
+## Load and process
 
 ```python
 ds_ra = grrr.load_reanalysis()
@@ -80,9 +86,7 @@ df_rf_peaks = (
 )
 ```
 
-```python
-df_rf_peaks
-```
+## Look at yearly peaks
 
 ```python
 df_rf_peaks = df_rf_peaks[df_rf_peaks["valid_year"] < 2023]
@@ -94,11 +98,15 @@ df_rf_peaks = calculate_groups_rp(
 )
 ```
 
+We can iterate over the leadtimes to see if the ranking of yearly peaks changes at all.
+
 ```python
 for lt, group in df_rf_peaks.groupby("leadtime"):
     print(lt)
     display(group.sort_values("streamflow_rank"))
 ```
+
+Looks like it doesn't, nice. But we can just double-check against the reanalysis peaks.
 
 ```python
 df_compare = df_rf_peaks.merge(
@@ -112,23 +120,17 @@ for lt, group in df_compare.groupby("leadtime"):
     display(group.sort_values("streamflow_rank_a"))
 ```
 
-```python
-for lt, group in df_compare.groupby("leadtime"):
-    print(lt)
-    display(group.sort_values("streamflow_rank_a"))
-```
+Looks like we're good. Then we can check what the maximum non-trigger-year peak is. The threshold just needs to be above this.
 
 ```python
 df_compare[~df_compare["trig"]]["streamflow_f"].max()
 ```
 
 ```python
-df_compare.groupby("leadtime").mean()["streamflow_f"].plot()
-```
-
-```python
 thresh_ra = 1212
 ```
+
+Looks like the old value is fine, so we can just triple-check that only 2019 and 2022 would've triggered with this value for the reforecast.
 
 ```python
 df_rf["trig"] = df_rf["streamflow"] >= thresh_ra
@@ -136,10 +138,6 @@ df_rf["trig"] = df_rf["streamflow"] >= thresh_ra
 
 ```python
 df_rf[df_rf["trig"]]["valid_year"].unique()
-```
-
-```python
-df_rf.groupby("leadtime").mean()["streamflow"].plot()
 ```
 
 ```python
