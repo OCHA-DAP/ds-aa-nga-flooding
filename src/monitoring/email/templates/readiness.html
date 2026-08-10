@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="font-size:11px;padding: 6px 10px 6px 10px;background-color:#F0F0F0;color:#000000;font-style:italic">
+  <p style="margin:0;">
+    This email is purely advisory, and does not serve as an official notice for the anticipatory action framework. Official notices of activation are sent by a separate email.
+  </p>
+</div>
+<div>
+  <p>Dear colleagues,</p>
+  <p>
+    The <b>readiness trigger</b> of the anticipatory action framework for riverine flooding in Adamawa State has been reached: <a href="https://global-flood.emergency.copernicus.eu/">GloFAS</a> discharge at the Wuroboki station exceeds <b>3,132 m<sup>3</sup>/s</b> — {% if readiness_forecast %}in the ensemble-mean forecast within the next 13 days{% endif %}{% if readiness_forecast and readiness_reanalysis %} and {% endif %}{% if readiness_reanalysis %}in the latest reanalysis estimate{% endif %} — based on data retrieved on {{ pub_date }}.
+  </p>
+  <p>
+    The readiness trigger is an early signal intended to support pre-positioning and preparedness by partners. It does <b>not</b> mean that the action trigger has been reached, and an action activation is not guaranteed to follow.
+  </p>
+  <p>
+    The <b>action trigger</b> (at least {{ min_gauges }} of the 10 monitored Google Flood Hub gauges forecasting streamflow above their individual 4-year return period thresholds on the same day) has <b>not</b> been reached: today a maximum of {{ max_gauges_exceeding }} of {{ n_gauges_reporting }} reporting gauges exceed their thresholds on any single forecast day.
+  </p>
+  <p>The plot below shows the forecast data retrieved for each source. In the lower panel, each line is one Google gauge, shown as a percentage of its own trigger threshold.</p>
+  <img src="{{ chart_url }}" width="600" style="max-width:100%;height:auto;"/>
+  <p>
+    Code and documentation to support this analysis is available <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding">here</a>.
+  </p>
+  <p>Best wishes,</p>
+  <p>OCHA Centre for Humanitarian Data</p>
+</div>
+{% endblock content %}

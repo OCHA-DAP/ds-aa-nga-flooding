@@ -50,14 +50,15 @@ jobs:
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
         CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
         CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
-        DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST}}
-        DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME}}
-        DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD}}
-        DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS}}
-        DSCI_AWS_EMAIL_PORT: 465
+        # ocha-relay reads DSCI_LISTMONK_BASE_URL; the org secret is named
+        # DSCI_LISTMONK_API_URL
+        DSCI_LISTMONK_BASE_URL: ${{ secrets.DSCI_LISTMONK_API_URL }}
+        DSCI_LISTMONK_API_USERNAME: ${{ secrets.DSCI_LISTMONK_API_USERNAME }}
+        DSCI_LISTMONK_API_KEY: ${{ secrets.DSCI_LISTMONK_API_KEY }}
         MONITORING_DATE: ${{ inputs.date || '' }}
         STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
 
       run: |
         python pipelines/check_forecasts.py
         python pipelines/save_plots.py
+        python pipelines/send_emails.py
