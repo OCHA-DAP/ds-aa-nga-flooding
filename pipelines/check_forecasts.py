@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import datetime, timedelta
 
 import ocha_stratus as stratus
@@ -79,3 +80,11 @@ if __name__ == "__main__":
         method=stratus.postgres_upsert,
     )
     print(f"{len(df_all)} rows saved to {etl.DB_SCHEMA}.{etl.DB_TABLE}!")
+
+    # eccodes/cfgrib segfault during interpreter teardown on linux (bundled
+    # eccodeslib frees GRIB handles in the wrong order at exit), turning a
+    # fully successful run into exit code 139. All work is done at this
+    # point, so skip teardown entirely. Real failures above still raise and
+    # exit non-zero.
+    sys.stdout.flush()
+    os._exit(0)
