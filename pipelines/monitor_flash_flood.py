@@ -11,7 +11,8 @@ Emails go out when the trigger is reached or on Mondays. TEST behaviour
 """
 
 import os
-from datetime import datetime, timezone
+import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import ocha_stratus as stratus
@@ -52,6 +53,20 @@ if __name__ == "__main__":
     df = flash.load_exposure()
     status = flash.evaluate_flash(df)
     latest_date = status["latest_date"].strftime("%Y-%m-%d")
+
+    # Freshness guard: the floodexposure-monitoring chain (23:15 UTC + ~40
+    # min) writes exposure for valid_date D late on day D+1, so by this
+    # run (01:30 UTC on day D+2) the latest valid_date must be at least
+    # monitoring_date - 2. Anything older means the upstream chain failed
+    # or is late — fail loudly rather than email a stale situation.
+    expected_min = monitoring_date_obj.date() - timedelta(days=2)
+    if status["latest_date"].date() < expected_min:
+        print(
+            f"ERROR: exposure data is stale (latest {latest_date}, "
+            f"expected >= {expected_min}) — has the "
+            "floodexposure-monitoring chain run?"
+        )
+        sys.exit(1)
     print(
         f"Flash status for {monitoring_date} "
         f"(exposure to {latest_date}): "
