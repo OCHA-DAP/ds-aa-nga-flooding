@@ -2,12 +2,19 @@
 <!-- markdownlint-disable MD013 -->
 [![Generic badge](https://img.shields.io/badge/STATUS-ENDORSED-%231EBFB3)](https://shields.io/)
 
-This repository contains work in progress to support the OCHA Anticipatory Action Framework.
+This repository contains the analysis and operational monitoring for the OCHA Anticipatory Action framework for flooding in Nigeria (2026 framework: Adamawa riverine + BAY-states flash flood).
 
-Initial outputs include:
+**Operational monitoring** (daily, from `main` — see [CLAUDE.md](CLAUDE.md) for the full architecture, trigger definitions, and ops runbook):
 
-- [Flood Exposure Return Periods](https://nga-floodexposure-marim-development-guc4dqhrguaxf3d9.eastus2-01.azurewebsites.net/)
-- [Monitoring Overview](https://nga-monitoring-marimo-development-d6fhc2fud0hqa3e6.eastus2-01.azurewebsites.net/)
+- `Monitor flooding` — Adamawa riverine: GloFAS readiness (forecast ≤13 d OR latest reanalysis vs 3,132 m³/s at Wuroboki) + multi-gauge action trigger (≥6 of 10 Google gauges over their 4-yr RP thresholds). Daily 20:00 UTC.
+- `Monitor flash flooding` — 4 BAY-states LGAs (Mobbar, Maiduguri, Jere, Geidam): FloodScan×WorldPop exposure vs per-LGA thresholds, with an approaching-threshold advisory tier. Daily 01:30 UTC.
+
+Both send email updates via the team Listmonk instance (weekly informational + immediate trigger/advisory alerts); the `STAGE` repo variable switches between the test and production audiences.
+
+Other outputs:
+
+- [Niger/Benue multi-state monitoring app](https://ocha-dap.github.io/ds-aa-nga-flooding/app/) (GH Pages)
+- [2026 CERF analysis notes](https://ocha-dap.github.io/ds-aa-nga-flooding/exploration/2026/cerf/notes/)
 
 ## Reproducing this analysis
 
