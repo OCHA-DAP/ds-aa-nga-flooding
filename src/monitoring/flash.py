@@ -54,8 +54,10 @@ def load_exposure(days=120):
     if df.empty:
         raise Exception("No exposure data returned for flash-flood LGAs")
     df["valid_date"] = pd.to_datetime(df["valid_date"])
+    # Strict window (no min_periods) — matches the threshold derivation and
+    # the 2025 monitoring convention
     df["rolling"] = df.groupby("pcode")["exposure"].transform(
-        lambda x: x.rolling(FLASH_ROLLING_DAYS, min_periods=1).mean()
+        lambda x: x.rolling(FLASH_ROLLING_DAYS).mean()
     )
     return df
 
