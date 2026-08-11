@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+  <p>Dear Humanitarian Coordinator, dear colleagues,</p>
+  <p>
+    The flash flooding observational trigger of the OCHA coordinated anticipatory action framework for floods in Nigeria has been reached: satellite-observed flood exposure ({{ rolling_days }}-day rolling mean, FloodScan overlaid with population) exceeds the framework threshold in the following LGA(s), as of {{ latest_date }}:
+  </p>
+  <ul>
+    {% for pcode, lga in lgas.items() %}{% if lga.exceeds %}
+    <li><b>{{ lga.name }}</b>: {{ "{:,.0f}".format(lga.rolling) }} people exposed (threshold: {{ "{:,.0f}".format(lga.threshold) }})</li>
+    {% endif %}{% endfor %}
+  </ul>
+  <p>
+    <!-- TODO: link the 2026 framework document once published -->
+    All activities in line with the 2026 framework document's flash flooding component should now commence. OCHA may convene a meeting of the participating partners.
+  </p>
+  <img src="{{ chart_url }}" width="600" style="max-width:100%;height:auto;"/>
+  <p>Best wishes and good luck,</p>
+  <p>OCHA Centre for Humanitarian Data</p>
+</div>
+{% endblock content %}

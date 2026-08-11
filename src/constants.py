@@ -196,3 +196,38 @@ LISTMONK_LISTS = {
         "extra_tags": ["TEST"],
     },
 }
+
+# --- 2026 NHF flash-flood observational trigger ---
+# 4 LGAs selected by NiHSA 2026 composite at-risk-community score (see
+# exploration/2026/cerf/notes/trigger_development.md on govt-2026-prep).
+# Indicator: daily FloodScan SFED x WorldPop population exposure per LGA
+# (from the live floodexposure-monitoring pipeline, DB app.floodscan_exposure,
+# prod), 3-day rolling mean. Fires when any LGA exceeds its threshold.
+# THRESHOLDS PENDING: the endorsed per-LGA values come from the 2026
+# framework document (not yet published) — with any threshold None the
+# pipeline runs in monitoring-only mode and cannot fire for that LGA.
+FLASH_ROLLING_DAYS = 3
+FLASH_LGAS = {
+    "NG008023": {"name": "Mobbar", "threshold": None},
+    "NG008021": {"name": "Maiduguri", "threshold": None},
+    "NG008013": {"name": "Jere", "threshold": None},
+    "NG036006": {"name": "Geidam", "threshold": None},
+}
+
+# Listmonk lists for the flash-flood stream (separate audience from the
+# riverine lists above). Created by setup_nga_listmonk_lists.py --flash.
+LISTMONK_FLASH_LISTS = {
+    "info": {
+        "name": "[AA framework] Nigeria flash flooding (informational)",
+        "tag": "nga-flash:info",
+    },
+    "trigger": {
+        "name": "[AA framework] Nigeria flash flooding (trigger)",
+        "tag": "nga-flash:trigger",
+    },
+    "test": {
+        "name": "[TEST] Nigeria flash flooding",
+        "tag": "nga-flash:test",
+        "extra_tags": ["TEST"],
+    },
+}

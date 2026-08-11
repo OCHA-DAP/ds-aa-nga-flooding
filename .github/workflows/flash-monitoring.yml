@@ -1,0 +1,59 @@
+name: Monitor flash flooding
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to process (YYYY-MM-DD format).'
+        required: false
+        type: string
+      stage:
+        description: Whether to run the monitoring in dev/test mode, or "for real"
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
+
+  schedule:
+    # After the floodexposure-monitoring chain (23:15 UTC cron + downstream
+    # raster-stats/quantiles dispatches) has written yesterday's exposure
+    - cron: '0 6 * * *'
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11.4'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e .
+        python -m pip install -r requirements.txt
+
+    - name: Run script
+      env:
+        DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+        DSCI_AZ_BLOB_DEV_SAS_WRITE: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS_WRITE }}
+        DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
+        DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
+        DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
+        # ocha-relay reads DSCI_LISTMONK_BASE_URL; the org secret is named
+        # DSCI_LISTMONK_API_URL
+        DSCI_LISTMONK_BASE_URL: ${{ secrets.DSCI_LISTMONK_API_URL }}
+        DSCI_LISTMONK_API_USERNAME: ${{ secrets.DSCI_LISTMONK_API_USERNAME }}
+        DSCI_LISTMONK_API_KEY: ${{ secrets.DSCI_LISTMONK_API_KEY }}
+        MONITORING_DATE: ${{ inputs.date || '' }}
+        STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
+
+      run: |
+        python pipelines/monitor_flash_flood.py

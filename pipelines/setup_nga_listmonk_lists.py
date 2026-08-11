@@ -40,6 +40,7 @@ from ocha_relay.listmonk import ListmonkClient
 # run directly.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.constants import (  # noqa: E402
+    LISTMONK_FLASH_LISTS,
     LISTMONK_LISTS,
     LISTMONK_PROJECT_TAG,
     PROJECT_PREFIX,
@@ -75,7 +76,9 @@ def _listmonk_http():
     return session, base
 
 
-def resolve_or_create_lists(client: ListmonkClient, dry_run: bool) -> dict:
+def resolve_or_create_lists(
+    client: ListmonkClient, dry_run: bool, lists_cfg=LISTMONK_LISTS
+) -> dict:
     """Return {type: list_id} for the info/trigger/test lists, creating any
     that do not already exist (matched by their type tag)."""
     existing = client.fetch_all_lists(tag=LISTMONK_PROJECT_TAG)
@@ -84,7 +87,7 @@ def resolve_or_create_lists(client: ListmonkClient, dry_run: bool) -> dict:
     }
 
     list_ids = {}
-    for list_type, cfg in LISTMONK_LISTS.items():
+    for list_type, cfg in lists_cfg.items():
         if cfg["tag"] in tag_to_id:
             lid = tag_to_id[cfg["tag"]]
             list_ids[list_type] = lid
@@ -188,13 +191,22 @@ def import_subscribers(session, base, memberships, list_ids, dry_run):
     print(f"  existing subscribers ({verb2}): {updated}")
 
 
-def main(dry_run: bool = False, lists_only: bool = False):
+def main(dry_run: bool = False, lists_only: bool = False, flash: bool = False):
     mode = "DRY RUN" if dry_run else "APPLY"
-    print(f"=== Nigeria flooding listmonk list setup ({mode}) ===")
+    stream = "flash flooding" if flash else "riverine flooding"
+    print(f"=== Nigeria {stream} listmonk list setup ({mode}) ===")
 
     client = _admin_client()
     print("Resolving / creating lists:")
-    list_ids = resolve_or_create_lists(client, dry_run)
+    lists_cfg = LISTMONK_FLASH_LISTS if flash else LISTMONK_LISTS
+    list_ids = resolve_or_create_lists(client, dry_run, lists_cfg)
+
+    if flash:
+        # No legacy distribution CSV for the flash stream — manage
+        # subscribers in the Listmonk UI (or via the admin API).
+        print(f"List IDs: {list_ids}")
+        print("Done.")
+        return
 
     if lists_only:
         print("Lists only — skipping subscriber import.")
@@ -229,5 +241,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Create the lists but skip the subscriber import.",
     )
+    parser.add_argument(
+        "--flash",
+        action="store_true",
+        help="Create the flash-flood stream's lists instead (no subscriber "
+        "import; audiences are managed directly in listmonk).",
+    )
     args = parser.parse_args()
-    main(dry_run=args.dry_run, lists_only=args.lists_only)
+    main(dry_run=args.dry_run, lists_only=args.lists_only, flash=args.flash)

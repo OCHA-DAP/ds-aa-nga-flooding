@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="font-size:11px;padding: 6px 10px 6px 10px;background-color:#F0F0F0;color:#000000;font-style:italic">
+  <p style="margin:0;">
+    This email is purely advisory, and does not serve as an official notice for the anticipatory action framework. Official notices of activation are sent by a separate email.
+  </p>
+</div>
+<div>
+  <p>Dear colleagues,</p>
+  <p>
+    Please see below the current flash flooding situation in the framework's four target LGAs in Borno and Yobe states (Mobbar, Maiduguri, Jere, Geidam), based on satellite-observed <a href="https://www.aer.com/weather-risk-management/floodscan-near-real-time-and-historical-flood-mapping/">FloodScan</a> flood extent overlaid with population, up to {{ latest_date }}.
+  </p>
+  <p>
+    The <b>flash flooding observational trigger</b> is reached when the estimated flood exposure ({{ rolling_days }}-day rolling mean of people exposed) in any target LGA exceeds its threshold:
+  </p>
+  <ul>
+    {% for pcode, lga in lgas.items() %}
+    <li>
+      <b>{{ lga.name }}</b>: currently {{ "{:,.0f}".format(lga.rolling) if lga.rolling is not none else "n/a" }} people exposed
+      {% if lga.threshold is not none %} (threshold: {{ "{:,.0f}".format(lga.threshold) }}){% else %} (threshold pending framework publication){% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if thresholds_pending %}
+  <p style="color:#7f5619;">
+    Note: trigger thresholds are pending publication of the 2026 framework document — until they are set, this email is for situational monitoring only and the trigger cannot be reached.
+  </p>
+  {% endif %}
+  <img src="{{ chart_url }}" width="600" style="max-width:100%;height:auto;"/>
+  <p>
+    Code and documentation to support this analysis is available <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding">here</a>.
+  </p>
+  <p>Best wishes,</p>
+  <p>OCHA Centre for Humanitarian Data</p>
+</div>
+{% endblock content %}
