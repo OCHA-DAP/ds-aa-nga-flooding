@@ -213,6 +213,10 @@ LISTMONK_LISTS = {
 # years (~3.5-yr RP: 1999, 2000, 2006, 2011, 2020, 2021, 2022, 2024).
 # The monitoring aggregation below matches the derivation exactly.
 FLASH_ROLLING_DAYS = 3
+# An advisory "approaching threshold" email goes out when any LGA reaches
+# this fraction of its trigger threshold (the 2025 riverine warning levels
+# sat at ~85-90% of their action thresholds)
+FLASH_WARNING_FRACTION = 0.8
 FLASH_LGAS = {
     "NG008023": {"name": "Mobbar", "threshold": 14720},
     "NG008021": {"name": "Maiduguri", "threshold": 23740},

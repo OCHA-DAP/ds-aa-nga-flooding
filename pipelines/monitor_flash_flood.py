@@ -5,7 +5,9 @@ pipeline (DB app.floodscan_exposure, prod), evaluates the observational
 trigger, saves the chart to blob, and sends Listmonk campaigns to the
 flash-flood lists (separate audience from the riverine stream).
 
-Emails go out when the trigger is reached or on Mondays. TEST behaviour
+Emails go out when the trigger is reached, when any LGA reaches
+FLASH_WARNING_FRACTION of its threshold ("approaching threshold"
+advisory), or on Mondays. TEST behaviour
 (STAGE != prod, the default): sends route to the flash test list, with a
 "[TEST]" subject prefix and the campaign template's test banner.
 """
@@ -22,6 +24,7 @@ from ocha_relay.listmonk import ListmonkClient
 
 from src.constants import (
     FLASH_ROLLING_DAYS,
+    FLASH_WARNING_FRACTION,
     LISTMONK_FLASH_LISTS,
     LISTMONK_PROJECT_TAG,
 )
@@ -84,13 +87,22 @@ if __name__ == "__main__":
         trigger_status = "FLASH FLOOD TRIGGER REACHED"
         template_name = "flash_action"
         email_type = "trigger"
+    elif status["warning"]:
+        trigger_status = "APPROACHING THRESHOLD"
+        template_name = "flash_informational"
+        email_type = "info"
     else:
         trigger_status = "NOT ACTIVATED"
         template_name = "flash_informational"
         email_type = "info"
 
-    # Send emails if the trigger has been reached, or if it is a Monday
-    if status["triggered"] or monitoring_date_obj.weekday() == 0:
+    # Send emails if the trigger has been reached, if any LGA is
+    # approaching its threshold, or if it is a Monday
+    if (
+        status["triggered"]
+        or status["warning"]
+        or monitoring_date_obj.weekday() == 0
+    ):
         print(f"Sending emails for date: {monitoring_date}")
         stage = os.getenv("STAGE", "dev")
         test = False if stage == "prod" else True
@@ -120,11 +132,14 @@ if __name__ == "__main__":
             trigger_status=trigger_status,
             chart_url=chart_url,
             lgas=status["lgas"],
+            warning=status["warning"],
+            warning_pct=int(FLASH_WARNING_FRACTION * 100),
             thresholds_pending=status["thresholds_pending"],
             rolling_days=FLASH_ROLLING_DAYS,
             cadence_note=(
                 "Email updates are sent weekly on Mondays, or in the event "
-                "that the flash flooding trigger is met."
+                "that the flash flooding trigger is met or closely "
+                "approaching the threshold."
             ),
         )
 

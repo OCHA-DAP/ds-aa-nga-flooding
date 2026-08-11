@@ -20,6 +20,7 @@ HDX_PRIMARY_MUTED = "#a3c0ef"  # primary-2: individual gauge lines
 HDX_BRAND = "#269777"  # brand-5: GloFAS reanalysis
 HDX_ERROR = "#c44536"  # error-5: thresholds / exceedance / triggered
 HDX_SUCCESS = "#2f9e6f"  # success-5: not-triggered status
+HDX_WARNING = "#d48f2a"  # warning-5: approaching-threshold status
 HDX_TEXT = "#1f2324"  # neutral-9
 HDX_SUBTEXT = "#5e6a6b"  # neutral-7
 HDX_SPINE = "#d8e0e1"  # neutral-2

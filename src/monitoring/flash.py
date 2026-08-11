@@ -19,6 +19,7 @@ from sqlalchemy import text
 from src.constants import (
     FLASH_LGAS,
     FLASH_ROLLING_DAYS,
+    FLASH_WARNING_FRACTION,
     PROJECT_PREFIX,
 )
 from src.monitoring.plot import (
@@ -29,6 +30,7 @@ from src.monitoring.plot import (
     HDX_SUBTEXT,
     HDX_SUCCESS,
     HDX_TEXT,
+    HDX_WARNING,
 )
 
 
@@ -76,14 +78,22 @@ def evaluate_flash(df):
             and threshold is not None
             and rolling >= threshold
         )
+        warning = (
+            not exceeds
+            and rolling is not None
+            and threshold is not None
+            and rolling >= FLASH_WARNING_FRACTION * threshold
+        )
         lgas[pcode] = {
             "name": cfg["name"],
             "rolling": rolling,
             "threshold": threshold,
             "exceeds": exceeds,
+            "warning": warning,
         }
     return {
         "triggered": any(lga["exceeds"] for lga in lgas.values()),
+        "warning": any(lga["warning"] for lga in lgas.values()),
         "thresholds_pending": any(
             lga["threshold"] is None for lga in lgas.values()
         ),
@@ -103,6 +113,8 @@ def flash_plot(df, status, save_output=True):
 
     if status["triggered"]:
         status_text, status_color = "FLASH FLOOD TRIGGER REACHED", HDX_ERROR
+    elif status["warning"]:
+        status_text, status_color = "Approaching threshold", HDX_WARNING
     else:
         status_text, status_color = "Not activated", HDX_SUCCESS
 
@@ -132,7 +144,12 @@ def flash_plot(df, status, save_output=True):
 
     for ax, (pcode, lga) in zip(axs.flat, status["lgas"].items()):
         df_lga = df[df.pcode == pcode]
-        color = HDX_ERROR if lga["exceeds"] else HDX_PRIMARY
+        if lga["exceeds"]:
+            color = HDX_ERROR
+        elif lga["warning"]:
+            color = HDX_WARNING
+        else:
+            color = HDX_PRIMARY
         ax.plot(
             df_lga["valid_date"],
             df_lga["rolling"],

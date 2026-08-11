@@ -8,6 +8,15 @@
 </div>
 <div>
   <p>Dear colleagues,</p>
+  {% if warning %}
+  <div style="font-size:13px;padding: 8px 12px;background-color:#fbf4ea;border-left:4px solid #d48f2a;color:#7f5619;">
+    <p style="margin:0;">
+      <b>Approaching threshold:</b> flood exposure in
+      {% for pcode, lga in lgas.items() %}{% if lga.warning %}<b>{{ lga.name }}</b> ({{ "{:,.0f}".format(lga.rolling) }} of {{ "{:,.0f}".format(lga.threshold) }}) {% endif %}{% endfor %}
+      has reached at least {{ warning_pct }}% of the trigger threshold. This is an early advisory — the trigger has <b>not</b> been reached.
+    </p>
+  </div>
+  {% endif %}
   <p>
     Please see below the current flash flooding situation in the framework's four target LGAs in Borno and Yobe states (Mobbar, Maiduguri, Jere, Geidam), based on satellite-observed <a href="https://www.aer.com/weather-risk-management/floodscan-near-real-time-and-historical-flood-mapping/">FloodScan</a> flood extent overlaid with population, up to {{ latest_date }}.
   </p>
