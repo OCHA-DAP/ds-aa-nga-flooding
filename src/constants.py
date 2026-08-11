@@ -196,3 +196,48 @@ LISTMONK_LISTS = {
         "extra_tags": ["TEST"],
     },
 }
+
+# --- 2026 NHF flash-flood observational trigger ---
+# 4 LGAs selected by NiHSA 2026 composite at-risk-community score (see
+# exploration/2026/cerf/notes/trigger_development.md on govt-2026-prep).
+# Indicator: daily FloodScan SFED x WorldPop population exposure per LGA
+# (from the live floodexposure-monitoring pipeline, DB app.floodscan_exposure,
+# prod), 3-day rolling mean. Fires when any LGA exceeds its threshold.
+# Thresholds from the 2026 framework document (pending publication),
+# independently validated against the operational data source: each value
+# reproduces (within interpolation noise, <1-3%) as the empirical Weibull
+# ~7.75-yr RP of calendar-year annual maxima (1998-2025) of the 3-day
+# rolling mean of app.floodscan_exposure daily sums — i.e. each LGA
+# exceeds its threshold in exactly 3 of 28 historical years (equal
+# per-LGA probability), and the combined any-LGA trigger fires in 8 of 28
+# years (~3.5-yr RP: 1999, 2000, 2006, 2011, 2020, 2021, 2022, 2024).
+# The monitoring aggregation below matches the derivation exactly.
+FLASH_ROLLING_DAYS = 3
+# An advisory "approaching threshold" email goes out when any LGA reaches
+# this fraction of its trigger threshold (the 2025 riverine warning levels
+# sat at ~85-90% of their action thresholds)
+FLASH_WARNING_FRACTION = 0.8
+FLASH_LGAS = {
+    "NG008023": {"name": "Mobbar", "threshold": 14720},
+    "NG008021": {"name": "Maiduguri", "threshold": 23740},
+    "NG008013": {"name": "Jere", "threshold": 103612},
+    "NG036006": {"name": "Geidam", "threshold": 5501},
+}
+
+# Listmonk lists for the flash-flood stream (separate audience from the
+# riverine lists above). Created by setup_nga_listmonk_lists.py --flash.
+LISTMONK_FLASH_LISTS = {
+    "info": {
+        "name": "[AA framework] Nigeria flash flooding (informational)",
+        "tag": "nga-flash:info",
+    },
+    "trigger": {
+        "name": "[AA framework] Nigeria flash flooding (trigger)",
+        "tag": "nga-flash:trigger",
+    },
+    "test": {
+        "name": "[TEST] Nigeria flash flooding",
+        "tag": "nga-flash:test",
+        "extra_tags": ["TEST"],
+    },
+}
