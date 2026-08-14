@@ -26,6 +26,8 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout repository
@@ -60,3 +62,36 @@ jobs:
 
       run: |
         python pipelines/monitor_flash_flood.py
+
+    - name: Publish flash monitoring status
+      env:
+        DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        if git ls-remote --exit-code --heads origin monitoring-status; then
+          git worktree add /tmp/status-branch monitoring-status
+        else
+          git worktree add --orphan -b monitoring-status /tmp/status-branch
+        fi
+        mkdir -p /tmp/status-branch/exploration/2026/cerf/monitoring
+        mkdir -p exploration/2026/cerf/monitoring
+
+        # Seed with the branch's current status.json so this run only
+        # updates its own section, not the riverine section written by the
+        # other pipeline
+        cp /tmp/status-branch/exploration/2026/cerf/monitoring/status.json \
+           exploration/2026/cerf/monitoring/status.json 2>/dev/null || true
+
+        python pipelines/export_monitoring_status.py flash
+
+        cp exploration/2026/cerf/monitoring/status.json \
+           exploration/2026/cerf/monitoring/flash_latest.png \
+           /tmp/status-branch/exploration/2026/cerf/monitoring/
+
+        cd /tmp/status-branch
+        git add exploration/2026/cerf/monitoring/status.json \
+          exploration/2026/cerf/monitoring/flash_latest.png
+        git diff --staged --quiet || git commit -m "update flash monitoring status"
+        git push origin monitoring-status
