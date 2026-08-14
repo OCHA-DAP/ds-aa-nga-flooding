@@ -54,8 +54,7 @@ def get_glofas_forecast(
         "day": [str(issued_date.day).zfill(2)],
         # Leads out to the readiness trigger's max lead time
         "leadtime_hour": [
-            str(24 * lead)
-            for lead in range(1, READINESS_MAX_LEADTIME + 1)
+            str(24 * lead) for lead in range(1, READINESS_MAX_LEADTIME + 1)
         ],
         "data_format": "grib2",
         "download_format": "unarchived",
@@ -198,7 +197,7 @@ def get_database_forecast(monitoring_date):
             select * from {DB_SCHEMA}.{DB_TABLE}
             where monitoring_date = :monitoring_date
             order by valid_date
-            """
+            """  # noqa: E231
             ),
             con=con,
             params={"monitoring_date": monitoring_date},
@@ -206,6 +205,18 @@ def get_database_forecast(monitoring_date):
     if len(df) == 0:
         raise Exception(f"No data saved for {monitoring_date}")
     return df
+
+
+def get_latest_monitoring_date():
+    """Most recent monitoring_date with saved forecast data."""
+    engine = stratus.get_engine(stage="dev")
+    with engine.connect() as con:
+        result = con.execute(
+            text(f"select max(monitoring_date) from {DB_SCHEMA}.{DB_TABLE}")
+        ).scalar()
+    if result is None:
+        raise Exception(f"No data found in {DB_SCHEMA}.{DB_TABLE}")
+    return pd.Timestamp(result).to_pydatetime()
 
 
 def evaluate_trigger(df):
@@ -239,8 +250,8 @@ def evaluate_trigger(df):
     )
     readiness = readiness_forecast | readiness_reanalysis
 
-    df_google["threshold"] = (
-        df_google.src.str.removeprefix("grrr_").map(ACTION_GAUGE_THRESHOLDS)
+    df_google["threshold"] = df_google.src.str.removeprefix("grrr_").map(
+        ACTION_GAUGE_THRESHOLDS
     )
     df_google = df_google.dropna(subset=["threshold"])
     df_google["exceeds"] = df_google.value > df_google.threshold
