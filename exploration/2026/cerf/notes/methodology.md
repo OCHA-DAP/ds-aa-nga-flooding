@@ -101,7 +101,7 @@ Assess a single-station GloFAS readiness trigger independently of the GRRR actio
 
 The readiness trigger is designed to fire *before* the action trigger — it gives humanitarian partners advance notice that conditions are developing. The operational version uses the GloFAS ensemble reforecast (available in near-real-time) rather than reanalysis.
 
-The current Adamawa configuration is **GloFAS ensemble mean > 3,132 m³/s at lead time ≤ 13 days**, targeting 4-year RP Floodscan events.
+The current Adamawa configuration is **GloFAS ensemble mean > 3,132 m³/s at lead time ≤ 12 days**, targeting 4-year RP Floodscan events.
 
 **Key inputs:** GloFAS reanalysis (threshold calibration), GloFAS reforecast (evaluation)
 **Key output:** performance curves by lead time, best configuration per RP level
