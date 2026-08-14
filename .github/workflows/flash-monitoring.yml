@@ -1,4 +1,4 @@
-name: Monitor flooding
+name: Monitor flash flooding
 
 on:
   workflow_dispatch:
@@ -16,7 +16,12 @@ on:
         default: dev
 
   schedule:
-    - cron: '0 20 * * *'
+    # Right after the floodexposure-monitoring chain has written the day's
+    # exposure to the DB: its 23:15 UTC cron + chained dispatches normally
+    # finish 23:40-23:52 UTC, with observed GHA queue slips to ~01:10 UTC.
+    # The pipeline guards on data freshness and fails loudly if the chain
+    # hasn't landed yet.
+    - cron: '30 1 * * *'
 
 jobs:
   run-script:
@@ -42,14 +47,9 @@ jobs:
       env:
         DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
         DSCI_AZ_BLOB_DEV_SAS_WRITE: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS_WRITE }}
-        DSCI_AZ_DB_DEV_PW_WRITE: ${{ secrets.DSCI_AZ_DB_DEV_PW_WRITE }}
-        DSCI_AZ_DB_DEV_UID_WRITE: ${{ secrets.DSCI_AZ_DB_DEV_UID_WRITE }}
-        DSCI_AZ_DB_DEV_PW: ${{ secrets.DSCI_AZ_DB_DEV_PW }}
-        DSCI_AZ_DB_DEV_UID: ${{ secrets.DSCI_AZ_DB_DEV_UID }}
-        DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST}}
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
-        CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
-        CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
+        DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
+        DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
+        DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
         # ocha-relay reads DSCI_LISTMONK_BASE_URL; the org secret is named
         # DSCI_LISTMONK_API_URL
         DSCI_LISTMONK_BASE_URL: ${{ secrets.DSCI_LISTMONK_API_URL }}
@@ -59,6 +59,4 @@ jobs:
         STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
 
       run: |
-        python pipelines/check_forecasts.py
-        python pipelines/save_plots.py
-        python pipelines/send_emails.py
+        python pipelines/monitor_flash_flood.py
