@@ -70,7 +70,8 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-        if git ls-remote --exit-code --heads origin monitoring-status; then
+        git fetch origin monitoring-status:monitoring-status 2>/dev/null || true
+        if git rev-parse --verify monitoring-status >/dev/null 2>&1; then
           git worktree add /tmp/status-branch monitoring-status
         else
           git worktree add --orphan -b monitoring-status /tmp/status-branch
