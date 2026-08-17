@@ -59,9 +59,8 @@ jobs:
         # since that branch has no PR/review requirement to update twice a
         # day). Both `|| true` since neither may exist yet on a given run.
         run: |
-          git fetch --depth 1 origin govt-2026-prep
+          git fetch --depth 1 origin govt-2026-prep monitoring-status
           git checkout origin/govt-2026-prep -- exploration/2026/cerf/monitoring/index.html || true
-          git fetch --depth 1 origin monitoring-status
           git checkout origin/monitoring-status -- exploration/2026/cerf/monitoring/ || true
 
       - name: Assemble site
