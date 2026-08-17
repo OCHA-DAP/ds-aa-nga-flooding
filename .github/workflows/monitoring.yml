@@ -68,6 +68,9 @@ jobs:
     - name: Publish riverine monitoring status
       env:
         DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+        DSCI_AZ_DB_DEV_PW: ${{ secrets.DSCI_AZ_DB_DEV_PW }}
+        DSCI_AZ_DB_DEV_UID: ${{ secrets.DSCI_AZ_DB_DEV_UID }}
+        DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST }}
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
