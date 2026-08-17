@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CERF Nigeria Flooding — Working Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="notes.css" />
+</head>
+<body>
+<h1 id="cerf-nigeria-flooding-working-notes">CERF Nigeria Flooding —
+Working Notes</h1>
+<p>Analysis of riverine flooding in Nigeria for CERF anticipatory
+action, focused on Adamawa and Benue states along the Benue river.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a href="context.html">Context &amp; background</a> — 2025 analysis
+summary, trigger definition, data sources</li>
+<li><a href="methodology.html">Methodology</a> — workflow steps,
+configuration levers, and how to extend to other river systems</li>
+<li><a href="trigger_development.html">2026 trigger development</a> —
+narrative of design decisions: gauge selection, action trigger
+calibration, readiness trigger options, open questions</li>
+</ul>
+<hr />
+<h2 id="sessions">Sessions</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Date</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="2026-05-22.html">2026-05-22</a></td>
+<td>Centralised <code>STATE_CONFIG</code> in <code>constants.py</code>;
+added Google HYBAS gauge IDs; updated notebooks 12–14</td>
+</tr>
+<tr>
+<td><a href="2026-05-25.html">2026-05-25</a></td>
+<td>Data source and constants overhaul; new
+<code>13_model_performance.ipynb</code>; initial
+<code>14_forecast_performance.ipynb</code></td>
+</tr>
+<tr>
+<td><a href="2026-05-26.html">2026-05-26</a></td>
+<td>Metric and plot refinements to
+<code>14_forecast_performance.ipynb</code>; new
+<code>15_trigger_performance.ipynb</code> evaluating GloFAS reforecast
+vs Floodscan events</td>
+</tr>
+<tr>
+<td><a href="2026-05-27.html">2026-05-27</a></td>
+<td>Consistency fixes (NB 08, 14, 15); 2025 threshold methodology
+investigation; new <code>17_threshold_selection.ipynb</code> (Benue grid
+search) and <code>18_trigger_summary_performance.ipynb</code></td>
+</tr>
+<tr>
+<td><a href="2026-05-28.html">2026-05-28</a></td>
+<td>New <code>19_model_reanalysis_comparison.ipynb</code> (GRRR gauge
+correlation + annual peak diagnostics) and
+<code>20_trigger_tuning.ipynb</code> (multi-gauge trigger grid search);
+dashboard collapsible sections; Floodscan threshold bug fix</td>
+</tr>
+<tr>
+<td><a href="2026-06-18.html">2026-06-18</a></td>
+<td>2025 vs 2026 trigger comparison (metrics, pros/cons); GloFAS
+readiness trigger configuration options and lead time analysis;
+operational limitations for stakeholders</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

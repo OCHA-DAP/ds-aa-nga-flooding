@@ -62,36 +62,6 @@ def calculate_one_group_rp(group, col_name: str = "q", ascending: bool = True):
     return group
 
 
-def calculate_groups_rp(
-    df: pd.DataFrame, by: List, col_name: str = "mean", ascending: bool = True
-):
-    """Calculate the empirical RP for each group in a DataFrame.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The DataFrame for which to calculate the RP.
-    by : List
-        The columns by which to group the DataFrame.
-
-    Returns
-    -------
-    pd.DataFrame
-        The input DataFrame with the RP columns added.
-    """
-    return (
-        df.groupby(by)
-        .apply(
-            calculate_one_group_rp,
-            include_groups=False,
-            col_name=col_name,
-            ascending=ascending,
-        )
-        .reset_index()
-        .drop(columns=f"level_{len(by)}")
-    )
-
-
 def estimate_return_periods(
     df: pd.DataFrame,
     date_col: str,
@@ -139,6 +109,40 @@ def estimate_return_periods(
     )
 
     return df_rp_calculated
+
+
+def empirical_return_periods(
+    df: pd.DataFrame,
+    date_col: str,
+    val_col: str,
+    target_rps: Optional[List[Union[int, float]]] = None,
+) -> pd.DataFrame:
+    """
+    Estimate thresholds at target return periods using Weibull plotting
+    positions and log-log interpolation. No parametric distribution assumed.
+
+    Same interface as estimate_return_periods — drop-in replacement.
+    For target RPs beyond the observed record length (n+1 years), returns
+    the maximum observed annual maximum.
+    """
+    if target_rps is None:
+        target_rps = [2, 3, 5, 7, 10]
+
+    df = df.copy()
+    df[date_col] = pd.to_datetime(df[date_col])
+    df["year"] = df[date_col].dt.year
+    df_annual_max = df.groupby("year")[val_col].max().reset_index()
+
+    vals = np.sort(df_annual_max[val_col].values.astype(float))[::-1]
+    n = len(vals)
+    emp_rps = (n + 1) / np.arange(1, n + 1)
+
+    sort_idx = np.argsort(emp_rps)
+    log_rps = np.log(emp_rps[sort_idx])
+    log_vals = np.log(vals[sort_idx])
+
+    thresholds = np.exp(np.interp(np.log(target_rps), log_rps, log_vals))
+    return pd.DataFrame({"return_period": target_rps, "value": thresholds})
 
 
 def estimate_return_periods_from_values(

@@ -100,7 +100,24 @@ PRIORITYTWO_ADM2_PCODES = [DIKWA, NGALA]
 
 ALL_PRIORITY_ADM2_PCODES = PRIORITYONE_ADM2_PCODES + PRIORITYTWO_ADM2_PCODES
 
-# Benue riverine LGAs
+BENUE = "NG007"
+
+# Benue state — riverine LGAs along the Benue river
+AGATU2 = "NG007002"
+GUMA2 = "NG007006"
+GWER_WEST2 = "NG007008"
+LOGO2 = "NG007012"
+MAKURDI2 = "NG007013"
+
+BENUE_STATE_ADM2_PCODES = [
+    AGATU2,
+    GUMA2,
+    GWER_WEST2,
+    LOGO2,
+    MAKURDI2,
+]
+
+# Adamawa — riverine LGAs along the Benue river
 FUFORE2 = "NG002002"
 YOLASOUTH2 = "NG002021"
 YOLANORTH2 = "NG002020"
@@ -109,7 +126,7 @@ DEMSA2 = "NG002001"
 NUMAN2 = "NG002016"
 LAMURDE2 = "NG002009"
 
-BENUE_ADM2_PCODES = [
+ADAMAWA_ADM2_PCODES = [
     FUFORE2,
     YOLASOUTH2,
     YOLANORTH2,
@@ -118,6 +135,7 @@ BENUE_ADM2_PCODES = [
     NUMAN2,
     LAMURDE2,
 ]
+BENUE_ADM2_PCODES = ADAMAWA_ADM2_PCODES  # backwards-compatible alias
 
 
 # NHF flash LGAs
@@ -168,10 +186,10 @@ ACTION_GAUGE_THRESHOLDS = {
 ACTION_MIN_GAUGES = 6
 
 # Readiness trigger (Option A): GloFAS ensemble-mean forecast at Wuroboki
-# exceeds 3,132 m3/s at lead time <= 13 days. From
+# exceeds 3,132 m3/s at lead time <= 12 days. From
 # exploration/2026/cerf/workflow/07_readiness_trigger.ipynb.
 READINESS_GLOFAS_THRESH = 3132.0
-READINESS_MAX_LEADTIME = 13  # days
+READINESS_MAX_LEADTIME = 12  # days
 
 # --- Listmonk email dispatch ---
 # Lists are resolved by tag at runtime (never by hardcoded id). Created by
@@ -239,5 +257,51 @@ LISTMONK_FLASH_LISTS = {
         "name": "[TEST] Nigeria flash flooding",
         "tag": "nga-flash:test",
         "extra_tags": ["TEST"],
+    },
+}
+
+# Google Flood Forecasting HYBAS gauge IDs
+WUROBOKI_HYBAS = "hybas_1120842550"
+MAKURDI_HYBAS = "hybas_1120911340"
+
+# Per-state config for riverine flooding analysis notebooks
+STATE_CONFIG = {
+    "Benue": {
+        "analysis_start_year": 1998,
+        "analysis_end_year": 2023,
+        "adm1_col": "ADM1_PCODE",
+        "adm1_val": BENUE,
+        "lga_pcodes": BENUE_STATE_ADM2_PCODES,
+        "river_x_min": 7.5,
+        "glofas_station": "makurdi",
+        "station_label": "Makurdi GloFAS Station",
+        "google_gauge": MAKURDI_HYBAS,
+        "floodscan_blob": "ds-aa-nga-flooding/processed/floodscan/fs_benue_state_pixels_1998_2025.parquet",  # noqa
+        "glofas_thresh": None,  # TBD via reforecast analysis
+        "google_thresh": None,  # TBD via reforecast analysis
+        "glofas_leadtime_action": None,
+        "google_leadtime_action": None,
+        "glofas_leadtime_readiness": None,
+        "google_leadtime_readiness": None,
+        "glofas_reforecast_blob": "ds-aa-nga-flooding/processed/glofas/glofas_reforecast_makurdi_ensemble.parquet",  # noqa
+    },
+    "Adamawa": {
+        "analysis_start_year": 1998,
+        "analysis_end_year": 2023,
+        "adm1_col": "ADM1_PCODE",
+        "adm1_val": ADAMAWA,
+        "lga_pcodes": ADAMAWA_ADM2_PCODES,
+        "river_x_min": 11.0,
+        "glofas_station": "wuroboki",
+        "station_label": "Wuroboki GloFAS Station",
+        "google_gauge": WUROBOKI_HYBAS,
+        "floodscan_blob": "ds-aa-nga-flooding/processed/floodscan/fs_adamawa_pixels_1998_2025.parquet",  # noqa
+        "glofas_thresh": GLOFAS_THRESH,
+        "google_thresh": GOOGLE_THRESH,
+        "glofas_leadtime_action": 5,
+        "google_leadtime_action": 7,
+        "glofas_leadtime_readiness": None,
+        "google_leadtime_readiness": None,
+        "glofas_reforecast_blob": "ds-aa-nga-flooding/processed/glofas/wuroboki_glofas_reforecast_ens.parquet",  # noqa
     },
 }

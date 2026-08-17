@@ -21,6 +21,8 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout repository
@@ -29,7 +31,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11.4'
+        python-version: '3.12'
         cache: 'pip'
 
     - name: Install dependencies
@@ -62,3 +64,40 @@ jobs:
         python pipelines/check_forecasts.py
         python pipelines/save_plots.py
         python pipelines/send_emails.py
+
+    - name: Publish riverine monitoring status
+      env:
+        DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+        DSCI_AZ_DB_DEV_PW: ${{ secrets.DSCI_AZ_DB_DEV_PW }}
+        DSCI_AZ_DB_DEV_UID: ${{ secrets.DSCI_AZ_DB_DEV_UID }}
+        DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        git fetch origin monitoring-status:monitoring-status 2>/dev/null || true
+        if git rev-parse --verify monitoring-status >/dev/null 2>&1; then
+          git worktree add /tmp/status-branch monitoring-status
+        else
+          git worktree add --orphan -b monitoring-status /tmp/status-branch
+        fi
+        mkdir -p /tmp/status-branch/exploration/2026/cerf/monitoring
+        mkdir -p exploration/2026/cerf/monitoring
+
+        # Seed with the branch's current status.json so this run only
+        # updates its own section, not the flash section written by the
+        # other pipeline
+        cp /tmp/status-branch/exploration/2026/cerf/monitoring/status.json \
+           exploration/2026/cerf/monitoring/status.json 2>/dev/null || true
+
+        python pipelines/export_monitoring_status.py riverine
+
+        cp exploration/2026/cerf/monitoring/status.json \
+           exploration/2026/cerf/monitoring/riverine_latest.png \
+           /tmp/status-branch/exploration/2026/cerf/monitoring/
+
+        cd /tmp/status-branch
+        git add exploration/2026/cerf/monitoring/status.json \
+          exploration/2026/cerf/monitoring/riverine_latest.png
+        git diff --staged --quiet || git commit -m "update riverine monitoring status"
+        git push origin monitoring-status

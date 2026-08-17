@@ -51,6 +51,18 @@ jobs:
           CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
         run: python pipelines/export_app_data.py
 
+      - name: Pull in 2026 monitoring status page + data
+        # This checkout is pinned to feat/niger-benue-multistate-monitoring
+        # above, which doesn't have the 2026 monitoring status page. Overlay
+        # it from govt-2026-prep (the page code) and monitoring-status (the
+        # status.json + chart PNGs the monitoring pipelines push there,
+        # since that branch has no PR/review requirement to update twice a
+        # day). Both `|| true` since neither may exist yet on a given run.
+        run: |
+          git fetch --depth 1 origin govt-2026-prep monitoring-status
+          git checkout origin/govt-2026-prep -- exploration/2026/cerf/monitoring/index.html || true
+          git checkout origin/monitoring-status -- exploration/2026/cerf/monitoring/ || true
+
       - name: Assemble site
         run: |
           mkdir -p _site

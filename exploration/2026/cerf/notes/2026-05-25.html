@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Session: 2026-05-25</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="notes.css" />
+</head>
+<body>
+<h1 id="session-2026-05-25">Session: 2026-05-25</h1>
+<p><a href="index.html">← Index</a></p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Major session covering codebase infrastructure, data source
+improvements, and new analysis notebooks. The main analytical work
+extended the trigger performance analysis to both
+<strong>Adamawa</strong> and <strong>Benue</strong> states via a new
+parameterised notebook (<code>13_model_performance.ipynb</code>). An
+initial version of <code>14_forecast_performance.ipynb</code> was also
+created, introducing skill-vs-leadtime and exceedance detection analysis
+for both GloFAS and Google GRRR reforecasts.</p>
+<hr />
+<h2 id="codebase-changes">Codebase changes</h2>
+<h3 id="constants-srcconstants.py">Constants
+(<code>src/constants.py</code>)</h3>
+<ul>
+<li>Added <strong>Benue state</strong> PCODE constants:
+<code>BENUE = "NG007"</code>, <code>BENUE_STATE_ADM2_PCODES</code> (5
+riverine LGAs along the Benue river)</li>
+<li>Renamed <code>BENUE_ADM2_PCODES</code> to
+<code>ADAMAWA_ADM2_PCODES</code> with a backwards-compatible alias</li>
+<li>Added <strong>Google Flood Hub HYBAS gauge IDs</strong>:
+<code>WUROBOKI_HYBAS</code> and <code>MAKURDI_HYBAS</code></li>
+<li>Added <code>STATE_CONFIG</code> dict parameterising Adamawa and
+Benue state analysis by station name, LGA list, river extent, GloFAS
+station, Google gauge, Floodscan blob path, and trigger thresholds</li>
+</ul>
+<h3 id="data-sources">Data sources</h3>
+<ul>
+<li><strong><code>src/datasources/worldpop.py</code></strong> (new):
+WorldPop population data loading via STAC</li>
+<li><strong><code>src/datasources/hydrosheds.py</code></strong>
+(updated): HydroSheds river network loading</li>
+<li><strong><code>src/datasources/glofas.py</code></strong> (major
+additions): Extended reanalysis and reforecast loading; helper functions
+for both Wuroboki and Makurdi stations</li>
+<li><strong><code>src/datasources/grrr.py</code></strong> (major
+additions): Google GRRR reanalysis and reforecast loading, including
+HYBAS gauge lookup and streamflow extraction</li>
+</ul>
+<h3 id="processing-notebooks-new">Processing notebooks (new)</h3>
+<p>Data download and processing pipeline for the extended analysis:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>processing/download_glofas.ipynb</code></td>
+<td>Download GloFAS reanalysis for Makurdi and Wuroboki stations</td>
+</tr>
+<tr>
+<td><code>processing/download_glofas_reforecast.ipynb</code></td>
+<td>Download GloFAS reforecast ensemble</td>
+</tr>
+<tr>
+<td><code>processing/process_glofas_reanalysis.ipynb</code></td>
+<td>Process raw GloFAS reanalysis to parquet</td>
+</tr>
+<tr>
+<td><code>processing/process_glofas_reforecast.ipynb</code></td>
+<td>Process GloFAS reforecast ensemble to parquet</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="analysis-outputs">Analysis outputs</h2>
+<h3
+id="trigger-performance-adamawa-and-benue-13_model_performance.ipynb">Trigger
+performance — Adamawa and Benue
+(<code>13_model_performance.ipynb</code>)</h3>
+<p>Notebook parameterised by state via <code>STATE_CONFIG</code>,
+reproducing the 2025 Wuroboki analysis approach for both stations:</p>
+<p><strong>Annual peak correlation</strong>: Side-by-side scatter plots
+comparing wet-season (Aug–Nov) annual discharge peaks against Floodscan
+annual mean SFED — one panel for GloFAS reanalysis, one for Google GRRR
+reanalysis. Each year is labelled, and the 5-year RP threshold is marked
+on both axes.</p>
+<p><strong>Precision, recall, F1</strong>: Performance metrics for three
+trigger configurations evaluated against Floodscan 5-year RP events:</p>
+<table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GloFAS reanalysis</td>
+<td>3,132 m³/s (Wuroboki)</td>
+</tr>
+<tr>
+<td>Google GRRR reanalysis</td>
+<td>1,195 (Wuroboki)</td>
+</tr>
+<tr>
+<td>OR logic (either source)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>A year-by-year table shows which years were events, which triggered,
+and which did not.</p>
+<h3
+id="forecast-performance-initial-version-14_forecast_performance.ipynb">Forecast
+performance — initial version
+(<code>14_forecast_performance.ipynb</code>)</h3>
+<p>Initial notebook created with the following structure:</p>
+<ul>
+<li><strong>Data loading</strong>: GloFAS reanalysis + ensemble
+reforecast; Google GRRR reanalysis + reforecast; both accessed via
+<code>STATE_CONFIG</code></li>
+<li><strong>Return period thresholds</strong>: GloFAS thresholds derived
+from reanalysis annual wet-season maxima; Google thresholds from the
+official GCS return periods dataset</li>
+<li><strong>Skill vs leadtime</strong>: Spearman correlation and MAPE
+between daily reforecast and reanalysis values, restricted to wet-season
+days, grouped by leadtime — separately for GloFAS (ensemble mean) and
+Google</li>
+<li><strong>Annual exceedance detection</strong>: For each year and
+leadtime, whether the wet-season annual max ensemble-mean reforecast
+exceeded the RP threshold, compared against reanalysis — reporting hit
+rate and false alarm rate vs leadtime per RP level</li>
+</ul>
+<hr />
+<h2 id="notebook-index">Notebook index</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>13_model_performance.ipynb</code></td>
+<td>Annual peak correlation + Precision/Recall/F1 for GloFAS, Google,
+and OR trigger</td>
+</tr>
+<tr>
+<td><code>14_forecast_performance.ipynb</code></td>
+<td>Skill vs leadtime and exceedance detection — initial version</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li>Refine metric definitions in
+<code>14_forecast_performance.ipynb</code>: switch to met-convention
+POD/FAR, implement cumulative activation logic, add probability of
+activation</li>
+<li>Define trigger thresholds and leadtime windows for Benue state
+(Makurdi) — analogous to the Adamawa/Wuroboki work</li>
+<li>Evaluate reforecast performance against Floodscan events directly
+(rather than reanalysis), disaggregated by RP level</li>
+</ul>
+</body>
+</html>

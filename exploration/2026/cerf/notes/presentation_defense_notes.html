@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>2025 → 2026 Trigger Revision — Defense Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="notes.css" />
+</head>
+<body>
+<h1
+id="presentation-notes-2025-2026-adamawa-trigger-revision">Presentation
+notes — 2025 → 2026 Adamawa trigger revision</h1>
+<p>Prep notes for internal defense of the trigger design change. Sourced
+from <code>trigger_development.md</code>, <code>methodology.md</code>,
+dated notes (<code>2026-05-2*.md</code>, <code>2026-06-18.md</code>),
+and direct verification against notebooks
+<code>19_model_reanalysis_comparison.ipynb</code>,
+<code>13_model_performance.ipynb</code>,
+<code>03_forecast_correlation.ipynb</code>,
+<code>04_gauge_selection_assessment.ipynb</code>. All numbers below were
+re-checked against saved notebook outputs before inclusion — flagged
+exceptions are noted explicitly.</p>
+<hr />
+<h2 id="key-updates-2025-2026-concise">1. Key updates, 2025 → 2026
+(concise)</h2>
+<ul>
+<li><strong>Action trigger redesigned</strong>: single-station OR logic
+(GloFAS ≥3,132 m³/s <strong>OR</strong> Google GRRR ≥1,195 m³/s, both at
+Wuroboki/Kangli) → multi-gauge GRRR voting (<strong>≥6 of 10
+gauges</strong> simultaneously exceed their own 4-yr RP threshold).</li>
+<li><strong>GloFAS demoted, not dropped</strong>: no longer part of the
+action trigger’s OR logic; moved to a new, independent <strong>readiness
+trigger</strong> (GloFAS reforecast ≤12d lead, or reanalysis, &gt;3,132
+m³/s).</li>
+<li><strong>Design RP target shifted</strong>: 2025 calibrated to
+~5.4-yr RP; 2026 calibrated to <strong>4-yr RP</strong> Floodscan events
+(n=6: 1999, 2012, 2015, 2018, 2022, 2023).</li>
+<li><strong>Same activation frequency preserved by design</strong>: both
+fire <strong>6 times in 26 years</strong> (RP = 4.5 yr, 22% annual
+probability). Only <em>which</em> years differ — 2003 drops out (was a
+3-yr, not 4-yr, event), 2018 comes in (a genuine 4-yr event 2025
+missed).</li>
+<li><strong>Detection performance at 4-yr RP improves</strong>: POD
+50%→67%, FAR 15%→10%, F1 0.50→0.67. 3-yr and 5-yr RP performance is
+unchanged between designs.</li>
+<li><strong>Gauge selection is now systematic and source-blind</strong>:
+42 GRRR candidates + GloFAS ranked together by Spearman correlation with
+Floodscan; top 10 taken regardless of source. GloFAS wasn’t excluded by
+rule — it ranked 11th+ (ρ=0.679) below the top-10 cutoff
+(ρ=0.711–0.742).</li>
+<li><strong>New capability</strong>: readiness trigger didn’t exist in
+2025 at all. Fires ~once every 3.5 years, ahead of the action trigger,
+for pre-positioning.</li>
+<li>(Separately) <strong>NHF flash-flood trigger</strong> re-targeted
+via a NiHSA composite risk score — different flood type/funding
+mechanism, not part of the CERF riverine story above.</li>
+</ul>
+<hr />
+<h2 id="whats-actually-better-in-2026">2. What’s actually better in
+2026</h2>
+<p><strong>Spatial robustness over single-station fragility</strong> 10
+geographically distributed gauges vote (≥60% threshold) instead of one
+station carrying the whole trigger. Illustration: one of the 10 selected
+gauges (<code>hybas_1120840690</code>) is a clear outlier — a small
+tributary with a 4-yr RP threshold of 143 m³/s (~8× lower than the other
+9, ~1,100 m³/s) — yet it only contributed to 4 of 6 fire years and never
+dominates the outcome, because the voting rule is built to absorb a
+single anomalous gauge. A 2025-style single-station design has no such
+safety margin.</p>
+<p><strong>One internally consistent signal, not an OR of two
+heterogeneous models</strong> 2025’s OR logic meant false alarms from
+<em>either</em> model counted against the trigger — a structural FAR
+penalty. 2026’s action trigger draws on one data source (GRRR) evaluated
+the same way at every gauge, which is more diagnosable and defensible
+than reconciling two different models’ failure modes.</p>
+<p><strong>A genuinely new early-warning layer (readiness
+trigger)</strong> This is additive capability, not a redesign of
+something that existed. It uses GloFAS specifically where GloFAS is
+strong — a real multi-day ensemble forecast — rather than folding it
+into a same-day observational OR condition it was never well-suited
+to.</p>
+<p><strong>Rigor of the calibration process itself</strong> 2025:
+single-station grid search over (GloFAS rank, Google rank) pairs, with
+lead time used only as a tiebreaker, not an optimization target (per
+<code>2026-05-27.md</code>). 2026: systematic gauge discovery (42
+candidates) → correlation ranking → grid search over (RP threshold ×
+N-gauges-required) scored on POD/FAR/F1 → explicit small-sample caveats
+stated throughout (“each event year shifts POD/F1 by ~17 percentage
+points at n=6”).</p>
+<p><strong>Note on two different “2025 numbers” — don’t conflate
+them</strong> There are two distinct sets of 2025 figures floating
+around, and only one of them is the fair comparison: - <strong>The
+headline comparison used above (POD 50%→67%, FAR 15%→10%, F1 0.50→0.67
+at 4-yr RP; identical at 3-yr/5-yr) is a direct, apples-to-apples
+recomputation.</strong> Both trigger <em>definitions</em> — 2025’s
+single-station OR and 2026’s 6-of-10 voting — were re-run against the
+<strong>same</strong> evaluation period (1998–2023), the
+<strong>same</strong> Floodscan SFED dataset and Weibull-derived event
+years, and the <strong>same</strong> scoring code. Only the trigger
+logic differs. This is exactly the comparison you’d want, and it’s the
+one to defend. - <strong>Separately</strong>, the 2025 framework’s own
+<em>originally published</em> FAR figures (18% at 3-yr, 10% at 5-yr,
+from the endorsed 2025 PDF) are <strong>confirmed typos in that
+document</strong> — not evidence of a different evaluation methodology.
+(<code>notes/2026-06-18.md</code> had speculated they might reflect a
+different period/dataset/threshold convention; that speculation is
+superseded now that the typo has been confirmed.) Still don’t cite those
+specific old PDF figures next to the 2026 metrics — they’re simply
+wrong, not an alternate valid calculation — but there’s no
+methodological discrepancy left to explain.</p>
+<p><strong>Early (pre-final-design) evidence that ensembling itself is
+the source of the gain</strong> An earlier prototype
+(<code>16_google_ensemble_exploration.ipynb</code>, Google’s official RP
+thresholds, before the empirical-Weibull/top-10 refinement) already
+showed multi-gauge aggregation beating single-station at the 4-yr RP
+benchmark: POD 0.50→0.67, FAR 0.40→0.20, F1 0.55→0.73. This isolates
+spatial aggregation as a real driver of improvement, separate from any
+later threshold retuning.</p>
+<hr />
+<h2 id="justifying-the-lead-time-change-and-why-its-not-a-regression">3.
+Justifying the lead-time change (and why it’s not a regression)</h2>
+<h3 id="the-honest-framing">The honest framing</h3>
+<p>The 2025 headline lead-time numbers (~13.7 days mean for Google,
+~24.7 days for GloFAS, to a 5-yr RP Floodscan threshold) were a
+by-product of the (RP-rank, RP-rank) grid search that selected the 2025
+trigger configuration — lead time was recorded as a
+<strong>tiebreaker</strong> among candidate configurations, not as a
+metric that was itself validated or optimised end-to-end. It’s a
+smaller, narrower slice of years than a full event-year evaluation, so
+it’s reasonable to want a fuller picture before repeating it as a
+headline figure.</p>
+<p>The 2026 numbers take a broader, more conservative view: - measured
+against <strong>first day Floodscan SFED crosses the 4-yr RP
+threshold</strong>, across <strong>all</strong> 6 identified 4-yr RP
+event years (not a subset) — including the years where the signal
+misses, - with explicit small-sample caveats stated alongside every
+number, - and — this is the part worth stating plainly — the raw GRRR
+<strong>reanalysis</strong> signal fires at roughly the same time the
+flood threshold is crossed (0 to −6 days in 2012/2018/2022),
+<em>not</em> weeks ahead. The 1999 outlier (+41d) is flagged as
+atypical, not representative.</p>
+<p>So the apparent “reduction” isn’t the new design performing worse —
+it’s that 2026 evaluates lead time the same rigorous way it evaluates
+everything else (full event-year set, misses included, uncertainty
+stated), rather than reporting a number that happened to fall out of a
+different selection process.</p>
+<h3 id="where-the-5-day-forecast-adjustment-comes-from">Where the +5-day
+forecast adjustment comes from</h3>
+<p>Because the GRRR <strong>reforecast</strong> archive is short, the
+action trigger is calibrated and backtested on GRRR
+<strong>reanalysis</strong> (1998–2023) as a historical proxy, then a
+flat <strong>+5-day</strong> offset is applied to estimate what the
+operational reforecast would add. This isn’t an arbitrary optimism
+adjustment — it’s justified directly by GRRR’s forecast skill (§ below),
+which is strong enough at short lead times that reanalysis is a
+defensible stand-in for calibration purposes, while the reforecast is
+what’s actually used operationally.</p>
+<p>With the +5-day estimate applied: 2012 → +5d, 2018 → +4d, 2022 → −1d
+(2022’s flood simply rose faster than a 5-day lead can cover), 1999 →
++46d (outlier, not representative).</p>
+<h3 id="the-core-evidence-google-grrr-forecast-skill-vs-glofas">The core
+evidence: Google (GRRR) forecast skill vs GloFAS</h3>
+<p>This is the part that actually justifies leaning on Google as the
+primary signal. Three independent, verified comparisons, all pointing
+the same direction:</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Comparison</th>
+<th>GloFAS</th>
+<th>Google GRRR</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Best-lag Spearman ρ vs Floodscan SFED (wet season, 1998–2023,
+n=3,172 days)</td>
+<td><strong>0.679</strong> (lag +1d)</td>
+<td>median 0.701 (lag +2d) across 42 candidate gauges; best individual
+gauge <strong>0.742</strong> (lag −3d)</td>
+<td><code>19_model_reanalysis_comparison.ipynb</code> cell 24 /
+<code>03_forecast_correlation.ipynb</code> (identical, independently
+reproduced)</td>
+</tr>
+<tr>
+<td>Single-station same-season correlation (Aug–Dec, 1998–2023)</td>
+<td>Pearson 0.615 / Spearman 0.748</td>
+<td>Pearson 0.700 / Spearman 0.754</td>
+<td><code>13_model_performance.ipynb</code> cell 10</td>
+</tr>
+<tr>
+<td>Classification skill at actual 5-yr RP flood events, single station,
+endorsed 2025 thresholds</td>
+<td>Precision 0.50 / Recall 0.40 / <strong>F1 0.44</strong></td>
+<td>Precision 0.60 / Recall 0.60 / <strong>F1 0.60</strong></td>
+<td><code>13_model_performance.ipynb</code> cell 12</td>
+</tr>
+</tbody>
+</table>
+<p>All 10 gauges eventually selected into the action trigger ranked
+above GloFAS (ρ 0.711–0.742 vs GloFAS’s 0.679) — GloFAS wasn’t excluded
+by design, it lost on merit
+(<code>04_gauge_selection_assessment.ipynb</code> cell 5: “Selected 10
+gauges: 10 GRRR, 0 GloFAS — best_r range: 0.711–0.742”).</p>
+<p>On the classification test specifically: GloFAS misses 2012 and 2015
+(2 of 5 actual 5-yr RP events) and false-alarms in 1998 and 2003; Google
+misses only 2015, correctly catches 2012, and false-alarms only in 1998.
+This is a direct, event-level demonstration that Google’s forecast is
+doing real work GloFAS isn’t — not just a marginally-better correlation
+coefficient.</p>
+<p><strong>A caveat worth raising proactively</strong> (this is good for
+credibility in a defense-style Q&amp;A): on <em>annual peak-timing</em>
+correlation specifically (as opposed to daily correlation), GloFAS
+(ρ=0.385) is actually comparable to or better than most of the
+individual GRRR gauges selected into the top 10 (which cluster at
+ρ≈0.34–0.36 on this specific metric, despite ranking highest on daily
+correlation). The story isn’t “GloFAS is worse on every axis” — it’s
+that GRRR’s advantage is concentrated in daily correlation and
+event-detection skill, which is what the action trigger actually needs,
+while GloFAS has some relative strength in peak-timing structure at a
+single station. Framing it this way is more defensible than an
+unqualified “Google is just better.”</p>
+<p><strong>Sampling-density caveat</strong> (also worth surfacing, not
+hiding): GloFAS’s reforecast is issued only twice weekly (~35 issue
+dates/season vs ~120 for a daily product), so any
+skill-degradation-with-leadtime estimate for GloFAS at high-RP
+conditions rests on much smaller samples (n≤15) than Google’s. This
+matters two ways: (1) it’s a reason to distrust <em>strong</em> claims
+about GloFAS’s long-leadtime skill in either direction, and (2) it’s
+part of <em>why</em> the readiness trigger keeps GloFAS’s leadtime
+window capped at 12 days rather than pushing further out where its
+sampling gets thin.</p>
+<p><em>(Two notebooks — <code>20_trigger_tuning.ipynb</code> and
+<code>14_forecast_performance.ipynb</code> — appear to have stale saved
+outputs from a different state config (Benue, not Adamawa) and were
+excluded from the numbers above. Don’t cite their printed tables without
+re-running first.)</em></p>
+<h3 id="one-line-synthesis-for-the-slide">One-line synthesis for the
+slide</h3>
+<blockquote>
+<p>“The 2026 lead-time figures look shorter because they’re measured
+across every actual event year, not just the subset that fell out of the
+original selection process. We built the action trigger on Google
+because it objectively correlates better with observed flooding and
+catches flood years GloFAS misses — and we recovered the lead time
+GloFAS is genuinely good at by giving it its own readiness trigger,
+instead of blending both into one same-day OR condition.”</p>
+</blockquote>
+<hr />
+<h2 id="anticipated-questions-defense-prep">Anticipated questions
+(defense prep)</h2>
+<p><strong>“Is the 2025 vs 2026 performance comparison actually
+apples-to-apples?”</strong> Yes, for the numbers that matter (POD
+50%→67%, FAR 15%→10%, F1 0.50→0.67 at 4-yr RP; identical at 3-yr/5-yr).
+Both trigger definitions were re-run against the same 1998–2023 period,
+same Floodscan dataset, same Weibull thresholds, same scoring code —
+only the trigger logic changed. The one thing <em>not</em> to cite
+side-by-side is the 2025 framework’s original <em>published</em> FAR
+figures (18%/10%) — those have since been confirmed as typos in that
+document, not a different calculation, so they’re just not reliable
+numbers to cite at all, from either side.</p>
+<p><strong>“Why 4-yr RP and not 5-yr like 2025?”</strong> 4-yr RP still
+targets 5-year-RP-level CERF activation frequency, but calibrates
+against <em>observed</em> Floodscan flooding rather than modelled
+discharge rank. It also gives a larger event sample (n=6 vs n=3-ish at
+5-yr) for a more stable calibration, while the overall activation
+frequency (RP≈4.5yr, one in ~4.5 years) is unchanged from 2025 by
+explicit design choice.</p>
+<p><strong>“Isn’t n=6 event years too small to trust a POD/F1
+improvement?”</strong> Yes, and this is stated explicitly in the doc:
+each single year shifts POD/F1 by ~17 percentage points. Treat 50%→67%
+as indicative, not statistically proven — the honest framing is “no
+worse, and directionally better, on a small sample,” not “provably
+better.”</p>
+<p><strong>“Why remove GloFAS from the action trigger?”</strong> It
+wasn’t removed by a rule — it was ranked against the same pool of
+candidates and came in below the top-10 cutoff (0.679 vs 0.711–0.742).
+It’s not thrown away — it’s redeployed as a readiness trigger, which is
+arguably a better fit for what GloFAS’s ensemble reforecast is actually
+good at.</p>
+<p><strong>“Why should we trust the +5-day reforecast estimate over
+reanalysis?”</strong> Because GRRR’s own forecast skill is very strong
+at short lead times (this is the whole point of the skill comparison
+above) — the assumption is explicitly flagged as an estimate in both the
+notebook and the documentation, and the sensitivity is small at the lead
+times actually used (5 days), not extrapolated out to a long, untested
+horizon.</p>
+<p><strong>“2015 and 2023 are still missed by both designs — isn’t that
+concerning?”</strong> Yes — flagged explicitly in the doc’s appendix as
+an open problem, not something the 2026 redesign claims to have solved.
+Worth naming directly rather than waiting for someone to find it:
+possible causes (different flood pathway, Lagdo dam release timing,
+gauge coverage gaps) are listed as unresolved and a stated priority
+before operational deployment.</p>
+</body>
+</html>
