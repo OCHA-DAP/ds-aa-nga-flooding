@@ -37,5 +37,19 @@
     "chart": "flash_latest.png",
     "chart_stale": false,
     "generated_at": "2026-08-17T22:55:02.555360+00:00"
+  },
+  "riverine": {
+    "date": "2026-08-17",
+    "action": false,
+    "readiness": false,
+    "readiness_forecast": false,
+    "readiness_reanalysis": false,
+    "max_gauges_exceeding": 0,
+    "n_gauges_reporting": 10,
+    "glofas_max": 1004.1273193359375,
+    "reanalysis_max": 270.90625,
+    "chart": "riverine_latest.png",
+    "chart_stale": false,
+    "generated_at": "2026-08-17T22:56:57.864178+00:00"
   }
 }
