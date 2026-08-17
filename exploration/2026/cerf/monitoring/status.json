@@ -1,0 +1,41 @@
+{
+  "flash": {
+    "date": "2026-08-15",
+    "triggered": false,
+    "warning": false,
+    "thresholds_pending": false,
+    "lgas": {
+      "NG008023": {
+        "name": "Mobbar",
+        "rolling": 0.0,
+        "threshold": 14720,
+        "exceeds": false,
+        "warning": false
+      },
+      "NG008021": {
+        "name": "Maiduguri",
+        "rolling": 0.0,
+        "threshold": 23740,
+        "exceeds": false,
+        "warning": false
+      },
+      "NG008013": {
+        "name": "Jere",
+        "rolling": 0.0,
+        "threshold": 103612,
+        "exceeds": false,
+        "warning": false
+      },
+      "NG036006": {
+        "name": "Geidam",
+        "rolling": 0.0,
+        "threshold": 5501,
+        "exceeds": false,
+        "warning": false
+      }
+    },
+    "chart": "flash_latest.png",
+    "chart_stale": false,
+    "generated_at": "2026-08-17T22:55:02.555360+00:00"
+  }
+}
