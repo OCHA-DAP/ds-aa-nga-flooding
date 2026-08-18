@@ -3,158 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nigeria AA — 2026 Monitoring Status</title>
+  <title>Nigeria AA: 2026 Monitoring Status</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 14px;
-      color: #24292f;
-      background: #fff;
-      padding: 32px 24px;
+    :root {
+      --accent: #1862d8;
+      --text: #1f2324;
+      --subtext: #5e6a6b;
+      --muted: #8c959f;
+      --border: #e1e4e8;
+      --success: #1a7f4e;
+      --error: #c44536;
+      --warning: #935f13;
     }
 
-    .page-wrap { max-width: 1000px; margin: 0 auto; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .page-wrap {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
 
     h1 {
-      font-size: 17px;
+      font-size: 22px;
       font-weight: 600;
-      margin-bottom: 4px;
+      letter-spacing: -.01em;
+      margin-bottom: 8px;
+    }
+
+    .last-updated {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
     .page-subtitle {
-      font-size: 12px;
-      color: #57606a;
-      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--subtext);
+      margin-bottom: 40px;
     }
 
-    .cards {
+    #sections {
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      gap: 32px;
       align-items: flex-start;
     }
 
-    .card {
-      flex: 1 1 440px;
-      border: 1px solid #d0d7de;
-      border-radius: 6px;
-      overflow: hidden;
+    .section {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
 
-    .card-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid #d0d7de;
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+      border-bottom: 3px solid var(--accent);
     }
 
-    .card-title {
-      font-size: 13px;
-      font-weight: 600;
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .05em;
-      color: #57606a;
-      margin-bottom: 10px;
+      letter-spacing: .04em;
+      color: var(--subtext);
     }
 
-    .status-badge {
+    .status-text {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .status-ok { color: var(--success); }
+    .status-warn { color: var(--warning); }
+    .status-error { color: var(--error); }
+    .status-unknown { color: var(--subtext); }
+
+    .chart-img {
+      width: 100%;
+      height: 360px;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .source-links {
+      margin-top: 14px;
+      font-size: 12.5px;
+      color: var(--subtext);
+    }
+    .source-links a {
+      color: var(--accent);
+      text-decoration: none;
+      margin-right: 16px;
+      white-space: nowrap;
+    }
+    .source-links a:hover { text-decoration: underline; }
+
+    .badge {
       display: inline-block;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 10px;
       border-radius: 4px;
+      background: #eaf1fc;
+      color: var(--accent);
     }
-    .status-ok { background: #ddf4e5; color: #1a7f4e; }
-    .status-warn { background: #fdf0dc; color: #935f13; }
-    .status-error { background: #fbe4e1; color: #a3352a; }
-    .status-unknown { background: #f0f2f4; color: #57606a; }
+    .badge-warn { background: #fdf0dc; color: var(--warning); }
+    .badge-error { background: #fbe4e1; color: var(--error); }
 
-    .card-meta {
-      font-size: 11.5px;
-      color: #57606a;
-      margin-top: 8px;
-    }
-
-    .card-body { padding: 16px 20px 20px; }
-
-    .card-body img {
-      width: 100%;
-      border: 1px solid #eaeef1;
-      border-radius: 4px;
-      margin-bottom: 14px;
-    }
-
-    table.stats {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12.5px;
-    }
-    table.stats th {
-      text-align: left;
-      font-weight: 600;
-      color: #57606a;
-      padding: 5px 8px 5px 0;
-      border-bottom: 1px solid #eaeef1;
-    }
-    table.stats td {
-      padding: 5px 8px 5px 0;
-      border-bottom: 1px solid #eaeef1;
-      text-align: right;
-    }
-    table.stats td:first-child { text-align: left; }
-    table.stats tr:last-child th, table.stats tr:last-child td { border-bottom: none; }
-
-    .lga-exceeds { color: #a3352a; font-weight: 600; }
-    .lga-warn { color: #935f13; font-weight: 600; }
-
-    .error-note {
-      font-size: 12.5px;
-      color: #a3352a;
-      background: #fbe4e1;
-      border-radius: 4px;
-      padding: 10px 12px;
-    }
-
-    .stale-note {
-      font-size: 12.5px;
-      color: #935f13;
-      background: #fdf0dc;
-      border-radius: 4px;
-      padding: 8px 12px;
-      margin-bottom: 10px;
-    }
+    .note { margin-bottom: 14px; }
 
     footer {
-      margin-top: 24px;
-      font-size: 11.5px;
-      color: #8c959f;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
     }
+    footer a { color: var(--accent); }
   </style>
 </head>
 <body>
   <div class="page-wrap">
-    <h1>Nigeria Anticipatory Action — 2026 Monitoring Status</h1>
+    <h1>Nigeria Anticipatory Action: 2026 Flood Monitoring Status</h1>
     <p class="page-subtitle">
-      Riverine (Adamawa) and flash-flood (BAY states) trigger status, updated
-      independently after each daily monitoring run. Same evaluation code as
-      the monitoring emails.
+      Live status of the Adamawa riverine and BAY-states flash-flood
+      anticipatory action triggers. Checked daily (riverine 20:00 UTC,
+      flash 01:30 UTC); emails go out on trigger activation, or weekly
+      on Mondays otherwise.
     </p>
 
-    <div class="cards" id="cards">
-      <div class="card"><div class="card-body">Loading…</div></div>
-    </div>
+    <div id="sections">Loading…</div>
 
     <footer>
-      Source: <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding">ds-aa-nga-flooding</a>
-      · <code>exploration/2026/cerf/notes/trigger_development.md</code>
+      <div>
+        Source: <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding">ds-aa-nga-flooding</a>
+        · Page updated by <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding/actions/workflows/deploy-app-cron.yml" target="_blank" rel="noopener">deploy-app-cron</a>
+        · <code>exploration/2026/cerf/notes/trigger_development.md</code>
+      </div>
+      <div class="last-updated" id="last-updated"></div>
     </footer>
   </div>
 
   <script>
-    function fmtNum(n) {
-      return (n === null || n === undefined) ? "—" : Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
-    }
-
     function fmtTimestamp(iso) {
       if (!iso) return "unknown";
       const d = new Date(iso);
@@ -164,79 +183,78 @@
       });
     }
 
+    function statusClass(kind) {
+      if (kind === "error") return "status-error";
+      if (kind === "warn") return "status-warn";
+      if (kind === "unknown") return "status-unknown";
+      return "status-ok";
+    }
+
     function chartBlock(chart, stale, alt) {
       if (!chart) return "";
       const note = stale
-        ? `<div class="stale-note">Chart is from the last available run — today's isn't published yet.</div>`
+        ? `<div class="note badge badge-warn">Chart is from the last available run — today's isn't published yet.</div>`
         : "";
-      return `${note}<img src="${chart}" alt="${alt}">`;
+      return `${note}<img class="chart-img" src="${chart}" alt="${alt}">`;
     }
 
-    function riverineCard(r) {
+    function riverineSection(r) {
       if (!r) {
-        return `<div class="card"><div class="card-header"><div class="card-title">Riverine — Adamawa</div>
-          <span class="status-badge status-unknown">No data yet</span></div></div>`;
+        return `<div class="section">
+          <div class="section-header">
+            <div class="section-title">Riverine (CERF + NHF)</div>
+            <span class="status-text status-unknown">No data yet</span>
+          </div>
+        </div>`;
       }
-      let badgeClass = "status-ok", label = "Not activated";
-      if (r.action) { badgeClass = "status-error"; label = "ACTION TRIGGER REACHED"; }
-      else if (r.readiness) { badgeClass = "status-warn"; label = "READINESS TRIGGER REACHED"; }
+      let cls = "ok", label = "Not activated";
+      if (r.action) { cls = "error"; label = "ACTION TRIGGER REACHED"; }
+      else if (r.readiness) { cls = "warn"; label = "READINESS TRIGGER REACHED"; }
 
       return `
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Riverine — Adamawa</div>
-            <span class="status-badge ${badgeClass}">${label}</span>
-            <div class="card-meta">Forecasts as of ${r.date} · checked ${fmtTimestamp(r.generated_at)}</div>
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Riverine (CERF + NHF)</div>
+            <span class="status-text ${statusClass(cls)}">${label}</span>
           </div>
-          <div class="card-body">
-            ${chartBlock(r.chart, r.chart_stale, "Riverine trigger monitoring chart")}
-            <table class="stats">
-              <tr><th>Gauges over 4-yr RP threshold</th><td>${r.max_gauges_exceeding} / ${r.n_gauges_reporting} (≥6 activates)</td></tr>
-              <tr><th>Readiness — reforecast (≤12d)</th><td>${r.readiness_forecast ? "exceeded" : "below threshold"}</td></tr>
-              <tr><th>Readiness — reanalysis</th><td>${r.readiness_reanalysis ? "exceeded" : "below threshold"}</td></tr>
-              <tr><th>GloFAS forecast peak</th><td>${fmtNum(r.glofas_max)} m³/s</td></tr>
-              <tr><th>GloFAS reanalysis latest</th><td>${fmtNum(r.reanalysis_max)} m³/s</td></tr>
-            </table>
+          ${chartBlock(r.chart, r.chart_stale, "Riverine trigger monitoring chart")}
+          <div class="source-links">
+            <a href="https://sites.research.google/floods/l/9.393855090673839/12.368545532226562/11.59287499999999/g/hybas_1120842550" target="_blank" rel="noopener">Google Flood Hub →</a>
+            <a href="https://global-flood.emergency.copernicus.eu/" target="_blank" rel="noopener">GloFAS monitoring →</a>
+            <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding/actions/workflows/monitoring.yml" target="_blank" rel="noopener">Pipeline runs →</a>
           </div>
         </div>`;
     }
 
-    function flashCard(f) {
+    function flashSection(f) {
       if (!f) {
-        return `<div class="card"><div class="card-header"><div class="card-title">Flash flooding — BAY states</div>
-          <span class="status-badge status-unknown">No data yet</span></div></div>`;
+        return `<div class="section">
+          <div class="section-header">
+            <div class="section-title">Flash flooding (NHF)</div>
+            <span class="status-text status-unknown">No data yet</span>
+          </div>
+        </div>`;
       }
-      let badgeClass = "status-ok", label = "Not activated";
-      if (f.triggered) { badgeClass = "status-error"; label = "FLASH FLOOD TRIGGER REACHED"; }
-      else if (f.warning) { badgeClass = "status-warn"; label = "Approaching threshold"; }
-
-      const lgaRows = Object.values(f.lgas).map(lga => {
-        let cls = "";
-        if (lga.exceeds) cls = "lga-exceeds";
-        else if (lga.warning) cls = "lga-warn";
-        const thresh = lga.threshold === null ? "pending" : fmtNum(lga.threshold);
-        return `<tr><th>${lga.name}</th><td class="${cls}">${fmtNum(lga.rolling)} / ${thresh}</td></tr>`;
-      }).join("");
+      let cls = "ok", label = "Not activated";
+      if (f.triggered) { cls = "error"; label = "FLASH FLOOD TRIGGER REACHED"; }
+      else if (f.warning) { cls = "warn"; label = "Approaching threshold"; }
 
       const pendingNote = f.thresholds_pending
-        ? `<div class="error-note" style="margin-top:10px;">Some LGA thresholds are still pending publication.</div>`
+        ? `<div class="note badge badge-error">Some LGA thresholds are still pending publication.</div>`
         : "";
 
       return `
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Flash flooding — BAY states</div>
-            <span class="status-badge ${badgeClass}">${label}</span>
-            <div class="card-meta">Exposure as of ${f.date} · checked ${fmtTimestamp(f.generated_at)}</div>
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Flash flooding (NHF)</div>
+            <span class="status-text ${statusClass(cls)}">${label}</span>
           </div>
-          <div class="card-body">
-            ${chartBlock(f.chart, f.chart_stale, "Flash flood trigger monitoring chart")}
-            <table class="stats">
-              <tr><th>LGA — exposed / threshold</th><td></td></tr>
-              ${lgaRows}
-            </table>
-            ${pendingNote}
+          ${chartBlock(f.chart, f.chart_stale, "Flash flood trigger monitoring chart")}
+          <div class="source-links">
+            <a href="https://chd-ds-floodexposure-monitoring.azurewebsites.net/" target="_blank" rel="noopener">Flood exposure monitoring app →</a>
+            <a href="https://github.com/OCHA-DAP/ds-aa-nga-flooding/actions/workflows/flash-monitoring.yml" target="_blank" rel="noopener">Pipeline runs →</a>
           </div>
+          ${pendingNote}
         </div>`;
     }
 
@@ -246,16 +264,24 @@
         return res.json();
       })
       .then(status => {
-        document.getElementById("cards").innerHTML =
-          riverineCard(status.riverine) + flashCard(status.flash);
+        document.getElementById("sections").innerHTML =
+          riverineSection(status.riverine) + flashSection(status.flash);
+
+        const dates = [status.riverine?.generated_at, status.flash?.generated_at]
+          .filter(Boolean).map(d => new Date(d));
+        if (dates.length) {
+          const latest = new Date(Math.max(...dates));
+          document.getElementById("last-updated").textContent =
+            `Last updated: ${fmtTimestamp(latest.toISOString())}`;
+        }
       })
       .catch(err => {
-        document.getElementById("cards").innerHTML =
-          `<div class="card"><div class="card-body"><div class="error-note">
+        document.getElementById("sections").innerHTML =
+          `<div class="section badge badge-error" style="display:block;">
             <strong>Could not load status.json:</strong> ${err.message}<br>
             This page reads a status file written by the monitoring pipelines —
             it may not have run yet on this branch.
-          </div></div></div>`;
+          </div>`;
       });
   </script>
 </body>
