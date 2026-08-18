@@ -85,15 +85,18 @@ def combined_plots(df, save_output=True):
         fontweight="bold",
         color=HDX_TEXT,
     )
-    fig.text(
+    label = fig.text(
         0.07,
         0.925,
         f"Forecasts retrieved {update_date}   ·   Status: ",
         fontsize=11,
         color=HDX_SUBTEXT,
     )
+    fig.canvas.draw()
+    bbox = label.get_window_extent(renderer=fig.canvas.get_renderer())
+    x_status = fig.transFigure.inverted().transform((bbox.x1, bbox.y1))[0]
     fig.text(
-        0.365,
+        x_status,
         0.925,
         status_text,
         fontsize=11,
@@ -173,7 +176,7 @@ def readiness_subplot(ax, df_glofas, df_reanalysis, status):
         linewidth=1.5,
     )
     ax.annotate(
-        f"Readiness threshold — {READINESS_GLOFAS_THRESH:,.0f} m³/s",
+        f"Readiness threshold — {READINESS_GLOFAS_THRESH:,.0f} m³/s",  # noqa
         (0.99, READINESS_GLOFAS_THRESH),
         xycoords=("axes fraction", "data"),
         textcoords="offset points",
@@ -183,7 +186,9 @@ def readiness_subplot(ax, df_glofas, df_reanalysis, status):
         color=HDX_ERROR,
     )
 
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:,.0f}"))
+    ax.yaxis.set_major_formatter(
+        FuncFormatter(lambda x, pos: f"{x:,.0f}")  # noqa: E231
+    )
     ax.set_ylim(0, max(READINESS_GLOFAS_THRESH * 1.15, 1))
     ax.set_ylabel("Discharge (m³/s, daily average)", fontsize=10)
     ax.set_title(
@@ -206,9 +211,7 @@ def action_subplot(ax, df_google, status):
     df_google = df_google.copy()
     df_google["gauge_id"] = df_google.src.str.removeprefix("grrr_")
     df_google["threshold"] = df_google.gauge_id.map(ACTION_GAUGE_THRESHOLDS)
-    df_google["pct_of_threshold"] = (
-        df_google.value / df_google.threshold * 100
-    )
+    df_google["pct_of_threshold"] = df_google.value / df_google.threshold * 100
 
     any_exceeding = False
     for gauge_id, df_gauge in df_google.groupby("gauge_id"):
@@ -265,7 +268,7 @@ def action_subplot(ax, df_google, status):
     ax.set_title(
         f"Action trigger — Google Flood Hub gauges  "
         f"(max {status['max_gauges_exceeding']}/{n_gauges} over threshold "
-        f"on a single day; ≥{ACTION_MIN_GAUGES} activates)\n",
+        f"on a single day; ≥{ACTION_MIN_GAUGES} activates)\n",  # noqa: E702
         pad=10,
     )
     _style_axes(ax)

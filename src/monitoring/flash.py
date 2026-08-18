@@ -106,9 +106,7 @@ def flash_plot(df, status, save_output=True):
     """2x2 small multiples: rolling exposure per LGA vs its threshold,
     HDX-styled to match the riverine chart."""
     latest_date = status["latest_date"].strftime("%Y-%m-%d")
-    fig, axs = plt.subplots(
-        2, 2, figsize=(11, 7.5), sharex=True, dpi=200
-    )
+    fig, axs = plt.subplots(2, 2, figsize=(11, 7.5), sharex=True, dpi=200)
     fig.subplots_adjust(top=0.82, hspace=0.4, wspace=0.25)
 
     if status["triggered"]:
@@ -126,15 +124,18 @@ def flash_plot(df, status, save_output=True):
         fontweight="bold",
         color=HDX_TEXT,
     )
-    fig.text(
+    label = fig.text(
         0.07,
         0.905,
         f"FloodScan exposure to {latest_date}   ·   Status: ",
         fontsize=11,
         color=HDX_SUBTEXT,
     )
+    fig.canvas.draw()
+    bbox = label.get_window_extent(renderer=fig.canvas.get_renderer())
+    x_status = fig.transFigure.inverted().transform((bbox.x1, bbox.y1))[0]
     fig.text(
-        0.375,
+        x_status,
         0.905,
         status_text,
         fontsize=11,
@@ -163,15 +164,17 @@ def flash_plot(df, status, save_output=True):
                 linestyle=(0, (4, 3)),
                 linewidth=1.3,
             )
-            thresh_note = f"threshold {lga['threshold']:,.0f}"
+            thresh_note = f"threshold {lga['threshold']:,.0f}"  # noqa: E231
         else:
             thresh_note = "threshold pending"
         latest_txt = (
-            f"{lga['rolling']:,.0f}" if lga["rolling"] is not None else "n/a"
+            f"{lga['rolling']:,.0f}"  # noqa: E231
+            if lga["rolling"] is not None
+            else "n/a"
         )
         ax.set_title(
             f"{lga['name']} — {latest_txt} exposed ({thresh_note})",
-            fontsize=10.5,
+            fontsize=10.5,  # noqa: E225
         )
         ax.set_ylim(0, None)
         top = ax.get_ylim()[1]
@@ -196,9 +199,7 @@ def flash_plot(df, status, save_output=True):
         container_client = stratus.get_container_client(
             "projects", "dev", write=True
         )
-        blob_name = get_flash_plot_blob_name(
-            latest_date, status["triggered"]
-        )
+        blob_name = get_flash_plot_blob_name(latest_date, status["triggered"])
         container_client.upload_blob(
             name=blob_name, data=buffer.getvalue(), overwrite=True
         )
@@ -207,6 +208,4 @@ def flash_plot(df, status, save_output=True):
 
 
 def get_flash_plot_blob_name(latest_date, triggered):
-    return (
-        f"{PROJECT_PREFIX}/monitoring/flash_{latest_date}_{triggered}.png"
-    )
+    return f"{PROJECT_PREFIX}/monitoring/flash_{latest_date}_{triggered}.png"
