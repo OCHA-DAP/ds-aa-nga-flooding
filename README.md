@@ -6,7 +6,7 @@ This repository contains the analysis and operational monitoring for the OCHA An
 
 **Operational monitoring** (daily, from `main` — see [CLAUDE.md](CLAUDE.md) for the full architecture, trigger definitions, and ops runbook):
 
-- `Monitor flooding` — Adamawa riverine: GloFAS readiness (forecast ≤13 d OR latest reanalysis vs 3,132 m³/s at Wuroboki) + multi-gauge action trigger (≥6 of 10 Google gauges over their 4-yr RP thresholds). Daily 20:00 UTC.
+- `Monitor flooding` — Adamawa riverine: GloFAS readiness (forecast ≤12 d OR latest reanalysis vs 3,132 m³/s at Wuroboki) + multi-gauge action trigger (≥6 of 10 Google gauges over their 4-yr RP thresholds). Daily 20:00 UTC.
 - `Monitor flash flooding` — 4 BAY-states LGAs (Mobbar, Maiduguri, Jere, Geidam): FloodScan×WorldPop exposure vs per-LGA thresholds, with an approaching-threshold advisory tier. Daily 01:30 UTC.
 
 Both send email updates via the team Listmonk instance (weekly informational + immediate trigger/advisory alerts); the `STAGE` repo variable switches between the test and production audiences.

@@ -24,7 +24,7 @@ rather than emailing an outdated situation.
   RP thresholds on the same forecast valid day. Thresholds derived in
   `exploration/2026/cerf/workflow/06_trigger_definition.ipynb`.
 - **Riverine readiness**: GloFAS at Wuroboki > 3,132 m³/s — in the
-  ensemble-mean forecast at lead ≤13 days OR in the latest intermediate
+  ensemble-mean forecast at lead ≤12 days OR in the latest intermediate
   reanalysis (the reanalysis OR-branch is in the endorsed framework
   document; it supersedes the "not recommended" verdict in notebook 07 and
   `notes/trigger_development.md`).
@@ -92,7 +92,7 @@ the legacy blob test CSV (it contains real team addresses).
 
 ## Apps
 
-The GH Pages site (https://ocha-dap.github.io/ds-aa-nga-flooding/) hosts
+The GH Pages site (<https://ocha-dap.github.io/ds-aa-nga-flooding/>) hosts
 the multi-state Niger/Benue exploration app, deployed from
 `feat/niger-benue-multistate-monitoring` by `deploy-app-cron.yml` every
 6 h — a separate work stream from the operational monitoring above.

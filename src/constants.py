@@ -168,10 +168,10 @@ ACTION_GAUGE_THRESHOLDS = {
 ACTION_MIN_GAUGES = 6
 
 # Readiness trigger (Option A): GloFAS ensemble-mean forecast at Wuroboki
-# exceeds 3,132 m3/s at lead time <= 13 days. From
+# exceeds 3,132 m3/s at lead time <= 12 days. From
 # exploration/2026/cerf/workflow/07_readiness_trigger.ipynb.
 READINESS_GLOFAS_THRESH = 3132.0
-READINESS_MAX_LEADTIME = 13  # days
+READINESS_MAX_LEADTIME = 12  # days
 
 # --- Listmonk email dispatch ---
 # Lists are resolved by tag at runtime (never by hardcoded id). Created by
