@@ -1,4 +1,7 @@
 import os
+import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
@@ -31,6 +34,10 @@ GF_REFORECAST_RAW_DIR = (
 )
 GF_TEST_DIR = DATA_DIR / "public" / "raw" / "nga" / "glofas" / "test"
 GF_PROC_DIR = DATA_DIR / "public" / "processed" / "nga" / "glofas"
+
+# Nigeria bounding box for country-wide GloFAS downloads [N, W, S, E]
+# Covers the full country extent at 0.05° resolution (~200 × 240 grid cells).
+NGA_BBOX = [14.05, 2.65, 4.25, 14.75]
 
 GF_STATIONS = {
     "wuroboki": {"lon": 12.767, "lat": 9.383},
@@ -69,6 +76,10 @@ ALL_MONTHS = [
     "november",
     "december",
 ]
+
+# Numeric month formats for the new CDS API (used by country-level downloads)
+RAINY_SEASON_MONTHS_NUM = [f"{m:02}" for m in [6, 7, 8, 9, 10, 11, 12]]
+ALL_MONTHS_NUM = [f"{m:02}" for m in range(1, 13)]
 
 
 def get_coords(station_name):
@@ -568,6 +579,349 @@ def process_glofas_reforecast(
         f"glofas_reforecast_{station_name}_{product_type}.parquet"
     )
     stratus.upload_parquet_to_blob(df, out_blob)
+
+
+PROGRESS_BLOB = (
+    f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+    "reforecast_country_progress.parquet"
+)
+
+
+def _load_progress(prod_dev: Literal["prod", "dev"] = "dev") -> pd.DataFrame:
+    if blob.check_blob_exists(PROGRESS_BLOB, prod_dev=prod_dev):
+        return blob.load_parquet_from_blob(PROGRESS_BLOB, prod_dev=prod_dev)
+    return pd.DataFrame(
+        columns=["product_type", "year", "lt_start", "lt_end", "downloaded_at"]
+    )
+
+
+def _save_progress(
+    progress: pd.DataFrame, prod_dev: Literal["prod", "dev"] = "dev"
+) -> None:
+    import io
+
+    buf = io.BytesIO()
+    progress.to_parquet(buf, index=False)
+    buf.seek(0)
+    stratus.upload_blob_data(buf, PROGRESS_BLOB, stage=prod_dev)
+
+
+def get_blob_name_country(
+    year: int,
+    product_type: Literal["ensemble", "control"],
+    lt_start: int,
+    lt_end: int,
+) -> str:
+    return (
+        f"{src.constants.PROJECT_PREFIX}/raw/glofas/reforecast_country/"
+        f"glofas_raw_reforecast_country_{product_type}_{year}"
+        f"_lt{lt_start}-{lt_end}.grib"
+    )
+
+
+def _download_country_chunk(
+    year: int,
+    lt_chunk: list,
+    product_type: Literal["ensemble", "control"],
+    months: list,
+    clobber: bool = False,
+    cds_url: str = None,
+) -> None:
+    product_type_str = (
+        "ensemble_perturbed_reforecast"
+        if product_type == "ensemble"
+        else "control_reforecast"
+    )
+    lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+    blob_name = get_blob_name_country(year, product_type, lt_start, lt_end)
+    if not clobber and blob.check_blob_exists(blob_name):
+        print(f"skipping {blob_name}")
+        return
+    request = {
+        "system_version": ["version_4_0"],
+        "hydrological_model": ["lisflood"],
+        "product_type": [product_type_str],
+        "variable": ["river_discharge_in_the_last_24_hours"],
+        "hyear": [f"{year}"],
+        "hmonth": months,
+        "hday": [f"{x:02}" for x in range(1, 32)],
+        "leadtime_hour": [str(x) for x in lt_chunk],
+        "data_format": "grib2",
+        "download_format": "unarchived",
+        "area": NGA_BBOX,
+    }
+    cds_utils.download_raw_cds_api_to_blob(
+        "cems-glofas-reforecast",
+        request,
+        blob_name,
+        keep_local_copy=False,
+        cds_url=cds_url,
+    )
+
+
+def download_glofas_reforecast_country_year(
+    year: int,
+    product_type: Literal["ensemble", "control"],
+    max_leadtime_days: int = 16,
+    max_leadtime_chunk: int = 4,
+    rainy_season_only: bool = True,
+    clobber: bool = False,
+    max_workers: int = 4,
+    cds_url: str = None,
+) -> None:
+    """Download whole-Nigeria GloFAS reforecast for one year.
+
+    Covers the full Nigeria bbox (~200 × 240 pixels at 0.05°). Splits requests
+    by leadtime chunk and runs up to max_workers chunks concurrently (CDS
+    allows ~2 concurrent requests per account). Files are NOT kept locally —
+    country-wide GRIBs are ~600 MB–1.5 GB each.
+
+    Use load_glofas_reforecast_country_pixel() to extract a pixel afterwards.
+    """
+    months = RAINY_SEASON_MONTHS_NUM if rainy_season_only else ALL_MONTHS_NUM
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(
+                _download_country_chunk,
+                year,
+                lt_chunk,
+                product_type,
+                months,
+                clobber,
+                cds_url,
+            ): lt_chunk
+            for lt_chunk in leadtime_chunks
+        }
+        for future in tqdm(
+            as_completed(futures),
+            total=len(futures),
+            desc=f"{year} lt chunks",
+        ):
+            lt_chunk = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+                print(f"Failed year={year} lt={lt_start}-{lt_end}: {e}")
+
+
+def download_glofas_reforecast_country(
+    product_type: Literal["ensemble", "control"],
+    years: range = range(2003, 2025),
+    max_leadtime_days: int = 16,
+    max_leadtime_chunk: int = 4,
+    rainy_season_only: bool = True,
+    clobber: bool = False,
+    max_workers: int = 4,
+    cds_url: str = None,
+    prod_dev: Literal["prod", "dev"] = "dev",
+) -> None:
+    """Download whole-Nigeria GloFAS reforecast, iterating leadtime chunks first.
+
+    Iterates leadtime chunks in the outer loop and years in the inner loop so
+    the full historical record for short leadtimes is available before longer
+    ones begin. Up to max_workers years run concurrently per chunk. After each
+    successful download the progress parquet is updated in blob so a crash
+    mid-run doesn't lose track of completed files.
+    """
+    months = RAINY_SEASON_MONTHS_NUM if rainy_season_only else ALL_MONTHS_NUM
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+
+    progress = _load_progress(prod_dev)
+
+    for lt_chunk in tqdm(leadtime_chunks, desc=f"lt chunks ({product_type})"):
+        lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(
+                    _download_country_chunk,
+                    year,
+                    lt_chunk,
+                    product_type,
+                    months,
+                    clobber,
+                    cds_url,
+                ): year
+                for year in years
+            }
+            for future in tqdm(
+                as_completed(futures),
+                total=len(futures),
+                desc=f"lt{lt_start}-{lt_end}",
+            ):
+                year = futures[future]
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Failed year={year} lt={lt_start}-{lt_end}: {e}")
+                    continue
+                already = (
+                    (progress["product_type"] == product_type)
+                    & (progress["year"] == year)
+                    & (progress["lt_start"] == lt_start)
+                    & (progress["lt_end"] == lt_end)
+                ).any()
+                if not already:
+                    row = pd.DataFrame(
+                        [
+                            {
+                                "product_type": product_type,
+                                "year": year,
+                                "lt_start": lt_start,
+                                "lt_end": lt_end,
+                                "downloaded_at": datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
+                            }
+                        ]
+                    )
+                    progress = pd.concat([progress, row], ignore_index=True)
+                    _save_progress(progress, prod_dev)
+
+
+def load_glofas_reforecast_country_pixel(
+    lon: float,
+    lat: float,
+    product_type: Literal["ensemble", "control"] = "ensemble",
+    years: range = range(2003, 2025),
+    max_leadtime_days: int = 16,
+    max_leadtime_chunk: int = 4,
+    rainy_season_only: bool = True,
+) -> pd.DataFrame:
+    """Extract reforecast time series for a pixel from country-wide GRIBs.
+
+    Snaps (lon, lat) to the nearest GloFAS 0.05° grid point and reads that one
+    pixel out of each country-wide GRIB file already downloaded to blob.
+    Downloads files to temp/ on demand if not already cached locally.
+
+    Returns a dataframe with columns: time, valid_time, leadtime, dis24
+    (plus 'number' for ensemble product type).
+    """
+    glofas_lon, glofas_lat = get_glofas_grid_coords(lon, lat)
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+    dfs = []
+    for year in tqdm(years, desc="years"):
+        for lt_chunk in leadtime_chunks:
+            lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+            blob_name = get_blob_name_country(
+                year, product_type, lt_start, lt_end
+            )
+            local_path = Path("temp") / Path(blob_name)
+            if not local_path.exists():
+                blob_data = blob.load_blob_data(blob_name)
+                local_path.parent.mkdir(parents=True, exist_ok=True)
+                local_path.write_bytes(blob_data)
+            try:
+                ds = xr.open_dataset(
+                    local_path,
+                    engine="cfgrib",
+                    backend_kwargs={"indexpath": ""},
+                )
+            except Exception as e:
+                print(f"Warning: skipping {blob_name}: {e}")
+                continue
+            da = ds["dis24"].sel(
+                latitude=glofas_lat, longitude=glofas_lon, method="nearest"
+            )
+            df_in = da.to_dataframe().reset_index()
+            keep = [
+                c
+                for c in ["number", "time", "step", "valid_time", "dis24"]
+                if c in df_in.columns
+            ]
+            df_in = df_in[keep]
+            df_in["leadtime"] = df_in["step"].dt.days
+            df_in = df_in.drop(columns=["step"])
+            dfs.append(df_in)
+    df = pd.concat(dfs, ignore_index=True)
+    sort_cols = [c for c in ["time", "leadtime", "number"] if c in df.columns]
+    return df.sort_values(sort_cols).reset_index(drop=True)
+
+
+def process_glofas_reforecast_country(
+    product_type: Literal["ensemble", "control"] = "ensemble",
+    years: range = range(2003, 2024),
+    max_leadtime_days: int = 16,
+    max_leadtime_chunk: int = 4,
+    rainy_season_only: bool = True,
+    prod_dev: Literal["prod", "dev"] = "dev",
+) -> None:
+    """Process country-wide GRIBs into per-station processed parquets.
+
+    Reads each GRIB once and extracts all station pixels in a single pass,
+    then deletes the local copy to keep disk usage to ~1 GRIB at a time.
+    Output blob paths match process_glofas_reforecast so downstream code
+    is unchanged.
+    """
+    months = RAINY_SEASON_MONTHS_NUM if rainy_season_only else ALL_MONTHS_NUM
+    leadtimes = [x * 24 for x in range(1, max_leadtime_days + 1)]
+    leadtime_chunks = [
+        leadtimes[i : i + max_leadtime_chunk]
+        for i in range(0, len(leadtimes), max_leadtime_chunk)
+    ]
+    base = Path(os.getenv("CDS_TEMP_DIR", tempfile.gettempdir()))
+    station_dfs: dict[str, list] = {name: [] for name in GF_STATIONS}
+
+    for year in tqdm(years, desc="years"):
+        for lt_chunk in tqdm(leadtime_chunks, desc="lt_chunks", leave=False):
+            lt_start, lt_end = lt_chunk[0], lt_chunk[-1]
+            blob_name = get_blob_name_country(year, product_type, lt_start, lt_end)
+            local_path = base / Path(blob_name)
+            local_path.parent.mkdir(parents=True, exist_ok=True)
+            if not local_path.exists():
+                blob_data = blob.load_blob_data(blob_name)
+                local_path.write_bytes(blob_data)
+            try:
+                ds = xr.open_dataset(
+                    local_path, engine="cfgrib",
+                    backend_kwargs={"indexpath": ""},
+                )
+            except Exception as e:
+                print(f"Warning: skipping {blob_name}: {e}")
+                os.remove(local_path)
+                continue
+            for station_name, station in GF_STATIONS.items():
+                glofas_lon, glofas_lat = get_glofas_grid_coords(
+                    station["lon"], station["lat"]
+                )
+                da = ds["dis24"].sel(
+                    latitude=glofas_lat, longitude=glofas_lon, method="nearest"
+                )
+                df_in = da.to_dataframe().reset_index()
+                keep = [
+                    c
+                    for c in ["number", "time", "step", "valid_time", "dis24"]
+                    if c in df_in.columns
+                ]
+                df_in = df_in[keep]
+                df_in["leadtime"] = df_in["step"].dt.days
+                df_in = df_in.drop(columns=["step"])
+                station_dfs[station_name].append(df_in)
+            ds.close()
+            os.remove(local_path)
+
+    for station_name, dfs in tqdm(station_dfs.items(), desc="saving"):
+        df = pd.concat(dfs, ignore_index=True)
+        sort_cols = [c for c in ["time", "leadtime", "number"] if c in df.columns]
+        df = df.sort_values(sort_cols).reset_index(drop=True)
+        out_blob = (
+            f"{src.constants.PROJECT_PREFIX}/processed/glofas/"
+            f"glofas_reforecast_{station_name}_{product_type}.parquet"
+        )
+        stratus.upload_parquet_to_blob(df, out_blob, stage=prod_dev)
 
 
 def load_glofas_reforecast(
