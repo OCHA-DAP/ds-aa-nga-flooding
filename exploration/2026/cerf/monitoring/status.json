@@ -1,6 +1,6 @@
 {
   "flash": {
-    "date": "2026-08-22",
+    "date": "2026-08-23",
     "triggered": false,
     "warning": false,
     "thresholds_pending": false,
@@ -28,7 +28,7 @@
       },
       "NG036006": {
         "name": "Geidam",
-        "rolling": 436.3333333333333,
+        "rolling": 0.0,
         "threshold": 5501,
         "exceeds": false,
         "warning": false
@@ -36,7 +36,7 @@
     },
     "chart": "flash_latest.png",
     "chart_stale": false,
-    "generated_at": "2026-08-24T02:06:40.457515+00:00"
+    "generated_at": "2026-08-25T02:04:33.899109+00:00"
   },
   "riverine": {
     "date": "2026-08-24",
