@@ -1,6 +1,6 @@
 {
   "flash": {
-    "date": "2026-09-01",
+    "date": "2026-09-02",
     "triggered": false,
     "warning": false,
     "thresholds_pending": false,
@@ -36,7 +36,7 @@
     },
     "chart": "flash_latest.png",
     "chart_stale": false,
-    "generated_at": "2026-09-03T01:53:54.555215+00:00"
+    "generated_at": "2026-09-04T01:46:57.711380+00:00"
   },
   "riverine": {
     "date": "2026-09-02",
