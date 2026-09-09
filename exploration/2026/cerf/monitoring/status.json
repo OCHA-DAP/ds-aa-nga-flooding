@@ -39,17 +39,17 @@
     "generated_at": "2026-09-09T01:50:03.876242+00:00"
   },
   "riverine": {
-    "date": "2026-09-08",
+    "date": "2026-09-09",
     "action": false,
     "readiness": false,
     "readiness_forecast": false,
     "readiness_reanalysis": false,
     "max_gauges_exceeding": 0,
     "n_gauges_reporting": 10,
-    "glofas_max": 665.4573364257812,
-    "reanalysis_max": 492.8984375,
+    "glofas_max": 577.3646850585938,
+    "reanalysis_max": null,
     "chart": "riverine_latest.png",
     "chart_stale": false,
-    "generated_at": "2026-09-08T20:38:20.541085+00:00"
+    "generated_at": "2026-09-09T20:20:52.552622+00:00"
   }
 }
