@@ -1,3 +1,5 @@
+import os
+
 CERF_YEARS = [2013, 2018, 2022]
 ADAMAWA = "NG002"
 WUROBOKI_LAT = 9.375
@@ -241,3 +243,30 @@ LISTMONK_FLASH_LISTS = {
         "extra_tags": ["TEST"],
     },
 }
+
+
+# ---------------------------------------------------------------------------
+# Run-mode switches (env-driven; the GHA workflows set them).
+# ---------------------------------------------------------------------------
+# STAGE selects BOTH the ocha-stratus data-plane (DB + blob) and live-vs-test
+# emailing. "prod" since 2026-09-23: the dev DB lost public network access on
+# 2026-09-22, so the monitoring table and GloFAS/plot blobs now live in prod.
+STAGE = os.getenv("STAGE", "dev")
+# "listmonk" (default) or "ses" — direct SMTP through the humdata SES account
+# with explicit recipients (see src/ses_mail.py). TEMPORARY "ses" in the
+# workflows while Listmonk (which runs on the dev DB) is down.
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "listmonk").strip().lower() or "listmonk"
+# TEMPORARY: send the informational email every day, not only on
+# triggers / warnings / Mondays — a daily heartbeat while the prod cutover
+# beds in. Unset it in the workflow to restore the normal cadence.
+ALWAYS_EMAIL = os.getenv("ALWAYS_EMAIL", "").strip().lower() in ("1", "true", "yes")
+# Route sends to the test audience even when STAGE=prod (workflow_dispatch
+# input) — lets a prod-data run be checked by one person first.
+TEST_EMAIL = os.getenv("TEST_EMAIL", "").strip().lower() in ("1", "true", "yes")
+SES_RECIPIENTS_LIVE = [
+    "tristan.downing@un.org",
+    "zachary.arno@un.org",
+    "leonardo.milano@un.org",
+    "hannah.ker@un.org",
+]
+SES_RECIPIENTS_TEST = ["tristan.downing@un.org"]

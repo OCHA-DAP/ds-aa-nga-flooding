@@ -21,6 +21,7 @@ from src.constants import (
     FLASH_ROLLING_DAYS,
     FLASH_WARNING_FRACTION,
     PROJECT_PREFIX,
+    STAGE,
 )
 from src.monitoring.plot import (
     HDX_ERROR,
@@ -197,7 +198,7 @@ def flash_plot(df, status, save_output=True):
         plt.savefig(buffer, format="png", bbox_inches="tight", dpi=200)
         buffer.seek(0)
         container_client = stratus.get_container_client(
-            "projects", "dev", write=True
+            "projects", STAGE, write=True
         )
         blob_name = get_flash_plot_blob_name(latest_date, status["triggered"])
         container_client.upload_blob(

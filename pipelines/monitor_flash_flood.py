@@ -12,6 +12,7 @@ advisory), or on Mondays. TEST behaviour
 "[TEST]" subject prefix and the campaign template's test banner.
 """
 
+import base64
 import os
 import sys
 from datetime import datetime, timedelta, timezone
@@ -23,12 +24,18 @@ from jinja2 import Environment, FileSystemLoader
 from ocha_relay.listmonk import ListmonkClient
 
 from src.constants import (
+    EMAIL_BACKEND,
     FLASH_ROLLING_DAYS,
     FLASH_WARNING_FRACTION,
     LISTMONK_FLASH_LISTS,
     LISTMONK_PROJECT_TAG,
+    SES_RECIPIENTS_LIVE,
+    SES_RECIPIENTS_TEST,
+    STAGE,
+    TEST_EMAIL,
 )
 from src.monitoring import flash
+from src.ses_mail import recipients_from_env, send_via_ses
 
 load_dotenv()
 
@@ -104,25 +111,29 @@ if __name__ == "__main__":
         or monitoring_date_obj.weekday() == 0
     ):
         print(f"Sending emails for date: {monitoring_date}")
-        stage = os.getenv("STAGE", "dev")
-        test = False if stage == "prod" else True
+        test = TEST_EMAIL or STAGE != "prod"
         if test:
             print("This is a TEST email!")
+        print(f"Email backend: {EMAIL_BACKEND}")
 
-        client = ListmonkClient.from_env()
+        client = ListmonkClient.from_env() if EMAIL_BACKEND == "listmonk" else None
 
         blob_name = flash.get_flash_plot_blob_name(
             latest_date, status["triggered"]
         )
         chart_bytes = (
-            stratus.get_container_client()
+            stratus.get_container_client("projects", STAGE)
             .get_blob_client(blob_name)
             .download_blob()
             .readall()
         )
-        chart_url = client.upload_media(
-            chart_bytes, f"nga_flash_monitoring_{monitoring_date}.png"
-        )
+        if client is not None:
+            chart_url = client.upload_media(
+                chart_bytes, f"nga_flash_monitoring_{monitoring_date}.png"
+            )
+        else:
+            b64 = base64.b64encode(chart_bytes).decode()
+            chart_url = f"data:image/png;base64,{b64}"
 
         environment = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = environment.get_template(f"{template_name}.html")
@@ -155,6 +166,14 @@ if __name__ == "__main__":
             f"{test_text}Nigeria AA: Flash Flooding"
             f" - {trigger_status} {monitoring_date}"
         )
+        if client is None:
+            recipients = recipients_from_env(
+                SES_RECIPIENTS_TEST if test else SES_RECIPIENTS_LIVE,
+                "SES_TEST_RECIPIENTS" if test else "SES_RECIPIENTS",
+            )
+            send_via_ses(subject, body, recipients, text_fallback=subject)
+            print(f"Sent {template_name} email via SES to {recipients}")
+            sys.exit(0)
         list_id = resolve_list_id(client, "test" if test else email_type)
         campaign_id = client.create_campaign(
             name=campaign_name,

@@ -30,7 +30,7 @@ load_dotenv()
 import ocha_stratus as stratus  # noqa: E402
 from azure.core.exceptions import ResourceNotFoundError  # noqa: E402
 
-from src.constants import PROJECT_PREFIX  # noqa: E402
+from src.constants import PROJECT_PREFIX  # noqa: E402, STAGE
 from src.monitoring import etl, flash  # noqa: E402
 
 OUT_DIR = Path(
@@ -44,7 +44,7 @@ def _download_blob(blob_name, dest_path):
     untouched) if the blob doesn't exist yet — this happens if the export
     runs before the pipeline that generates today's chart has finished, and
     shouldn't take down the whole status update over a missing image."""
-    container = stratus.get_container_client("projects", "dev")
+    container = stratus.get_container_client("projects", STAGE)
     try:
         data = container.get_blob_client(blob_name).download_blob().readall()
     except ResourceNotFoundError:
