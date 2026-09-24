@@ -89,8 +89,12 @@ variables:
   - pypi: { package: "ocha-stratus" }
   - pypi: { package: "ocha-relay @ git+https://github.com/OCHA-DAP/ocha-relay.git@v0.3.0" }
   - pypi: { package: "cdsapi" }
-  - pypi: { package: "cfgrib" }
-  - pypi: { package: "eccodes==2.47.0" }
+  # eccodes pinned below requirements.txt's 2.47.0: that wheel's bundled
+  # crypto library aborts the cluster Python ("OpenSSL internal error: FATAL
+  # FIPS SELFTEST FAILURE", exit -6) as soon as the GRIB is opened; 2.42.0 +
+  # cfgrib 0.9.14.0 (pa-aa-tcd-flooding) run fine on the same runtime.
+  - pypi: { package: "cfgrib==0.9.14.0" }
+  - pypi: { package: "eccodes==2.42.0" }
   - pypi: { package: "xarray" }
   - pypi: { package: "zarr" }
   - pypi: { package: "fsspec" }
