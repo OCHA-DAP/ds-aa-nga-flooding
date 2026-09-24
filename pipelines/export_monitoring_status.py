@@ -30,7 +30,7 @@ load_dotenv()
 import ocha_stratus as stratus  # noqa: E402
 from azure.core.exceptions import ResourceNotFoundError  # noqa: E402
 
-from src.constants import PROJECT_PREFIX  # noqa: E402, STAGE
+from src.constants import PROJECT_PREFIX, STAGE  # noqa: E402
 from src.monitoring import etl, flash  # noqa: E402
 
 OUT_DIR = Path(
