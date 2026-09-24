@@ -76,7 +76,22 @@ This monitoring includes:
 - Sending regular email updates. The recipients of these
 emails are configured in `.csv` files saved to Azure blob storage.
 
-The setup for this monitoring can be found in `.github/workflows/monitoring.yml`.
+Both monitors run as Databricks jobs defined in `databricks.yml` (**NGA
+Riverine Flood Monitoring**, 20:00 UTC, and **NGA Flash Flood Monitoring**,
+01:30 UTC), each a chain of tasks running the unchanged `pipelines/*.py`
+scripts through `databricks/run_task.py`. The `dev` target runs the dev data
+plane with test emails; the `prod` target sets `STAGE=prod`. The status page
+data (`status.json` + charts) goes to blob and `deploy-app-cron.yml` copies
+it into the site.
+
+```shell
+databricks bundle validate -t dev -p DEFAULT
+databricks bundle deploy   -t dev -p DEFAULT
+databricks bundle run nga_riverine_monitoring -t dev -p DEFAULT
+```
+
+The GitHub Actions workflows `monitoring.yml` and `flash-monitoring.yml`
+remain as manual fallbacks (`workflow_dispatch`); their crons are gone.
 
 ### Configuration
 

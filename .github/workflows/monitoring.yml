@@ -19,8 +19,9 @@ on:
         type: boolean
         default: false
 
-  schedule:
-    - cron: '0 20 * * *'
+  # Manual fallback only. The daily 20:00 UTC run is the Databricks job
+  # "NGA Riverine Flood Monitoring" defined in databricks.yml; GitHub Actions
+  # runners are losing network access to the Postgres DB.
 
 jobs:
   run-script:

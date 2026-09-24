@@ -67,6 +67,31 @@ jobs:
           git checkout origin/main -- exploration/2026/cerf/monitoring/index.html || true
           git checkout origin/monitoring-status -- exploration/2026/cerf/monitoring/ || true
 
+      - name: Pull in monitoring status from blob
+        # The Databricks monitoring jobs (databricks.yml) write status.json +
+        # the chart PNGs to blob (ds-aa-nga-flooding/monitoring/status/ in
+        # the projects container) instead of pushing the monitoring-status
+        # branch. Blob wins over the branch when present.
+        env:
+          DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+          DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+          STATUS_BLOB_STAGE: dev
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import ocha_stratus as stratus
+          from azure.core.exceptions import ResourceNotFoundError
+          out = Path("exploration/2026/cerf/monitoring"); out.mkdir(parents=True, exist_ok=True)
+          c = stratus.get_container_client("projects", os.environ["STATUS_BLOB_STAGE"])
+          for name in ("status.json", "riverine_latest.png", "flash_latest.png"):
+              try:
+                  (out / name).write_bytes(c.get_blob_client(f"ds-aa-nga-flooding/monitoring/status/{name}").download_blob().readall())
+                  print("blob ->", name)
+              except ResourceNotFoundError:
+                  print("no blob for", name)
+          PY
+
       - name: Assemble site
         run: |
           mkdir -p _site
