@@ -69,7 +69,7 @@ def _load_status():
 
 
 def _upload_status(chart_name):
-    container = stratus.get_container_client("projects", "dev", write=True)
+    container = stratus.get_container_client("projects", STAGE, write=True)
     for path in (STATUS_PATH, OUT_DIR / chart_name):
         if not path.exists():
             continue
