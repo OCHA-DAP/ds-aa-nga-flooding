@@ -15,13 +15,9 @@ on:
           - prod
         default: dev
 
-  schedule:
-    # Right after the floodexposure-monitoring chain has written the day's
-    # exposure to the DB: its 23:15 UTC cron + chained dispatches normally
-    # finish 23:40-23:52 UTC, with observed GHA queue slips to ~01:10 UTC.
-    # The pipeline guards on data freshness and fails loudly if the chain
-    # hasn't landed yet.
-    - cron: '30 1 * * *'
+  # Manual fallback only. The daily 01:30 UTC run is the Databricks job
+  # "NGA Flash Flood Monitoring" defined in databricks.yml; GitHub Actions
+  # runners are losing network access to the Postgres DB.
 
 jobs:
   run-script:
