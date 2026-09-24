@@ -37,6 +37,12 @@ OUT_DIR = Path(
     os.environ.get("STATUS_OUT_DIR", "exploration/2026/cerf/monitoring")
 )
 STATUS_PATH = OUT_DIR / "status.json"
+# Blob handoff (Databricks): with STATUS_BLOB_PREFIX set, status.json is
+# seeded from <prefix>/status.json in the projects container before the
+# section is updated, and status.json + this section's chart are uploaded
+# back afterwards. deploy-app-cron.yml copies them into the Pages site. The
+# GHA workflows instead pushed the files to the monitoring-status branch.
+STATUS_BLOB_PREFIX = os.environ.get("STATUS_BLOB_PREFIX", "").strip("/")
 
 
 def _download_blob(blob_name, dest_path):
@@ -55,9 +61,21 @@ def _download_blob(blob_name, dest_path):
 
 
 def _load_status():
+    if STATUS_BLOB_PREFIX:
+        _download_blob(f"{STATUS_BLOB_PREFIX}/status.json", STATUS_PATH)
     if STATUS_PATH.exists():
         return json.loads(STATUS_PATH.read_text())
     return {}
+
+
+def _upload_status(chart_name):
+    container = stratus.get_container_client("projects", "dev", write=True)
+    for path in (STATUS_PATH, OUT_DIR / chart_name):
+        if not path.exists():
+            continue
+        blob_name = f"{STATUS_BLOB_PREFIX}/{path.name}"
+        container.upload_blob(blob_name, path.read_bytes(), overwrite=True)
+        print(f"  Uploaded {blob_name}")
 
 
 def export_riverine(prev):
@@ -135,3 +153,5 @@ if __name__ == "__main__":
 
     STATUS_PATH.write_text(json.dumps(combined, indent=2) + "\n")
     print(f"Wrote {STATUS_PATH} (section: {args.section})")
+    if STATUS_BLOB_PREFIX:
+        _upload_status(f"{args.section}_latest.png")

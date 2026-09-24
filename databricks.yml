@@ -1,0 +1,304 @@
+# Databricks Asset Bundle — ds-aa-nga-flooding
+#
+# Two scheduled jobs, the two daily AA monitors that ran as GitHub Actions
+# crons (GitHub runners are losing network access to the Postgres DB):
+#
+#   • nga_riverine_monitoring — Adamawa riverine (GloFAS at Wuroboki + the
+#     10 Google GRRR gauges), 20:00 UTC. Four chained tasks, the unchanged
+#     pipeline scripts in the GHA order:
+#         check_forecasts  EWDS + Google → projects.ds_aa_nga_flooding_monitoring
+#         save_plots       DB → chart PNG in blob
+#         send_emails      DB + blob → email (SES / Listmonk)
+#         export_status    status.json + chart for the public status page → blob
+#   • nga_flash_monitoring — BAY-states flash flood (FloodScan × WorldPop
+#     exposure, app.floodscan_exposure written by the Flood Exposure
+#     Monitoring job ~23:15-23:55 UTC), 01:30 UTC. Two chained tasks:
+#         monitor_flash    DB → evaluate → chart in blob → email
+#         export_status    status.json + chart → blob
+#
+# The status page (exploration/2026/cerf/monitoring/ on GitHub Pages) reads
+# status.json + the chart PNGs: the export task writes them to blob under
+# ds-aa-nga-flooding/monitoring/status/ and deploy-app-cron.yml copies them
+# into the site — no git push from the job (the GHA workflows pushed the
+# `monitoring-status` branch, which a Databricks job cannot do).
+#
+# Every task goes through databricks/run_task.py, which sets the run-mode env
+# vars the code reads at import (STAGE, MONITORING_DATE, STATUS_BLOB_PREFIX)
+# and copies src/ + pipelines/ off the wsfs checkout before importing.
+# DB/blob/CDS creds are NOT here — the Job Compute policy injects DSCI_AZ_*
+# and CDSAPI_KEY from the `dsci` secret scope; the Listmonk sender creds and
+# GOOGLE_API_KEY (not in the policy) are added below via spark_env_vars.
+#
+# NOTE: on this branch the riverine data plane is hardcoded to DEV (DB +
+# blob; flash reads app.floodscan_exposure on prod); STAGE only switches
+# live-vs-test emailing. The prod cutover (STAGE selecting the data plane,
+# SES backend, prod projects schema) is a separate PR stacked on this one —
+# until it merges, run the `dev` target only.
+#
+# The policy fixes CDSAPI_URL to plain CDS; GloFAS lives on EWDS, so the
+# wrapper overrides CDSAPI_URL in the script's environment (see tasks).
+#
+# The two dev/prod axes (KB infrastructure/databricks.md): the bundle TARGET
+# says where the job runs (dev = paused, "[dev <user>]"-prefixed; prod = the
+# live schedule), the `stage` variable says which data plane it touches.
+#
+#   databricks bundle validate -t dev  -p DEFAULT
+#   databricks bundle deploy   -t dev  -p DEFAULT --var git_branch=my-branch   # feature test (paused)
+#   databricks bundle run nga_riverine_monitoring -t dev -p DEFAULT          # dev data, test list
+#   databricks bundle destroy  -t dev  -p DEFAULT
+#   databricks bundle deploy   -t prod -p DEFAULT                              # the live jobs
+#
+# Code changes ship by pushing the branch (source: GIT); `bundle deploy` is
+# only needed when the job config (schedule, params, libraries, cluster)
+# changes.
+
+bundle:
+  name: ds-aa-nga-flooding
+
+variables:
+  git_branch:
+    description: Repo branch the jobs pull the pipeline code from
+    default: main
+  stage:
+    description: STAGE env for the pipelines (dev | prod) — live-vs-test emailing (data plane once the prod cutover PR lands)
+    default: dev
+
+.git_source: &git_source
+  git_url: https://github.com/OCHA-DAP/ds-aa-nga-flooding.git
+  git_provider: gitHub
+  git_branch: ${var.git_branch}
+
+# Job Compute policy (000C79D951EAF0D6): ephemeral single-worker cluster that
+# injects DSCI_AZ_DB_*/DSCI_AZ_BLOB_* (dev + prod) and CDSAPI_KEY from the
+# dsci secret scope. The Listmonk sender creds + the Google Flood Hub key are
+# not in the policy, so add them. GOOGLE_API_KEY is NOT referenced here: a
+# spark_env_vars secret that does not exist stops the cluster from launching,
+# so the riverine check_forecasts task resolves it via `--secret` instead.
+.cluster_spec: &cluster_spec
+  policy_id: "000C79D951EAF0D6"
+  apply_policy_default_values: true
+  num_workers: 1
+  spark_env_vars:
+    DSCI_LISTMONK_BASE_URL: "{{secrets/dsci/DSCI_LISTMONK_BASE_URL}}"
+    DSCI_LISTMONK_API_USERNAME: "{{secrets/dsci/DSCI_LISTMONK_API_USERNAME}}"
+    DSCI_LISTMONK_API_KEY: "{{secrets/dsci/DSCI_LISTMONK_API_KEY}}"
+
+# requirements.txt (monitoring subset; marimo is the app, not the pipeline).
+# numpy/pandas are left to the Databricks runtime.
+.libs: &libs
+  - pypi: { package: "ocha-stratus" }
+  - pypi: { package: "ocha-relay @ git+https://github.com/OCHA-DAP/ocha-relay.git@v0.3.0" }
+  - pypi: { package: "cdsapi" }
+  # eccodes pinned below requirements.txt's 2.47.0: that wheel's bundled
+  # crypto library aborts the cluster Python ("OpenSSL internal error: FATAL
+  # FIPS SELFTEST FAILURE", exit -6) as soon as the GRIB is opened; 2.42.0 +
+  # cfgrib 0.9.14.0 (pa-aa-tcd-flooding) run fine on the same runtime.
+  - pypi: { package: "cfgrib==0.9.14.0" }
+  - pypi: { package: "eccodes==2.42.0" }
+  - pypi: { package: "xarray" }
+  - pypi: { package: "zarr" }
+  - pypi: { package: "fsspec" }
+  - pypi: { package: "gcsfs" }
+  - pypi: { package: "matplotlib" }
+  - pypi: { package: "folium" }
+  - pypi: { package: "xlrd" }
+  - pypi: { package: "html2text==2025.4.15" }
+  - pypi: { package: "Jinja2" }
+  - pypi: { package: "python-dotenv" }
+  - pypi: { package: "pyarrow" }
+
+resources:
+  jobs:
+
+    nga_riverine_monitoring:
+      name: NGA Riverine Flood Monitoring
+      description: >
+        Daily Adamawa riverine flood AA monitor: GloFAS at Wuroboki (EWDS) +
+        Google GRRR gauges → projects.ds_aa_nga_flooding_monitoring → chart →
+        email → status page export. Replaces the GitHub Actions "Monitor
+        flooding" cron.
+      git_source: *git_source
+      tags:
+        databricks: job
+        output_schema: projects
+
+      permissions:
+        - group_name: dsci
+          level: CAN_MANAGE
+
+      schedule:
+        # 20:00 UTC daily (the GHA cron). No explicit pause_status: the prod
+        # target runs it, the dev target (development mode) auto-pauses it.
+        quartz_cron_expression: "0 0 20 * * ?"
+        timezone_id: UTC
+
+      max_concurrent_runs: 1
+
+      email_notifications:
+        on_failure:
+          - tristan.downing@un.org
+
+      parameters:
+        - name: stage
+          default: ${var.stage}
+        - name: monitoring_date
+          # YYYY-MM-DD; empty = today
+          default: ""
+
+      job_clusters:
+        - job_cluster_key: main
+          new_cluster: *cluster_spec
+
+      tasks:
+        - task_key: check_forecasts
+          job_cluster_key: main
+          libraries: *libs
+          spark_python_task:
+            python_file: databricks/run_task.py
+            source: GIT
+            parameters:
+              - "pipelines/check_forecasts.py"
+              - "--stage"
+              - "{{job.parameters.stage}}"
+              # Google Flood Hub key (dsci scope; tolerated if missing)
+              - "--secret"
+              - "GOOGLE_API_KEY"
+              - "--env"
+              - "MONITORING_DATE={{job.parameters.monitoring_date}}"
+              # GloFAS is served by EWDS, not the plain CDS URL the policy fixes.
+              - "--env"
+              - "CDSAPI_URL=https://ewds.climate.copernicus.eu/api"
+
+        - task_key: save_plots
+          depends_on:
+            - task_key: check_forecasts
+          job_cluster_key: main
+          libraries: *libs
+          spark_python_task:
+            python_file: databricks/run_task.py
+            source: GIT
+            parameters:
+              - "pipelines/save_plots.py"
+              - "--stage"
+              - "{{job.parameters.stage}}"
+              - "--env"
+              - "MONITORING_DATE={{job.parameters.monitoring_date}}"
+
+        - task_key: send_emails
+          depends_on:
+            - task_key: save_plots
+          job_cluster_key: main
+          libraries: *libs
+          spark_python_task:
+            python_file: databricks/run_task.py
+            source: GIT
+            parameters:
+              - "pipelines/send_emails.py"
+              - "--stage"
+              - "{{job.parameters.stage}}"
+              - "--env"
+              - "MONITORING_DATE={{job.parameters.monitoring_date}}"
+
+        - task_key: export_status
+          depends_on:
+            - task_key: send_emails
+          job_cluster_key: main
+          libraries: *libs
+          spark_python_task:
+            python_file: databricks/run_task.py
+            source: GIT
+            parameters:
+              - "pipelines/export_monitoring_status.py"
+              - "--stage"
+              - "{{job.parameters.stage}}"
+              - "--env"
+              - "STATUS_BLOB_PREFIX=ds-aa-nga-flooding/monitoring/status"
+              - "--"
+              - "riverine"
+
+    nga_flash_monitoring:
+      name: NGA Flash Flood Monitoring
+      description: >
+        Daily BAY-states flash-flood AA monitor: per-LGA FloodScan × WorldPop
+        exposure (app.floodscan_exposure, prod) vs thresholds → chart → email
+        → status page export. Replaces the GitHub Actions "Monitor flash
+        flooding" cron. Runs after the Flood Exposure Monitoring job.
+      git_source: *git_source
+      tags:
+        databricks: job
+
+      permissions:
+        - group_name: dsci
+          level: CAN_MANAGE
+
+      schedule:
+        # 01:30 UTC daily (the GHA cron): after the flood exposure chain
+        # (23:15 UTC + ~40 min) has written the day's app.floodscan_exposure.
+        # The pipeline guards on data freshness and fails loudly otherwise.
+        quartz_cron_expression: "0 30 1 * * ?"
+        timezone_id: UTC
+
+      max_concurrent_runs: 1
+
+      email_notifications:
+        on_failure:
+          - tristan.downing@un.org
+
+      parameters:
+        - name: stage
+          default: ${var.stage}
+        - name: monitoring_date
+          default: ""
+
+      job_clusters:
+        - job_cluster_key: main
+          new_cluster: *cluster_spec
+
+      tasks:
+        - task_key: monitor_flash
+          job_cluster_key: main
+          libraries: *libs
+          spark_python_task:
+            python_file: databricks/run_task.py
+            source: GIT
+            parameters:
+              - "pipelines/monitor_flash_flood.py"
+              - "--stage"
+              - "{{job.parameters.stage}}"
+              - "--env"
+              - "MONITORING_DATE={{job.parameters.monitoring_date}}"
+
+        - task_key: export_status
+          depends_on:
+            - task_key: monitor_flash
+          job_cluster_key: main
+          libraries: *libs
+          spark_python_task:
+            python_file: databricks/run_task.py
+            source: GIT
+            parameters:
+              - "pipelines/export_monitoring_status.py"
+              - "--stage"
+              - "{{job.parameters.stage}}"
+              - "--env"
+              - "STATUS_BLOB_PREFIX=ds-aa-nga-flooding/monitoring/status"
+              - "--"
+              - "flash"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      profile: DEFAULT
+
+  prod:
+    mode: production
+    workspace:
+      profile: DEFAULT
+      root_path: /Workspace/Users/adm.tdowning@global.un.org/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      # TODO: replace with a service principal once one is provisioned
+      user_name: adm.tdowning@global.un.org
+    variables:
+      stage: prod
