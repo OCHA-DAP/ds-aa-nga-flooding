@@ -76,13 +76,14 @@ variables:
 # Job Compute policy (000C79D951EAF0D6): ephemeral single-worker cluster that
 # injects DSCI_AZ_DB_*/DSCI_AZ_BLOB_* (dev + prod) and CDSAPI_KEY from the
 # dsci secret scope. Email sender creds + the Google Flood Hub key are not in
-# the policy, so add them (GOOGLE_API_KEY must exist in the dsci scope).
+# the policy, so add them. GOOGLE_API_KEY is NOT referenced here: a
+# spark_env_vars secret that does not exist stops the cluster from launching,
+# so the riverine check_forecasts task resolves it via `--secret` instead.
 .cluster_spec: &cluster_spec
   policy_id: "000C79D951EAF0D6"
   apply_policy_default_values: true
   num_workers: 1
   spark_env_vars:
-    GOOGLE_API_KEY: "{{secrets/dsci/GOOGLE_API_KEY}}"
     DSCI_AWS_EMAIL_HOST: "{{secrets/dsci/DSCI_AWS_EMAIL_HOST}}"
     DSCI_AWS_EMAIL_USERNAME: "{{secrets/dsci/DSCI_AWS_EMAIL_USERNAME}}"
     DSCI_AWS_EMAIL_PASSWORD: "{{secrets/dsci/DSCI_AWS_EMAIL_PASSWORD}}"
@@ -170,6 +171,9 @@ resources:
               - "pipelines/check_forecasts.py"
               - "--stage"
               - "{{job.parameters.stage}}"
+              # Google Flood Hub key (dsci scope; tolerated if missing)
+              - "--secret"
+              - "GOOGLE_API_KEY"
               - "--env"
               - "EMAIL_BACKEND={{job.parameters.email_backend}}"
               - "--env"

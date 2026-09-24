@@ -60,6 +60,16 @@ def _parse(argv):
         metavar="KEY=VALUE",
         help="extra env var for the script (repeatable)",
     )
+    ap.add_argument(
+        "--secret",
+        action="append",
+        default=[],
+        metavar="KEY",
+        help="dsci secret to expose as env var KEY (repeatable). Resolved with "
+        "dbutils at run time and tolerated if missing — unlike a "
+        "spark_env_vars {{secrets/...}} reference, which stops the cluster "
+        "from launching at all when the key does not exist.",
+    )
     ap.epilog = "Everything after a literal `--` is passed through to the script."
     # Split on the first literal "--" ourselves: an argparse REMAINDER
     # positional would swallow --stage/--env as soon as it sees the script.
@@ -95,6 +105,13 @@ def main(argv=None):
         if not key:
             raise ValueError(f"bad --env {kv!r}; expected KEY=VALUE")
         env[key] = value
+    for key in args.secret:
+        try:
+            from databricks.sdk.runtime import dbutils
+
+            env[key] = dbutils.secrets.get("dsci", key)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[run_task] WARNING: dsci/{key} unavailable ({exc})")
     env["PYTHONPATH"] = local_root + os.pathsep + env.get("PYTHONPATH", "")
     # Unbuffered so the script's prints interleave correctly in the run log.
     env["PYTHONUNBUFFERED"] = "1"
@@ -102,7 +119,10 @@ def main(argv=None):
 
     cmd = [sys.executable, os.path.join(local_root, args.script), *args.script_args]
     shown = {k: env[k] for k in ["STAGE", *[kv.partition("=")[0] for kv in args.env]]}
-    print(f"[run_task] script={args.script} env={shown} args={args.script_args}")
+    print(
+        f"[run_task] script={args.script} env={shown} "
+        f"secrets={[k for k in args.secret if k in env]} args={args.script_args}"
+    )
     rc = subprocess.run(cmd, cwd=local_root, env=env, check=False).returncode
     # Databricks treats a top-level SystemExit (even code 0) as a task failure;
     # raise only on non-zero and let success return naturally.
