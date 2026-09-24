@@ -71,13 +71,14 @@ variables:
 # Job Compute policy (000C79D951EAF0D6): ephemeral single-worker cluster that
 # injects DSCI_AZ_DB_*/DSCI_AZ_BLOB_* (dev + prod) and CDSAPI_KEY from the
 # dsci secret scope. The Listmonk sender creds + the Google Flood Hub key are
-# not in the policy, so add them (GOOGLE_API_KEY must exist in the dsci scope).
+# not in the policy, so add them. GOOGLE_API_KEY is NOT referenced here: a
+# spark_env_vars secret that does not exist stops the cluster from launching,
+# so the riverine check_forecasts task resolves it via `--secret` instead.
 .cluster_spec: &cluster_spec
   policy_id: "000C79D951EAF0D6"
   apply_policy_default_values: true
   num_workers: 1
   spark_env_vars:
-    GOOGLE_API_KEY: "{{secrets/dsci/GOOGLE_API_KEY}}"
     DSCI_LISTMONK_BASE_URL: "{{secrets/dsci/DSCI_LISTMONK_BASE_URL}}"
     DSCI_LISTMONK_API_USERNAME: "{{secrets/dsci/DSCI_LISTMONK_API_USERNAME}}"
     DSCI_LISTMONK_API_KEY: "{{secrets/dsci/DSCI_LISTMONK_API_KEY}}"
@@ -155,6 +156,9 @@ resources:
               - "pipelines/check_forecasts.py"
               - "--stage"
               - "{{job.parameters.stage}}"
+              # Google Flood Hub key (dsci scope; tolerated if missing)
+              - "--secret"
+              - "GOOGLE_API_KEY"
               - "--env"
               - "MONITORING_DATE={{job.parameters.monitoring_date}}"
               # GloFAS is served by EWDS, not the plain CDS URL the policy fixes.
