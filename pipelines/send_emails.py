@@ -12,7 +12,9 @@ gets a "[TEST]" prefix, and "[test]" in the campaign name switches on the
 base_campaign template's test banner.
 """
 
+import base64
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,10 +25,18 @@ from ocha_relay.listmonk import ListmonkClient
 
 from src.constants import (
     ACTION_MIN_GAUGES,
+    ALWAYS_EMAIL,
+    DATA_STAGE,
+    EMAIL_BACKEND,
     LISTMONK_LISTS,
     LISTMONK_PROJECT_TAG,
+    SES_RECIPIENTS_LIVE,
+    SES_RECIPIENTS_TEST,
+    STAGE,
+    TEST_EMAIL,
 )
 from src.monitoring import etl, utils
+from src.ses_mail import recipients_from_env, send_via_ses
 
 load_dotenv()
 
@@ -70,14 +80,19 @@ if __name__ == "__main__":
         email_type = "info"
 
     # Send emails if a trigger has been reached, or if it is a Monday
-    if action or readiness or monitoring_date_obj.weekday() == 0:
+    if (
+        action
+        or readiness
+        or monitoring_date_obj.weekday() == 0
+        or ALWAYS_EMAIL
+    ):
         print(f"Sending emails for date: {monitoring_date}")
-        stage = os.getenv("STAGE", "dev")
-        test = False if stage == "prod" else True
+        test = TEST_EMAIL or STAGE != "prod"
         if test:
             print("This is a TEST email!")
+        print(f"Email backend: {EMAIL_BACKEND} (ALWAYS_EMAIL={ALWAYS_EMAIL})")
 
-        client = ListmonkClient.from_env()
+        client = ListmonkClient.from_env() if EMAIL_BACKEND == "listmonk" else None
 
         # Chart is included on non-action emails only; hosted on the
         # listmonk media library rather than embedded
@@ -85,14 +100,19 @@ if __name__ == "__main__":
         if not action:
             blob_name = utils.get_plot_blob_name(monitoring_date, action)
             chart_bytes = (
-                stratus.get_container_client()
+                stratus.get_container_client("projects", DATA_STAGE)
                 .get_blob_client(blob_name)
                 .download_blob()
                 .readall()
             )
-            chart_url = client.upload_media(
-                chart_bytes, f"nga_flooding_monitoring_{monitoring_date}.png"
-            )
+            if client is not None:
+                chart_url = client.upload_media(
+                    chart_bytes, f"nga_flooding_monitoring_{monitoring_date}.png"
+                )
+            else:
+                # SES path: data URI -> CID inline attachment in send_via_ses
+                b64 = base64.b64encode(chart_bytes).decode()
+                chart_url = f"data:image/png;base64,{b64}"
 
         environment = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = environment.get_template(f"{template_name}.html")
@@ -116,12 +136,19 @@ if __name__ == "__main__":
         if test:
             campaign_name += " [test]"
 
+        subject = utils.get_email_subject(trigger_status, test, monitoring_date)
+        if client is None:
+            recipients = recipients_from_env(
+                SES_RECIPIENTS_TEST if test else SES_RECIPIENTS_LIVE,
+                "SES_TEST_RECIPIENTS" if test else "SES_RECIPIENTS",
+            )
+            send_via_ses(subject, body, recipients, text_fallback=subject)
+            print(f"Sent {template_name} email via SES to {recipients}")
+            sys.exit(0)
         list_id = resolve_list_id(client, "test" if test else email_type)
         campaign_id = client.create_campaign(
             name=campaign_name,
-            subject=utils.get_email_subject(
-                trigger_status, test, monitoring_date
-            ),
+            subject=subject,
             body=body,
             list_ids=[list_id],
         )  # default template_id = the instance's base_campaign
