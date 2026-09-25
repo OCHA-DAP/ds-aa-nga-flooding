@@ -1,3 +1,5 @@
+import os
+
 CERF_YEARS = [2013, 2018, 2022]
 ADAMAWA = "NG002"
 WUROBOKI_LAT = 9.375
@@ -241,3 +243,35 @@ LISTMONK_FLASH_LISTS = {
         "extra_tags": ["TEST"],
     },
 }
+
+
+# ---------------------------------------------------------------------------
+# Run-mode switches (env-driven; the GHA workflows set them).
+# ---------------------------------------------------------------------------
+# STAGE selects live-vs-test emailing ("prod" = real recipients). It is also
+# the default data plane, but see DATA_STAGE below.
+STAGE = os.getenv("STAGE", "dev")
+# DATA_STAGE selects the ocha-stratus data plane (DB + blob) on its own;
+# defaults to STAGE. Since 2026-09-25 the Databricks bundle runs with
+# STAGE=prod (live recipients) and DATA_STAGE=dev: the dev server is reachable
+# from Databricks over its private endpoint (dsci secret DSCI_AZ_DB_DEV_HOST is
+# the private IP), while prod has no `projects` schema yet.
+DATA_STAGE = os.getenv("DATA_STAGE", "").strip().lower() or STAGE
+# "listmonk" (default) or "ses" — direct SMTP through the humdata SES account
+# with explicit recipients (see src/ses_mail.py). TEMPORARY "ses" in the
+# workflows while Listmonk (which runs on the dev DB) is down.
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "listmonk").strip().lower() or "listmonk"
+# TEMPORARY: send the informational email every day, not only on
+# triggers / warnings / Mondays — a daily heartbeat while the prod cutover
+# beds in. Unset it in the workflow to restore the normal cadence.
+ALWAYS_EMAIL = os.getenv("ALWAYS_EMAIL", "").strip().lower() in ("1", "true", "yes")
+# Route sends to the test audience even when STAGE=prod (workflow_dispatch
+# input) — lets a prod-data run be checked by one person first.
+TEST_EMAIL = os.getenv("TEST_EMAIL", "").strip().lower() in ("1", "true", "yes")
+SES_RECIPIENTS_LIVE = [
+    "tristan.downing@un.org",
+    "zachary.arno@un.org",
+    "leonardo.milano@un.org",
+    "hannah.ker@un.org",
+]
+SES_RECIPIENTS_TEST = ["tristan.downing@un.org"]

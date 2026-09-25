@@ -10,6 +10,7 @@ from sqlalchemy import text
 from src.constants import (
     ACTION_GAUGE_THRESHOLDS,
     ACTION_MIN_GAUGES,
+    DATA_STAGE,
     READINESS_GLOFAS_THRESH,
     READINESS_MAX_LEADTIME,
 )
@@ -36,7 +37,7 @@ def get_glofas_forecast(
     keep_local_copy=True,
     overwrite=False,
 ):
-    container = stratus.get_container_client("projects", "dev")
+    container = stratus.get_container_client("projects", DATA_STAGE)
     if (
         container.get_blob_client(forecast_blob_name).exists()
         and not overwrite
@@ -66,6 +67,7 @@ def get_glofas_forecast(
         forecast_request,
         forecast_blob_name,
         keep_local_copy=keep_local_copy,
+        prod_dev=DATA_STAGE,
     )
 
 
@@ -76,7 +78,7 @@ def get_glofas_reanalysis(
     keep_local_copy=True,
     overwrite=False,
 ):
-    container = stratus.get_container_client("projects", "dev")
+    container = stratus.get_container_client("projects", DATA_STAGE)
     if (
         container.get_blob_client(reanalysis_blob_name).exists()
         and not overwrite
@@ -108,6 +110,7 @@ def get_glofas_reanalysis(
         reanalysis_request,
         reanalysis_blob_name,
         keep_local_copy=keep_local_copy,
+        prod_dev=DATA_STAGE,
     )
 
 
@@ -189,7 +192,7 @@ def process_glofas(blob_name, data_type, station_name):
 
 
 def get_database_forecast(monitoring_date):
-    engine = stratus.get_engine(stage="dev")
+    engine = stratus.get_engine(stage=DATA_STAGE)
     with engine.connect() as con:
         df = pd.read_sql(
             text(
@@ -209,7 +212,7 @@ def get_database_forecast(monitoring_date):
 
 def get_latest_monitoring_date():
     """Most recent monitoring_date with saved forecast data."""
-    engine = stratus.get_engine(stage="dev")
+    engine = stratus.get_engine(stage=DATA_STAGE)
     with engine.connect() as con:
         result = con.execute(
             text(f"select max(monitoring_date) from {DB_SCHEMA}.{DB_TABLE}")

@@ -17,6 +17,7 @@ import pandas as pd
 from sqlalchemy import text
 
 from src.constants import (
+    DATA_STAGE,
     FLASH_LGAS,
     FLASH_ROLLING_DAYS,
     FLASH_WARNING_FRACTION,
@@ -197,7 +198,7 @@ def flash_plot(df, status, save_output=True):
         plt.savefig(buffer, format="png", bbox_inches="tight", dpi=200)
         buffer.seek(0)
         container_client = stratus.get_container_client(
-            "projects", "dev", write=True
+            "projects", DATA_STAGE, write=True
         )
         blob_name = get_flash_plot_blob_name(latest_date, status["triggered"])
         container_client.upload_blob(

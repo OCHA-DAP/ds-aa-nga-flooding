@@ -14,6 +14,10 @@ on:
           - dev
           - prod
         default: dev
+      test_email:
+        description: Send only to the test recipient (Tristan) even when stage=prod
+        type: boolean
+        default: false
 
   # Manual fallback only. The daily 20:00 UTC run is the Databricks job
   # "NGA Riverine Flood Monitoring" defined in databricks.yml; GitHub Actions
@@ -50,6 +54,24 @@ jobs:
         DSCI_AZ_DB_DEV_PW: ${{ secrets.DSCI_AZ_DB_DEV_PW }}
         DSCI_AZ_DB_DEV_UID: ${{ secrets.DSCI_AZ_DB_DEV_UID }}
         DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST}}
+        # Prod data-plane (STAGE=prod): the dev DB lost public network
+        # access on 2026-09-22.
+        DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+        DSCI_AZ_BLOB_PROD_SAS_WRITE: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS_WRITE }}
+        DSCI_AZ_DB_PROD_PW_WRITE: ${{ secrets.DSCI_AZ_DB_PROD_PW_WRITE }}
+        DSCI_AZ_DB_PROD_UID_WRITE: ${{ secrets.DSCI_AZ_DB_PROD_UID_WRITE }}
+        DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
+        DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
+        DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
+        # SES (direct SMTP) sender — TEMPORARY backend while Listmonk is down,
+        # plus a daily heartbeat email during the prod cutover
+        DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST }}
+        DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME }}
+        DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD }}
+        DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS }}
+        EMAIL_BACKEND: ses
+        ALWAYS_EMAIL: 'true'
+        TEST_EMAIL: ${{ inputs.test_email || 'false' }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
         CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
         CDSAPI_URL: ${{ secrets.CDSAPI_URL}}
@@ -69,9 +91,11 @@ jobs:
     - name: Publish riverine monitoring status
       env:
         DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
-        DSCI_AZ_DB_DEV_PW: ${{ secrets.DSCI_AZ_DB_DEV_PW }}
-        DSCI_AZ_DB_DEV_UID: ${{ secrets.DSCI_AZ_DB_DEV_UID }}
-        DSCI_AZ_DB_DEV_HOST: ${{ secrets.DSCI_AZ_DB_DEV_HOST }}
+        DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+        DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
+        DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
+        DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
+        STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"

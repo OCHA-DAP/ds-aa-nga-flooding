@@ -14,6 +14,10 @@ on:
           - dev
           - prod
         default: dev
+      test_email:
+        description: Send only to the test recipient (Tristan) even when stage=prod
+        type: boolean
+        default: false
 
   # Manual fallback only. The daily 01:30 UTC run is the Databricks job
   # "NGA Flash Flood Monitoring" defined in databricks.yml; GitHub Actions
@@ -45,9 +49,18 @@ jobs:
       env:
         DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
         DSCI_AZ_BLOB_DEV_SAS_WRITE: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS_WRITE }}
+        DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+        DSCI_AZ_BLOB_PROD_SAS_WRITE: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS_WRITE }}
         DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
         DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
         DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
+        # TEMPORARY: SES backend while Listmonk (on the dev DB) is down
+        DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST }}
+        DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME }}
+        DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD }}
+        DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS }}
+        EMAIL_BACKEND: ses
+        TEST_EMAIL: ${{ inputs.test_email || 'false' }}
         # ocha-relay reads DSCI_LISTMONK_BASE_URL; the org secret is named
         # DSCI_LISTMONK_API_URL
         DSCI_LISTMONK_BASE_URL: ${{ secrets.DSCI_LISTMONK_API_URL }}
@@ -62,6 +75,8 @@ jobs:
     - name: Publish flash monitoring status
       env:
         DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+        DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+        STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
         DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
         DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
         DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
