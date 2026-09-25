@@ -75,7 +75,7 @@ jobs:
         env:
           DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
           DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
-          STATUS_BLOB_STAGE: ${{ vars.STAGE || 'prod' }}
+          STATUS_BLOB_STAGE: dev   # DATA_STAGE of the Databricks jobs (dev since 2026-09-25)
         run: |
           python - <<'PY'
           import os

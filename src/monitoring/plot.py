@@ -9,9 +9,9 @@ from matplotlib.ticker import FuncFormatter
 from src.constants import (
     ACTION_GAUGE_THRESHOLDS,
     ACTION_MIN_GAUGES,
+    DATA_STAGE,
     PROJECT_PREFIX,
     READINESS_GLOFAS_THRESH,
-    STAGE,
 )
 from src.monitoring import etl
 
@@ -113,7 +113,7 @@ def combined_plots(df, save_output=True):
         plt.savefig(buffer, format="png", bbox_inches="tight", dpi=200)
         buffer.seek(0)
         container_client = stratus.get_container_client(
-            "projects", STAGE, write=True
+            "projects", DATA_STAGE, write=True
         )
         blob_name = (
             f"{PROJECT_PREFIX}/monitoring/{update_date}_"

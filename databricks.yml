@@ -23,7 +23,7 @@
 # `monitoring-status` branch, which a Databricks job cannot do).
 #
 # Every task goes through databricks/run_task.py, which sets the run-mode env
-# vars the code reads at import (STAGE = ocha-stratus data plane, EMAIL_BACKEND,
+# vars the code reads at import (STAGE = live-vs-test emailing, DATA_STAGE = ocha-stratus data plane, EMAIL_BACKEND,
 # ALWAYS_EMAIL, TEST_EMAIL, MONITORING_DATE, STATUS_BLOB_PREFIX) and copies
 # src/ + pipelines/ off the wsfs checkout before importing. DB/blob/CDS creds
 # are NOT here — the Job Compute policy injects DSCI_AZ_* and CDSAPI_KEY from
@@ -57,6 +57,9 @@ variables:
     default: main
   stage:
     description: ocha-stratus data plane (dev | prod) — also live-vs-test emailing
+    default: dev
+  data_stage:
+    description: ocha-stratus data plane (dev | prod) — DEV since 2026-09-25 (private endpoint from Databricks; prod has no projects schema yet); `stage` alone keeps meaning live-vs-test emailing
     default: dev
   email_backend:
     description: '"ses" (direct SMTP, TEMPORARY while Listmonk is down) or "listmonk"'
@@ -150,6 +153,8 @@ resources:
       parameters:
         - name: stage
           default: ${var.stage}
+        - name: data_stage
+          default: ${var.data_stage}
         - name: email_backend
           default: ${var.email_backend}
         - name: always_email
@@ -175,6 +180,8 @@ resources:
               - "pipelines/check_forecasts.py"
               - "--stage"
               - "{{job.parameters.stage}}"
+              - "--env"
+              - "DATA_STAGE={{job.parameters.data_stage}}"
               # Google Flood Hub key (dsci scope; tolerated if missing)
               - "--secret"
               - "GOOGLE_API_KEY"
@@ -203,6 +210,8 @@ resources:
               - "--stage"
               - "{{job.parameters.stage}}"
               - "--env"
+              - "DATA_STAGE={{job.parameters.data_stage}}"
+              - "--env"
               - "MONITORING_DATE={{job.parameters.monitoring_date}}"
 
         - task_key: send_emails
@@ -217,6 +226,8 @@ resources:
               - "pipelines/send_emails.py"
               - "--stage"
               - "{{job.parameters.stage}}"
+              - "--env"
+              - "DATA_STAGE={{job.parameters.data_stage}}"
               - "--env"
               - "EMAIL_BACKEND={{job.parameters.email_backend}}"
               - "--env"
@@ -238,6 +249,8 @@ resources:
               - "pipelines/export_monitoring_status.py"
               - "--stage"
               - "{{job.parameters.stage}}"
+              - "--env"
+              - "DATA_STAGE={{job.parameters.data_stage}}"
               - "--env"
               - "STATUS_BLOB_PREFIX=ds-aa-nga-flooding/monitoring/status"
               - "--"
@@ -274,6 +287,8 @@ resources:
       parameters:
         - name: stage
           default: ${var.stage}
+        - name: data_stage
+          default: ${var.data_stage}
         - name: email_backend
           default: ${var.email_backend}
         - name: test_email
@@ -297,6 +312,8 @@ resources:
               - "--stage"
               - "{{job.parameters.stage}}"
               - "--env"
+              - "DATA_STAGE={{job.parameters.data_stage}}"
+              - "--env"
               - "EMAIL_BACKEND={{job.parameters.email_backend}}"
               - "--env"
               - "TEST_EMAIL={{job.parameters.test_email}}"
@@ -315,6 +332,8 @@ resources:
               - "pipelines/export_monitoring_status.py"
               - "--stage"
               - "{{job.parameters.stage}}"
+              - "--env"
+              - "DATA_STAGE={{job.parameters.data_stage}}"
               - "--env"
               - "STATUS_BLOB_PREFIX=ds-aa-nga-flooding/monitoring/status"
               - "--"
@@ -337,4 +356,5 @@ targets:
       user_name: adm.tdowning@global.un.org
     variables:
       stage: prod
+      data_stage: dev
       test_email: "false"

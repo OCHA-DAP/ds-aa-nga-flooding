@@ -26,6 +26,7 @@ from ocha_relay.listmonk import ListmonkClient
 from src.constants import (
     ACTION_MIN_GAUGES,
     ALWAYS_EMAIL,
+    DATA_STAGE,
     EMAIL_BACKEND,
     LISTMONK_LISTS,
     LISTMONK_PROJECT_TAG,
@@ -99,7 +100,7 @@ if __name__ == "__main__":
         if not action:
             blob_name = utils.get_plot_blob_name(monitoring_date, action)
             chart_bytes = (
-                stratus.get_container_client("projects", STAGE)
+                stratus.get_container_client("projects", DATA_STAGE)
                 .get_blob_client(blob_name)
                 .download_blob()
                 .readall()

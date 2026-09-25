@@ -24,6 +24,7 @@ from jinja2 import Environment, FileSystemLoader
 from ocha_relay.listmonk import ListmonkClient
 
 from src.constants import (
+    DATA_STAGE,
     EMAIL_BACKEND,
     FLASH_ROLLING_DAYS,
     FLASH_WARNING_FRACTION,
@@ -122,7 +123,7 @@ if __name__ == "__main__":
             latest_date, status["triggered"]
         )
         chart_bytes = (
-            stratus.get_container_client("projects", STAGE)
+            stratus.get_container_client("projects", DATA_STAGE)
             .get_blob_client(blob_name)
             .download_blob()
             .readall()

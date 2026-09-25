@@ -248,10 +248,15 @@ LISTMONK_FLASH_LISTS = {
 # ---------------------------------------------------------------------------
 # Run-mode switches (env-driven; the GHA workflows set them).
 # ---------------------------------------------------------------------------
-# STAGE selects BOTH the ocha-stratus data-plane (DB + blob) and live-vs-test
-# emailing. "prod" since 2026-09-23: the dev DB lost public network access on
-# 2026-09-22, so the monitoring table and GloFAS/plot blobs now live in prod.
+# STAGE selects live-vs-test emailing ("prod" = real recipients). It is also
+# the default data plane, but see DATA_STAGE below.
 STAGE = os.getenv("STAGE", "dev")
+# DATA_STAGE selects the ocha-stratus data plane (DB + blob) on its own;
+# defaults to STAGE. Since 2026-09-25 the Databricks bundle runs with
+# STAGE=prod (live recipients) and DATA_STAGE=dev: the dev server is reachable
+# from Databricks over its private endpoint (dsci secret DSCI_AZ_DB_DEV_HOST is
+# the private IP), while prod has no `projects` schema yet.
+DATA_STAGE = os.getenv("DATA_STAGE", "").strip().lower() or STAGE
 # "listmonk" (default) or "ses" — direct SMTP through the humdata SES account
 # with explicit recipients (see src/ses_mail.py). TEMPORARY "ses" in the
 # workflows while Listmonk (which runs on the dev DB) is down.

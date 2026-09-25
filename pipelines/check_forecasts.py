@@ -6,7 +6,7 @@ import ocha_stratus as stratus
 import pandas as pd
 from dotenv import load_dotenv
 
-from src.constants import ACTION_GAUGE_THRESHOLDS, STAGE
+from src.constants import ACTION_GAUGE_THRESHOLDS, DATA_STAGE
 from src.datasources import glofas
 from src.monitoring import etl
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # --- 3. Combine and save to database...
     df_all = pd.concat([df_forecast, df_reanalysis, df_google])
     df_all["monitoring_date"] = update_date
-    engine = stratus.get_engine(stage=STAGE, write=True)
+    engine = stratus.get_engine(stage=DATA_STAGE, write=True)
     df_all.to_sql(
         etl.DB_TABLE,  # This table was created manually
         schema=etl.DB_SCHEMA,
