@@ -63,14 +63,11 @@ jobs:
         DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
         DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
         DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
-        # SES (direct SMTP) sender — TEMPORARY backend while Listmonk is down,
-        # plus a daily heartbeat email during the prod cutover
+        # SES (direct SMTP) sender — escape hatch, only used with EMAIL_BACKEND=ses
         DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST }}
         DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME }}
         DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD }}
         DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS }}
-        EMAIL_BACKEND: ses
-        ALWAYS_EMAIL: 'true'
         TEST_EMAIL: ${{ inputs.test_email || 'false' }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
         CDSAPI_KEY: ${{ secrets.CDSAPI_KEY}}
