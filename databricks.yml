@@ -62,11 +62,11 @@ variables:
     description: ocha-stratus data plane (dev | prod) — DEV since 2026-09-25 (private endpoint from Databricks; prod has no projects schema yet); `stage` alone keeps meaning live-vs-test emailing
     default: dev
   email_backend:
-    description: '"ses" (direct SMTP, TEMPORARY while Listmonk is down) or "listmonk"'
-    default: ses
+    description: '"listmonk" (default; Listmonk is back on the prod DB since 2026-09-25) or "ses" — direct SMTP escape hatch (src/ses_mail.py)'
+    default: listmonk
   always_email:
-    description: '"true" = riverine informational email every day (cutover heartbeat); "false" = triggers / warnings / Mondays only'
-    default: "true"
+    description: '"true" = riverine informational email every day (heartbeat, used during the 2026-09 cutover); "false" = triggers / warnings / Mondays only'
+    default: "false"
   test_email:
     description: '"true" = send only to the test recipient even when stage=prod; the prod target sets "false"'
     default: "true"

@@ -54,12 +54,11 @@ jobs:
         DSCI_AZ_DB_PROD_PW: ${{ secrets.DSCI_AZ_DB_PROD_PW }}
         DSCI_AZ_DB_PROD_UID: ${{ secrets.DSCI_AZ_DB_PROD_UID }}
         DSCI_AZ_DB_PROD_HOST: ${{ secrets.DSCI_AZ_DB_PROD_HOST }}
-        # TEMPORARY: SES backend while Listmonk (on the dev DB) is down
+        # SES (direct SMTP) sender — escape hatch, only used with EMAIL_BACKEND=ses
         DSCI_AWS_EMAIL_HOST: ${{ secrets.DSCI_AWS_EMAIL_HOST }}
         DSCI_AWS_EMAIL_USERNAME: ${{ secrets.DSCI_AWS_EMAIL_USERNAME }}
         DSCI_AWS_EMAIL_PASSWORD: ${{ secrets.DSCI_AWS_EMAIL_PASSWORD }}
         DSCI_AWS_EMAIL_ADDRESS: ${{ secrets.DSCI_AWS_EMAIL_ADDRESS }}
-        EMAIL_BACKEND: ses
         TEST_EMAIL: ${{ inputs.test_email || 'false' }}
         # ocha-relay reads DSCI_LISTMONK_BASE_URL; the org secret is named
         # DSCI_LISTMONK_API_URL
