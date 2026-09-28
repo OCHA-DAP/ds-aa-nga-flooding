@@ -124,15 +124,15 @@ resources:
 
     nga_riverine_monitoring:
       name: NGA Riverine Flood Monitoring
-      description: >
-        Daily Adamawa riverine flood AA monitor: GloFAS at Wuroboki (EWDS) +
-        Google GRRR gauges → projects.ds_aa_nga_flooding_monitoring → chart →
-        email → status page export. Replaces the GitHub Actions "Monitor
-        flooding" cron.
+      description: "Monitor the Adamawa riverine trigger using [GloFAS](https://global-flood.emergency.copernicus.eu/) at Wuroboki and [Google Flood Hub](https://sites.research.google/floods/) gauges"
       git_source: *git_source
       tags:
         databricks: job
-        output_schema: projects
+        type: monitoring
+        hazard: flood
+        kb: nga-flooding-monitoring
+        output_schema: projects.ds_aa_nga_flooding_monitoring
+        output_blob: projects/ds-aa-nga-flooding/monitoring
 
       permissions:
         - group_name: dsci
@@ -258,14 +258,14 @@ resources:
 
     nga_flash_monitoring:
       name: NGA Flash Flood Monitoring
-      description: >
-        Daily BAY-states flash-flood AA monitor: per-LGA FloodScan × WorldPop
-        exposure (app.floodscan_exposure, prod) vs thresholds → chart → email
-        → status page export. Replaces the GitHub Actions "Monitor flash
-        flooding" cron. Runs after the Flood Exposure Monitoring job.
+      description: "Monitor the BAY-states flash flood trigger from FloodScan × WorldPop exposure per LGA"
       git_source: *git_source
       tags:
         databricks: job
+        type: monitoring
+        hazard: flood
+        kb: nga-flooding-monitoring
+        output_blob: projects/ds-aa-nga-flooding/monitoring
 
       permissions:
         - group_name: dsci
