@@ -109,7 +109,7 @@ def _index(group, ids):
     return out
 
 
-def fetch(version, gauge_ids):
+def fetch(version, gauge_ids, tag=""):
     """Reanalysis + reforecast for the gauges, cached under temp/.
 
     Rows carry the old-style gauge id (hybas_...) for both versions: the new
@@ -117,7 +117,7 @@ def fetch(version, gauge_ids):
     outlet coordinates.
     """
     CACHE.mkdir(parents=True, exist_ok=True)
-    ra_path, rf_path = CACHE / f"{version}_reanalysis.parquet", CACHE / f"{version}_reforecast.parquet"
+    ra_path, rf_path = CACHE / f"{version}{tag}_reanalysis.parquet", CACHE / f"{version}{tag}_reforecast.parquet"
     if ra_path.exists() and rf_path.exists():
         return pd.read_parquet(ra_path), pd.read_parquet(rf_path)
     store_ids = {g: PREFIX[version] + g.removeprefix("hybas_") for g in gauge_ids}

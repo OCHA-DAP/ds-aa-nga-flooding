@@ -34,6 +34,47 @@ WUROBOKI = "hybas_1120842550"
 OUTLIER = "hybas_1120840690"
 
 
+STYLE = """:root { --b5:#269777; --b6:#1e795f; --b7:#18614c; --b05:#e9f5f1; --b1:#d4eae4; --n9:#1f2324; --n8:#3f4748; --n7:#5e6a6b; --n05:#f5f7f7; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--n05); color:var(--n9); font-family:'Roboto',system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif; line-height:1.5; }
+.wrap { max-width:1080px; margin:0 auto; background:#fff; min-height:100vh; box-shadow:0 0 40px rgba(31,35,36,.06); }
+.hero { background:var(--b6); padding:40px 44px 34px; }
+.hero h1 { font-family:'Merriweather',Georgia,serif; font-weight:700; font-size:28px; line-height:1.2; color:#fff; margin:0 0 14px; }
+.hero p { margin:0; font-size:15px; line-height:1.6; color:#fff; max-width:66ch; }
+.crumb { font-size:12px !important; margin:0 0 14px !important; } .crumb a { color:rgba(255,255,255,.85); text-decoration:none; }
+article { padding:8px 44px 24px; max-width:960px; }
+article h2 { font-family:'Merriweather',Georgia,serif; font-size:21px; color:var(--n9); margin:40px 0 10px; line-height:1.25; }
+article h2 .num { color:var(--b5); font-size:15px; margin-right:8px; }
+article h3 { font-size:15px; color:var(--n9); margin:26px 0 6px; }
+article p, article li { font-size:14.5px; color:var(--n8); line-height:1.65; } article a { color:var(--b6); } article strong { color:var(--n9); }
+article code { background:var(--n05); border:1px solid #e2e7e7; padding:1px 5px; border-radius:3px; font-size:12.5px; }
+table.data { border-collapse:collapse; width:100%; margin:14px 0; font-size:13px; }
+table.data th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--n7); font-weight:700; border-bottom:2px solid var(--b1); padding:7px 10px 6px; vertical-align:bottom; }
+table.data td { border-bottom:1px solid #eef1f1; padding:7px 10px; color:var(--n8); vertical-align:top; }
+table.data td.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; } table.data td em { font-style:normal; color:var(--b6); font-weight:600; }
+table.data th.grp { text-align:center; border-bottom:1px solid var(--b1); }
+table.data tr.pick td { background:var(--b05); } .tablewrap { overflow-x:auto; }
+table.yg { border-collapse:separate; border-spacing:2px; margin:12px 0 6px; font-size:11.5px; }
+table.yg th { font-weight:500; color:#6b7683; font-size:10.5px; padding:0 0 2px; text-align:center; }
+table.yg th.rl { text-align:right; padding-right:8px; white-space:nowrap; color:var(--n8); font-size:12px; font-weight:500; }
+table.yg td { width:24px; min-width:24px; height:22px; text-align:center; border-radius:3px; background:#f3f5f7; color:#9aa4ae; font-variant-numeric:tabular-nums; }
+table.yg td.nd { background:repeating-linear-gradient(45deg,#f6f7f8 0 3px,#e9ecef 3px 5px); }
+table.yg td.z { color:#c4cbd2; } table.yg td.part { color:var(--n8); background:#e6ebf0; }
+table.yg td.act { background:#1f5c8b; color:#fff; font-weight:700; }
+table.yg td.fl { background:#f6dfb8; color:#7a4d06; font-weight:700; } table.yg td.sev { background:#d9822b; color:#fff; font-weight:700; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin:26px 0 6px; }
+.stat { background:#fff; border:1px solid #e2e7e7; border-top:3px solid var(--b5); border-radius:5px; padding:14px 16px 12px; }
+.stat.flag { border-top-color:#e0a04b; } .stat .v { font-family:'Merriweather',Georgia,serif; font-size:23px; font-weight:700; color:var(--b6); line-height:1.15; }
+.stat.flag .v { color:#b0722b; } .stat .l { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--n7); margin-top:6px; line-height:1.45; }
+.callout { margin:20px 0; padding:13px 17px; border-radius:4px; background:var(--b05); border-left:5px solid var(--b5); font-size:13.5px; color:var(--n8); line-height:1.6; }
+.callout.warn { background:#fdf3e7; border-left-color:#e0a04b; }
+.figcap { font-size:12px !important; color:var(--n7) !important; line-height:1.5 !important; }
+details { margin:10px 0 0; font-size:13.5px; } details summary { cursor:pointer; color:var(--b6); }
+.provenance { margin:34px 44px 40px; padding-top:14px; border-top:1px solid #e2e7e7; font-size:12px; color:var(--n7); line-height:1.7; } .provenance a { color:var(--b6); }
+@media (max-width:640px) { article { padding:4px 22px 16px; } .hero { padding:32px 22px 28px; } .provenance { margin:28px 22px 32px; } }
+"""
+
+
 def e(x):
     return html.escape(str(x))
 
@@ -236,44 +277,7 @@ def main():
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {{ --b5:#269777; --b6:#1e795f; --b7:#18614c; --b05:#e9f5f1; --b1:#d4eae4; --n9:#1f2324; --n8:#3f4748; --n7:#5e6a6b; --n05:#f5f7f7; }}
-* {{ box-sizing:border-box; }}
-body {{ margin:0; background:var(--n05); color:var(--n9); font-family:'Roboto',system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif; line-height:1.5; }}
-.wrap {{ max-width:1080px; margin:0 auto; background:#fff; min-height:100vh; box-shadow:0 0 40px rgba(31,35,36,.06); }}
-.hero {{ background:var(--b6); padding:40px 44px 34px; }}
-.hero h1 {{ font-family:'Merriweather',Georgia,serif; font-weight:700; font-size:28px; line-height:1.2; color:#fff; margin:0 0 14px; }}
-.hero p {{ margin:0; font-size:15px; line-height:1.6; color:#fff; max-width:66ch; }}
-.crumb {{ font-size:12px !important; margin:0 0 14px !important; }} .crumb a {{ color:rgba(255,255,255,.85); text-decoration:none; }}
-article {{ padding:8px 44px 24px; max-width:960px; }}
-article h2 {{ font-family:'Merriweather',Georgia,serif; font-size:21px; color:var(--n9); margin:40px 0 10px; line-height:1.25; }}
-article h2 .num {{ color:var(--b5); font-size:15px; margin-right:8px; }}
-article h3 {{ font-size:15px; color:var(--n9); margin:26px 0 6px; }}
-article p, article li {{ font-size:14.5px; color:var(--n8); line-height:1.65; }} article a {{ color:var(--b6); }} article strong {{ color:var(--n9); }}
-article code {{ background:var(--n05); border:1px solid #e2e7e7; padding:1px 5px; border-radius:3px; font-size:12.5px; }}
-table.data {{ border-collapse:collapse; width:100%; margin:14px 0; font-size:13px; }}
-table.data th {{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--n7); font-weight:700; border-bottom:2px solid var(--b1); padding:7px 10px 6px; vertical-align:bottom; }}
-table.data td {{ border-bottom:1px solid #eef1f1; padding:7px 10px; color:var(--n8); vertical-align:top; }}
-table.data td.n {{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }} table.data td em {{ font-style:normal; color:var(--b6); font-weight:600; }}
-table.data th.grp {{ text-align:center; border-bottom:1px solid var(--b1); }}
-table.data tr.pick td {{ background:var(--b05); }} .tablewrap {{ overflow-x:auto; }}
-table.yg {{ border-collapse:separate; border-spacing:2px; margin:12px 0 6px; font-size:11.5px; }}
-table.yg th {{ font-weight:500; color:#6b7683; font-size:10.5px; padding:0 0 2px; text-align:center; }}
-table.yg th.rl {{ text-align:right; padding-right:8px; white-space:nowrap; color:var(--n8); font-size:12px; font-weight:500; }}
-table.yg td {{ width:24px; min-width:24px; height:22px; text-align:center; border-radius:3px; background:#f3f5f7; color:#9aa4ae; font-variant-numeric:tabular-nums; }}
-table.yg td.nd {{ background:repeating-linear-gradient(45deg,#f6f7f8 0 3px,#e9ecef 3px 5px); }}
-table.yg td.z {{ color:#c4cbd2; }} table.yg td.part {{ color:var(--n8); background:#e6ebf0; }}
-table.yg td.act {{ background:#1f5c8b; color:#fff; font-weight:700; }}
-table.yg td.fl {{ background:#f6dfb8; color:#7a4d06; font-weight:700; }} table.yg td.sev {{ background:#d9822b; color:#fff; font-weight:700; }}
-.stats {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin:26px 0 6px; }}
-.stat {{ background:#fff; border:1px solid #e2e7e7; border-top:3px solid var(--b5); border-radius:5px; padding:14px 16px 12px; }}
-.stat.flag {{ border-top-color:#e0a04b; }} .stat .v {{ font-family:'Merriweather',Georgia,serif; font-size:23px; font-weight:700; color:var(--b6); line-height:1.15; }}
-.stat.flag .v {{ color:#b0722b; }} .stat .l {{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--n7); margin-top:6px; line-height:1.45; }}
-.callout {{ margin:20px 0; padding:13px 17px; border-radius:4px; background:var(--b05); border-left:5px solid var(--b5); font-size:13.5px; color:var(--n8); line-height:1.6; }}
-.callout.warn {{ background:#fdf3e7; border-left-color:#e0a04b; }}
-.figcap {{ font-size:12px !important; color:var(--n7) !important; line-height:1.5 !important; }}
-details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:pointer; color:var(--b6); }}
-.provenance {{ margin:34px 44px 40px; padding-top:14px; border-top:1px solid #e2e7e7; font-size:12px; color:var(--n7); line-height:1.7; }} .provenance a {{ color:var(--b6); }}
-@media (max-width:640px) {{ article {{ padding:4px 22px 16px; }} .hero {{ padding:32px 22px 28px; }} .provenance {{ margin:28px 22px 32px; }} }}
+{STYLE}
 {SM_CSS}
 </style>
 <script>{SM_JS}</script>
@@ -288,7 +292,7 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
        it on the new model with exactly the method used to design it on the old one: the same ten gauges, the same
        August&ndash;November season, the same 1998&ndash;2023 calibration years, the same level and gauge count. Only the
        per-gauge levels are refitted, on the new model's own record. The readiness trigger runs on GloFAS and does not
-       change. {API_CHECKED}.</p>
+       change. Analysis of {API_CHECKED}.</p>
   </header>
 
   <article>
@@ -319,6 +323,9 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
           the record {A.START}&ndash;{A.END} (the calibration years) and, for forecasts, the seasons {rf_eval[0]}&ndash;{rf_eval[-1]} that both
           archives cover completely. What the new model says about 2023&ndash;2025 beyond that is in section 6: the rule is not met in
           2024 or 2025.</li>
+      <li><strong>Gauges.</strong> This page keeps the ten endorsed gauges and refits only their levels. A
+          <a href="reselected-gauges/">variant page</a> also re-runs the design's gauge selection on the new model and applies the
+          rule to the ten gauges it picks.</li>
     </ul>
 
     <div class="callout warn"><strong>Before Google switches Flood Hub to the new model.</strong> On {API_CHECKED} the Flood Hub API still serves
@@ -404,7 +411,8 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
           forecast 2018, 2019, 2022).</li>
       <li>Same years for both versions: levels fitted on {A.START}&ndash;{A.END} for both; activations, timing, FloodScan scores, correlations
           and the old-levels-on-new-flows count all over {A.START}&ndash;{A.END}; forecasts over the complete seasons {rf_eval[0]}&ndash;{rf_eval[-1]}.</li>
-      <li>The gauge set is the endorsed one; gauge selection was not re-run. FloodScan benchmark years are the design's.</li>
+      <li>The gauge set is the endorsed one; gauge selection is re-run on the new model in the <a href="reselected-gauges/">variant page</a>.
+          FloodScan benchmark years are the design's.</li>
       <li>Data: Google Runoff Reanalysis &amp; Reforecast, public Google Cloud bucket <code>flood-forecasting</code>, old version
           <code>model_id_8583a5c2_v0</code>, new version <code>distributed_model_2026_11</code> (CC-BY-4.0).</li>
     </ul>
