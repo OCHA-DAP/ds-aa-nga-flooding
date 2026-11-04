@@ -75,6 +75,35 @@ details { margin:10px 0 0; font-size:13.5px; } details summary { cursor:pointer;
 """
 
 
+# ------------------------------------------------------------------ cross-page navigation
+# The four new-Google-model pages (two per framework) carry the same bar so each
+# links to the others; absolute URLs because they live on two Pages sites.
+NAV_PAGES = [
+    ("Nigeria", [("nga", "Comparison", "https://ocha-dap.github.io/ds-aa-nga-flooding/exploration/2026/cerf/google-model-update/"),
+                 ("nga-gauges", "Gauges re-selected", "https://ocha-dap.github.io/ds-aa-nga-flooding/exploration/2026/cerf/google-model-update/reselected-gauges/")]),
+    ("Somalia", [("som", "Comparison", "https://ocha-dap.github.io/ds-aa-som-floods/google-model-update/"),
+                 ("som-models", "Model choice re-run", "https://ocha-dap.github.io/ds-aa-som-floods/google-model-update/model-selection/")]),
+]
+NAV_CSS = """
+.gnav { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 22px; padding:11px 44px; background:#f5f7f7;
+  border-bottom:1px solid #e2e7e7; font-size:13px; color:#5e6a6b; }
+.gnav .t { font-weight:700; color:#3f4748; }
+.gnav .g { white-space:nowrap; } .gnav .g b { color:#3f4748; font-weight:500; margin-right:6px; }
+.gnav a { color:#1e795f; text-decoration:none; } .gnav a:hover { text-decoration:underline; }
+.gnav span.cur { color:#1f2324; font-weight:700; }
+@media (max-width:640px) { .gnav { padding:10px 22px; } }
+"""
+
+
+def nav_html(current):
+    groups = []
+    for country, pages in NAV_PAGES:
+        links = " &middot; ".join(f'<span class="cur" aria-current="page">{label}</span>' if key == current
+                                  else f'<a href="{url}">{label}</a>' for key, label, url in pages)
+        groups.append(f'<span class="g"><b>{country}</b>{links}</span>')
+    return f'<nav class="gnav" aria-label="New Google model pages"><span class="t">New Google model (Nov 2026)</span>{"".join(groups)}</nav>'
+
+
 def e(x):
     return html.escape(str(x))
 
@@ -278,6 +307,7 @@ def main():
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 {STYLE}
+{NAV_CSS}
 {SM_CSS}
 </style>
 <script>{SM_JS}</script>
@@ -294,6 +324,7 @@ def main():
        per-gauge levels are refitted, on the new model's own record. The readiness trigger runs on GloFAS and does not
        change. Analysis of {API_CHECKED}.</p>
   </header>
+  {nav_html('nga')}
 
   <article>
     <div class="stats">

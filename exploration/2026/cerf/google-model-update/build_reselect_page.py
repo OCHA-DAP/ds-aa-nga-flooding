@@ -203,6 +203,7 @@ def main():
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 {B.STYLE}
+{B.NAV_CSS}
 .map svg {{ width:100%; height:auto; display:block; }} .map .mt {{ font-size:12px; fill:#3f4748; font-family:Roboto,Arial,sans-serif; }}
 .key {{ display:flex; flex-wrap:wrap; gap:18px; font-size:13px; color:var(--n8); margin:8px 0 4px; }}
 .key i {{ display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:-1px; margin-right:6px; }}
@@ -221,6 +222,7 @@ def main():
        use the years both model versions cover: the record 1998&ndash;2023 and forecasts {rf_eval[0]}&ndash;{rf_eval[-1]}.
        Analysis of {B.API_CHECKED}.</p>
   </header>
+  {B.nav_html('nga-gauges')}
 
   <article>
     <div class="stats">

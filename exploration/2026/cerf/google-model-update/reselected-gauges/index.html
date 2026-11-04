@@ -48,6 +48,15 @@ details { margin:10px 0 0; font-size:13.5px; } details summary { cursor:pointer;
 .provenance { margin:34px 44px 40px; padding-top:14px; border-top:1px solid #e2e7e7; font-size:12px; color:var(--n7); line-height:1.7; } .provenance a { color:var(--b6); }
 @media (max-width:640px) { article { padding:4px 22px 16px; } .hero { padding:32px 22px 28px; } .provenance { margin:28px 22px 32px; } }
 
+
+.gnav { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 22px; padding:11px 44px; background:#f5f7f7;
+  border-bottom:1px solid #e2e7e7; font-size:13px; color:#5e6a6b; }
+.gnav .t { font-weight:700; color:#3f4748; }
+.gnav .g { white-space:nowrap; } .gnav .g b { color:#3f4748; font-weight:500; margin-right:6px; }
+.gnav a { color:#1e795f; text-decoration:none; } .gnav a:hover { text-decoration:underline; }
+.gnav span.cur { color:#1f2324; font-weight:700; }
+@media (max-width:640px) { .gnav { padding:10px 22px; } }
+
 .map svg { width:100%; height:auto; display:block; } .map .mt { font-size:12px; fill:#3f4748; font-family:Roboto,Arial,sans-serif; }
 .key { display:flex; flex-wrap:wrap; gap:18px; font-size:13px; color:var(--n8); margin:8px 0 4px; }
 .key i { display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:-1px; margin-right:6px; }
@@ -150,6 +159,7 @@ function drawSM(root, spec) {
        use the years both model versions cover: the record 1998&ndash;2023 and forecasts 2016&ndash;2022.
        Analysis of 4 November 2026.</p>
   </header>
+  <nav class="gnav" aria-label="New Google model pages"><span class="t">New Google model (Nov 2026)</span><span class="g"><b>Nigeria</b><a href="https://ocha-dap.github.io/ds-aa-nga-flooding/exploration/2026/cerf/google-model-update/">Comparison</a> &middot; <span class="cur" aria-current="page">Gauges re-selected</span></span><span class="g"><b>Somalia</b><a href="https://ocha-dap.github.io/ds-aa-som-floods/google-model-update/">Comparison</a> &middot; <a href="https://ocha-dap.github.io/ds-aa-som-floods/google-model-update/model-selection/">Model choice re-run</a></span></nav>
 
   <article>
     <div class="stats">
