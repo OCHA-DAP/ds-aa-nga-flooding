@@ -24,7 +24,10 @@ import analysis as A  # noqa: E402
 from sm_chart import SM_CSS, SM_JS, sm_panel  # noqa: E402
 
 C_OLD, C_NEW, C_FS = "#2a78d6", "#eb6834", "#1baf7a"  # validated (dataviz validate_palette.js, light)
-YEARS = list(range(A.START, 2026))
+# Every old-vs-new comparison uses only the years both versions cover: the record 1998-2023 (the
+# calibration years) and, for forecasts, the seasons both archives cover completely (2016-2022).
+# The new model's 2023-2025 forecasts and 2024-2025 record are reported separately.
+YEARS = list(range(A.START, A.END + 1))
 N_YEARS = A.END - A.START + 1
 API_CHECKED = "4 November 2026"
 WUROBOKI = "hybas_1120842550"
@@ -106,10 +109,10 @@ def main():
         cells[y] = ((str(top), "sev" if top and top >= 4 else "fl", f"{y}: FloodScan 1-in-{top} flood year or rarer")
                     if top else ("", "no", f"{y}: below the FloodScan 1-in-3 level"))
     rows.append(("FloodScan flood year", cells))
-    for r, lab, ext in ((old, "Old model", False), (new, "New model", True)):
+    rf_eval = old["rf_complete"]  # forecast seasons both archives cover completely
+    assert set(rf_eval) <= set(new["rf_complete"])
+    for r, lab in ((old, "Old model"), (new, "New model")):
         n_exc = r["n_exc"]
-        if ext:
-            n_exc = pd.concat([n_exc, r["ext_n_exc"]])
         cells = {}
         for y, k in n_exc.items():
             k = int(k)
@@ -117,25 +120,25 @@ def main():
             cells[int(y)] = (str(k), "act" if act else ("z" if k == 0 else "part"),
                              f"{y}: up to {k} of 10 gauges over their 1-in-4 level on one day" + (" (rule met)" if act else ""))
         rows.append((f"{lab}: gauges over", cells))
-    for r, lab, comp, ff in ((old, "Old model", old["rf_complete"], old["rf_first_forecast"]),
-                             (new, "New model", new["ext_rf_complete"], {**new["rf_first_forecast"],
-                                                                        **new["ext_first_forecast"]})):
-        yrs_hit = set(r["rf_years"]) | (set(r.get("ext_rf_years", [])))
+    for r, lab in ((old, "Old model"), (new, "New model")):
+        ff = r["rf_first_forecast"]
+        yrs_hit = set(r["rf_years"]) & set(rf_eval)
         cells = {}
-        for y in comp:
+        for y in rf_eval:
             cells[y] = (("&#9679;", "act", f"{y}: a forecast issued {d(ff[y][0])} met the rule") if y in yrs_hit
                         else ("", "z", f"{y}: no forecast at leads 0-7 met the rule"))
         rows.append((f"{lab}: forecast", cells))
     year_grid = grid(rows, "Adamawa action trigger by year")
 
     # ------------------------------------------------------------ timing
-    t_years = sorted(set(old["first_crossing"]) | set(new["first_crossing"]) | set(old["rf_years"])
-                     | set(new["rf_years"]) | set(new["ext_first_crossing"]))
-    ffo, ffn = old["rf_first_forecast"], {**new["rf_first_forecast"], **new["ext_first_forecast"]}
+    ffo = {y: v for y, v in old["rf_first_forecast"].items() if y in rf_eval}
+    ffn = {y: v for y, v in new["rf_first_forecast"].items() if y in rf_eval}
+    assert all(y in YEARS for y in list(old["first_crossing"]) + list(new["first_crossing"]))
+    t_years = sorted(set(old["first_crossing"]) | set(new["first_crossing"]) | set(ffo) | set(ffn))
     t_rows = ""
     leads = {}
     for y in t_years:
-        oc, nc = old["first_crossing"].get(y), {**new["first_crossing"], **new["ext_first_crossing"]}.get(y)
+        oc, nc = old["first_crossing"].get(y), new["first_crossing"].get(y)
         oi, ni = ffo.get(y, (None,))[0], ffn.get(y, (None,))[0]
         ref = fs_first.get(y)
         top = max([rp for rp in A.FS_RP_LEVELS if y in fs_ev[rp]], default=None)
@@ -147,11 +150,9 @@ def main():
 
     # ------------------------------------------------------------ chart
     panels = []
-    for y in t_years + [2025]:  # 2025: the year the framework activated (2025 version), new model only
-        oc, nc = old["first_crossing"].get(y), {**new["first_crossing"], **new["ext_first_crossing"]}.get(y)
+    for y in t_years:
+        oc, nc = old["first_crossing"].get(y), new["first_crossing"].get(y)
         note = f"rule met: old {d(oc)} &middot; new {d(nc)}".replace("&ndash;", "no")
-        if y > A.END:
-            note = f"rule met: new {d(nc)} (old model ends 2023)".replace("&ndash;", "no")
         panels.append(sm_panel(str(y), note, f"{y}-08-01", f"{y}-11-30",
                                {"old": old["margin"], "new": new["margin"], "fs": fs_ratio},
                                marks={"old": oc, "new": nc}))
@@ -178,8 +179,8 @@ def main():
     def sc(s):
         f = lambda v: "&ndash;" if v is None or (isinstance(v, float) and np.isnan(v)) else f"{v:.2f}"
         return f"<td class=n>{s['TP']}</td><td class=n>{s['FP']}</td><td class=n>{s['FN']}</td><td class=n>{f(s['POD'])}</td><td class=n>{f(s['FAR'])}</td>"
-    rf_eval = old["rf_complete"]  # the years both forecast archives cover
     new_rf_shared = [y for y in new["rf_years"] if y in rf_eval]
+    mismatch = [y for y in new["mismatch_years"] if y in YEARS]  # old levels on new flows, shared years
     s_rows = ""
     for rp in A.FS_RP_LEVELS:
         s_rows += (f"<tr><td>1-in-{rp}</td><td>record, {A.START}&ndash;{A.END}</td>{sc(old['scores'][rp])}{sc(new['scores'][rp])}</tr>")
@@ -200,7 +201,16 @@ def main():
     assert all(v[1] == 0 for g, v in new["corr"].items() if g != OUTLIER)
     assert all(lv.new[g] > 3000 and lv.old[g] < 1200 for g in lv.index if g != OUTLIER)
     peak25 = float(new["margin"][new["margin"].index.year == 2025].max())
-    assert len(new["mismatch_years"]) == len(YEARS), "the callout says every season"
+    no_rows = ""
+    for y in (2023, 2024, 2025):
+        ra_k = "shared record, see above" if y <= A.END else f"{int(new['ext_n_exc'][y])} of 10"
+        pk = "" if y <= A.END else f"{float(new['margin'][new['margin'].index.year == y].max()):.0%} of its level"
+        met = (y in new["ext_years"]) or (y in new["ext_rf_years"])
+        no_rows += (f"<tr><td><b>{y}</b></td><td>{ra_k}</td><td>{pk}</td><td>{int(new['ext_rf_n_exc'][y])} of 10</td>"
+                    f"<td>{'yes' if met else 'no'}</td></tr>")
+    assert not any(y in new["ext_rf_years"] for y in (2023, 2024, 2025))
+    assert len(mismatch) == len(YEARS), "the callout says every season"
+    assert {2024, 2025} <= set(new["mismatch_years"]), "the callout says 2024 and 2025 too"
     oc_, nc_ = [v[0] for v in old["corr"].values()], [v[0] for v in new["corr"].values()]
     assert min(nc_) > min(oc_) and max(nc_) > max(oc_), "the text says slightly more closely"
     # the single forecast issued on the first 2016 date put 9 of 10 gauges over on one valid day
@@ -286,7 +296,7 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
       <div class="stat"><div class="v">{len(old['years'])} &rarr; {len(new['years'])}</div><div class="l">activations {A.START}&ndash;{A.END}, old &rarr; new: the same six years</div></div>
       <div class="stat"><div class="v">{main_ratio.min():.1f}&ndash;{main_ratio.max():.1f}x</div><div class="l">higher 1-in-4 levels at the nine main-channel gauges</div></div>
       <div class="stat"><div class="v">{abs(early)} earlier &ndash; {late} later</div><div class="l">days: change in the first day the rule is met ({y_early}, {y_late})</div></div>
-      <div class="stat flag"><div class="v">{len(new['mismatch_years'])} of {len(YEARS)}</div><div class="l">seasons activated if the old levels met new-model flows</div></div>
+      <div class="stat flag"><div class="v">{len(mismatch)} of {len(YEARS)}</div><div class="l">seasons {A.START}&ndash;{A.END} activated if the old levels met new-model flows</div></div>
     </div>
 
     <h2><span class="num">1</span>What changes</h2>
@@ -305,17 +315,17 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
           against {lv.old.drop(OUTLIER).min():,.0f}&ndash;{lv.old.drop(OUTLIER).max():,.0f} on the nine main-channel gauges. Its August&ndash;November flows follow FloodScan
           slightly more closely (best correlation {min(v[0] for v in new['corr'].values()):.2f}&ndash;{max(v[0] for v in new['corr'].values()):.2f} against {min(v[0] for v in old['corr'].values()):.2f}&ndash;{max(v[0] for v in old['corr'].values()):.2f}),
           and match it best with no time offset on the main channel, where the old model's best match was offset by three days.</li>
-      <li><strong>2024 and 2025</strong>, which only the new model covers: the rule is not met in either year. In 2025 at most one of the ten gauges
-          went over its level on any day, and the sixth-highest peaked at {peak25:.0%} of its level.
-          The framework did activate on 7&ndash;8 September 2025, under the 2025 version's single-gauge rule on the forecasts of the time;
-          the old model's archive ends in 2023, so it cannot be compared for 2025.</li>
+      <li><strong>Same years throughout.</strong> Every old-versus-new comparison on this page uses only the years both versions cover:
+          the record {A.START}&ndash;{A.END} (the calibration years) and, for forecasts, the seasons {rf_eval[0]}&ndash;{rf_eval[-1]} that both
+          archives cover completely. What the new model says about 2023&ndash;2025 beyond that is in section 6: the rule is not met in
+          2024 or 2025.</li>
     </ul>
 
     <div class="callout warn"><strong>Before Google switches Flood Hub to the new model.</strong> On {API_CHECKED} the Flood Hub API still serves
       the old model: Wuroboki's warning, danger and extreme-danger levels are unchanged (1,094, 1,352 and 1,648 m³/s) and gauges keep their
       <code>hybas_</code> identifiers. The monitoring reads Google against the endorsed levels (about 1,100&ndash;1,120 m³/s on the main channel). The new model's
       ordinary wet-season flows sit far above those levels: applied to the new record they would have met the rule in
-      <strong>every one of the {len(YEARS)} seasons 1998&ndash;2025</strong>. The levels have to be replaced by the refitted ones (section 4) when the
+      <strong>every one of the {len(YEARS)} seasons {A.START}&ndash;{A.END}</strong> (and in 2024 and 2025 too). The levels have to be replaced by the refitted ones (section 4) when the
       API switches, and before that if Google announces a date. Signals that the switch has happened: the warning levels or gauge model
       identifiers change for these gauges, or identifiers move from <code>hybas_</code> to <code>subhybas_</code> as in the new dataset (not confirmed).</div>
 
@@ -331,10 +341,11 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
 
     <h2><span class="num">3</span>When the trigger is met</h2>
     <p>One column per year. FloodScan row: the rarest FloodScan flood level reached in Adamawa that year (3, 4 or 5 for 1-in-3, 1-in-4,
-       1-in-5; the benchmark the design was scored on, available to 2023). Model rows: the most gauges over their own 1-in-4 level on any
+       1-in-5; the benchmark the design was scored on). Model rows: the most gauges over their own 1-in-4 level on any
        one day of August&ndash;November; filled where the rule is met (6 or more). Forecast rows: a year in which the forecasts at leads of
        0 to 7 days put 6 or more gauges over their level on the same day (the design's reading: the highest forecast value per
-       gauge and day across issues). Hatched: no data. Hover a cell for details.</p>
+       gauge and day across issues). Years {A.START}&ndash;{A.END}, the years both versions cover; forecasts {rf_eval[0]}&ndash;{rf_eval[-1]},
+       the seasons both forecast archives cover completely (hatched otherwise). Hover a cell for details.</p>
     {year_grid}
     <h3>Dates</h3>
     <p>First day each model's record meets the rule, and first forecast issue date that meets it. The last two columns are the reference the
@@ -351,7 +362,7 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
     <div class="sm-grid" id="sm-nga"></div>
     <p class="figcap">Daily flow at the sixth-highest of the ten gauges, as a share of that gauge's own 1-in-4 level, August to November, on each
        model's record; the rule is met on days the line is above 100%, and dots mark the first such day. FloodScan: flooded fraction in Adamawa
-       as a share of its own 1-in-4 level (to 2023). Years shown: every year either model or either forecast met the rule, and 2025.</p>
+       as a share of its own 1-in-4 level. Years shown: every year from 1998 to 2023 in which either model or either forecast met the rule.</p>
     <script>drawSM(document.getElementById('sm-nga'), {json.dumps(spec)});</script>
 
     <h2><span class="num">4</span>Gauge levels</h2>
@@ -373,13 +384,26 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
     <div class="tablewrap"><table class="data"><thead><tr><th>Level</th><th>Old model, years</th><th>New model, years</th></tr></thead>
       <tbody>{sweep}</tbody></table></div></details>
 
-    <h2><span class="num">6</span>Method</h2>
+    <h2><span class="num">6</span>New model only: 2023&ndash;2025</h2>
+    <p>The new record runs two years, and the new forecast archive two and a half seasons, past the old ones. These years have no
+       old-model counterpart and are kept out of every comparison above. Levels are still those fitted on {A.START}&ndash;{A.END}.
+       FloodScan in this benchmark ends in 2023.</p>
+    <div class="tablewrap"><table class="data"><thead><tr><th>Year</th><th>Record: most gauges over on one day</th>
+      <th>Record: sixth-highest gauge at its peak</th><th>Forecasts: most gauges over (leads 0&ndash;7)</th><th>Rule met</th></tr></thead>
+      <tbody>{no_rows}</tbody></table></div>
+    <p>The framework did activate on 7&ndash;8 September 2025, under the 2025 version's single-gauge rule on the forecasts of the time.
+       The 2026 rule on the new model is not met in 2025: at most one of the ten gauges went over its level on any day, and the
+       sixth-highest peaked at {peak25:.0%} of its level. The old model's archive ends in 2023, so it cannot be compared for 2025.</p>
+
+    <h2><span class="num">7</span>Method</h2>
     <ul>
       <li>The design notebook's steps (<code>exploration/2026/cerf/workflow/06_trigger_definition.ipynb</code>) run on each model's data in turn, in
           <code>analysis.py</code> next to this page: the estimator is copied verbatim; a gauge counts when strictly above its level; forecast valid
           day = issue day + lead, leads 0&ndash;7, best value per day across issues, years whose forecasts reach October.</li>
       <li>The old model run here reproduces the endorsed levels to 0.1 m³/s and the endorsed years (record 1998, 1999, 2012, 2018, 2019, 2022;
           forecast 2018, 2019, 2022).</li>
+      <li>Same years for both versions: levels fitted on {A.START}&ndash;{A.END} for both; activations, timing, FloodScan scores, correlations
+          and the old-levels-on-new-flows count all over {A.START}&ndash;{A.END}; forecasts over the complete seasons {rf_eval[0]}&ndash;{rf_eval[-1]}.</li>
       <li>The gauge set is the endorsed one; gauge selection was not re-run. FloodScan benchmark years are the design's.</li>
       <li>Data: Google Runoff Reanalysis &amp; Reforecast, public Google Cloud bucket <code>flood-forecasting</code>, old version
           <code>model_id_8583a5c2_v0</code>, new version <code>distributed_model_2026_11</code> (CC-BY-4.0).</li>
@@ -405,7 +429,7 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
         "forecast_years": {"old": old["rf_years"], "new": new["rf_years"]},
         "first_forecast_issue": {"old": {y: str(x[0].date()) for y, x in ffo.items()},
                                  "new": {y: str(x[0].date()) for y, x in ffn.items()}},
-        "old_levels_on_new_flows": new["mismatch_years"],
+        "old_levels_on_new_flows_1998_2023": mismatch,
         "new_2024_2025": {"years": new["ext_years"], "max_gauges": {int(k): int(v) for k, v in new["ext_n_exc"].items()}},
     }
     (HERE / "data.json").write_text(json.dumps(summary, indent=1) + "\n", encoding="utf-8")
