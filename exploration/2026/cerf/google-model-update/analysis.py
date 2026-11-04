@@ -375,4 +375,5 @@ if __name__ == "__main__":
                   {y: str(d.date()) for y, d in r["ext_first_crossing"].items()})
             print("ext rf:", r["ext_rf_complete"], r["ext_rf_years"], dict(r["ext_rf_n_exc"]))
             print("ext first forecast:", {y: (str(a.date()), str(b.date()), lt) for y, (a, b, lt) in r["ext_first_forecast"].items()})
+    sys.stdout.flush()
     os._exit(0)

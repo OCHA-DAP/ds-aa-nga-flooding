@@ -200,6 +200,15 @@ def main():
     assert all(v[1] == 0 for g, v in new["corr"].items() if g != OUTLIER)
     assert all(lv.new[g] > 3000 and lv.old[g] < 1200 for g in lv.index if g != OUTLIER)
     peak25 = float(new["margin"][new["margin"].index.year == 2025].max())
+    assert len(new["mismatch_years"]) == len(YEARS), "the callout says every season"
+    oc_, nc_ = [v[0] for v in old["corr"].values()], [v[0] for v in new["corr"].values()]
+    assert min(nc_) > min(oc_) and max(nc_) > max(oc_), "the text says slightly more closely"
+    # the single forecast issued on the first 2016 date put 9 of 10 gauges over on one valid day
+    rf16 = A._rf_frame(new["rf"])
+    rf16 = rf16[(rf16.issue_time == ffn[2016][0]) & rf16.leadtime.le(A.MAX_LEAD_TIME) & rf16.gauge_id.isin(new["thr"].index)]
+    rf16 = rf16.join(new["thr"].rename("t"), on="gauge_id")
+    n16 = int((rf16.streamflow > rf16.t).groupby(rf16.valid_time).sum().max())
+    assert n16 == 9, n16
     early = min(shifts.values())
     late = max(shifts.values())
     y_early = min(shifts, key=shifts.get)
@@ -289,7 +298,7 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
           (same day in {yrs([y for y in old['years'] if shifts[y] == 0])}). The two large moves are {y_late}, which the new model reaches {late} days
           after the old model and after FloodScan's first day over its own 1-in-4 level, and {y_early}, which it reaches {abs(early)} days earlier.</li>
       <li><strong>Forecasts</strong> (archive {rf_eval[0]}&ndash;{rf_eval[-1]} on both models, leads 0&ndash;7 days): the old model's forecasts meet the
-          rule in {yrs(old['rf_years'])}, the new model's in {yrs(new_rf_shared)}. 2016 is new: a forecast issued {d(ffn[2016][0])} put 9 of 10 gauges over
+          rule in {yrs(old['rf_years'])}, the new model's in {yrs(new_rf_shared)}. 2016 is new: a forecast issued {d(ffn[2016][0])} put {n16} of 10 gauges over
           their level, while neither model's record nor FloodScan show a 1-in-4 flood that year. The first qualifying forecast moves by
           {", ".join(f"{change(ffo[y][0], ffn[y][0])} in {y}" for y in sorted(fshifts))}.</li>
       <li><strong>Levels.</strong> The new model runs about three times higher at these gauges: 1-in-4 levels of {lv.new.drop(OUTLIER).min():,.0f}&ndash;{lv.new.drop(OUTLIER).max():,.0f} m³/s
@@ -323,8 +332,9 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
     <h2><span class="num">3</span>When the trigger is met</h2>
     <p>One column per year. FloodScan row: the rarest FloodScan flood level reached in Adamawa that year (3, 4 or 5 for 1-in-3, 1-in-4,
        1-in-5; the benchmark the design was scored on, available to 2023). Model rows: the most gauges over their own 1-in-4 level on any
-       one day of August&ndash;November; filled where the rule is met (6 or more). Forecast rows: a year in which one forecast, at leads of
-       0 to 7 days, put 6 or more gauges over their level on the same day. Hatched: no data. Hover a cell for details.</p>
+       one day of August&ndash;November; filled where the rule is met (6 or more). Forecast rows: a year in which the forecasts at leads of
+       0 to 7 days put 6 or more gauges over their level on the same day (the design's reading: the highest forecast value per
+       gauge and day across issues). Hatched: no data. Hover a cell for details.</p>
     {year_grid}
     <h3>Dates</h3>
     <p>First day each model's record meets the rule, and first forecast issue date that meets it. The last two columns are the reference the
@@ -405,4 +415,5 @@ details {{ margin:10px 0 0; font-size:13.5px; }} details summary {{ cursor:point
 
 if __name__ == "__main__":
     main()
+    sys.stdout.flush()
     os._exit(0)
