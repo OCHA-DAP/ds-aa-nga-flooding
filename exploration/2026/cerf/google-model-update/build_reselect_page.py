@@ -33,13 +33,15 @@ CFG = [("old_endorsed", "Old model, endorsed gauges", C_OLD),
        ("new_reselected", "New model, re-selected gauges", C_RES)]
 SHORT = {"old_endorsed": "Old, endorsed", "new_endorsed": "New, endorsed", "new_reselected": "New, re-selected"}
 NUMAN_LON = 12.03  # Numan, where the Gongola joins the Benue
+YOLA_LON = 12.48
 TOWNS = [("Yola", 9.21, 12.48), ("Numan", 9.467, 12.033)]
 
 
 def gauge_map(ranked_old, ranked_new, endorsed, selected):
     """Outlet locations of the candidates; endorsed and re-selected sets marked."""
-    W, H, m = 860, 300, 30
-    lon0, lon1, lat0, lat1 = 11.40, 13.10, 9.15, 9.65
+    W, H, m = 860, 460, 30
+    lon0, lon1, lat0, lat1 = 11.40, 13.10, 8.80, 9.65
+    assert ranked_new.latitude.between(lat0, lat1).all() and ranked_new.longitude.between(lon0, lon1).all()
     sx = lambda lon: m + (lon - lon0) / (lon1 - lon0) * (W - 2 * m)
     sy = lambda lat: H - m - (lat - lat0) / (lat1 - lat0) * (H - 2 * m)
     old = ranked_old.set_index("gauge_id")
@@ -82,14 +84,27 @@ def main():
     # ------------------------------------------------------------ facts the text states
     kept = set(selected) & set(endorsed)
     top15 = rn.iloc[:15]
-    downstream = [g for g in selected if rn.set_index("gauge_id").loc[g, "longitude"] < NUMAN_LON]
+    lon = rn.set_index("gauge_id").longitude
+    downstream = [g for g in selected if lon[g] < NUMAN_LON]
+    between = [g for g in selected if NUMAN_LON < lon[g] < YOLA_LON]
+    assert len(downstream) + len(between) == 10
+    assert all(rn.set_index("gauge_id").loc[g, "river"] == "Benue" for g in selected)
+    assert lon[selected].max() < lon[endorsed].min(), "the text says the new ten sit further down the Benue"
+    gap10 = float(rn.iloc[9].best_r - rn.iloc[10].best_r)
+    assert gap10 < 0.001, gap10
+    thr_res = cf["new_reselected"]["thr"]
+    thr_end_main = cf["new_endorsed"]["thr"].drop(B.OUTLIER)
+    assert thr_res.min() > thr_end_main.max(), "the text says the re-selected gauges carry more water"
+    assert B.OUTLIER not in selected
+    for k in ("new_endorsed", "new_reselected"):
+        assert set(cf["old_endorsed"]["rf_complete"]) <= set(cf[k]["rf_complete"])
     yr_old, yr_res = set(cf["old_endorsed"]["years"]), set(cf["new_reselected"]["years"])
     assert cf["new_endorsed"]["years"] == cf["old_endorsed"]["years"]
     lost, gained = sorted(yr_old - yr_res), sorted(yr_res - yr_old)
     assert lost == [2019] and gained == [2020], (lost, gained)
     assert 2019 in fs_ev[3] and 2019 not in fs_ev[4] and 2020 not in fs_ev[3]
     assert all(cf["new_reselected"]["scores"][4][k] == cf["old_endorsed"]["scores"][4][k] for k in ("TP", "FP", "FN"))
-    assert (rn.iloc[:10].best_lag == 0).all(), "the text says no time offset at every selected gauge"
+    assert (rn.iloc[:15].best_lag == 0).all(), "the text says no time offset at every one of the top 15"
     end_ranks = rn.set_index("gauge_id").loc[endorsed, "rank"]
 
     # ------------------------------------------------------------ year grid
@@ -155,8 +170,8 @@ def main():
                 ("<b style='color:%s'>endorsed</b>" % C_OLD if g.gauge_id in endorsed else ""))
         name = "GloFAS Wuroboki" if g.source == "glofas" else g.gauge_id.removeprefix("hybas_")
         rk_rows += (f"<tr><td class=n>{int(g['rank'])}</td><td>{name}</td><td class=n>{g.latitude:.3f}, {g.longitude:.3f}</td>"
-                    f"<td class=n>{g.best_r:.3f} ({B.lag(int(g.best_lag))})</td><td class=n>{int(o['rank'])}</td>"
-                    f"<td class=n>{o.best_r:.3f} ({B.lag(int(o.best_lag))})</td><td>{mark}</td></tr>")
+                    f"<td class=n>{g.best_r:.4f} ({B.lag(int(g.best_lag))})</td><td class=n>{int(o['rank'])}</td>"
+                    f"<td class=n>{o.best_r:.4f} ({B.lag(int(o.best_lag))})</td><td>{mark}</td></tr>")
 
     # ------------------------------------------------------------ scores, levels, sweep
     def sc(s):
@@ -203,7 +218,8 @@ def main():
     <p>The <a href="../" style="color:#fff">comparison page</a> keeps the ten endorsed gauges and refits only their levels. Here the
        design's gauge selection is re-run on the new model as well, exactly as it was run on the old one, and the endorsed rule
        (at least 6 of 10 gauges over their own 1-in-4 level on the same day) is applied to the ten gauges it picks. All comparisons
-       use the years both model versions cover: the record 1998&ndash;2023 and forecasts 2016&ndash;2022. {B.API_CHECKED}.</p>
+       use the years both model versions cover: the record 1998&ndash;2023 and forecasts {rf_eval[0]}&ndash;{rf_eval[-1]}.
+       Analysis of {B.API_CHECKED}.</p>
   </header>
 
   <article>
@@ -217,12 +233,13 @@ def main():
     <h2><span class="num">1</span>What changes</h2>
     <ul>
       <li><strong>The gauges.</strong> {'None' if not kept else len(kept)} of the ten endorsed gauges make the new top ten. The new ten sit further down the
-          Benue: {len(downstream)} downstream of Numan, where the Gongola joins, and {10 - len(downstream)} between Numan and Yola. The endorsed
-          gauges, around Yola and upstream, rank {int(end_ranks.min())} to {int(end_ranks.max())} on the new model.</li>
+          Benue: {len(downstream)} downstream of Numan, where the Gongola joins, and {len(between)} between Numan and Yola. All ten endorsed
+          gauges sit upstream of them, from about 15 km below Yola to above it, and rank {int(end_ranks.min())} to {int(end_ranks.max())} on the new model.</li>
       <li><strong>The ranking is almost flat.</strong> On the new model the top 15 candidates all correlate with FloodScan between
-          {top15.best_r.min():.3f} and {top15.best_r.max():.3f}, so which ten are picked is decided in the third decimal. On the old model the
+          {top15.best_r.min():.3f} and {top15.best_r.max():.3f}, and the tenth and eleventh differ by only {gap10:.4f}, so which ten are picked
+          comes down to the fourth decimal. On the old model the
           top ten ranged from {ro.iloc[:10].best_r.min():.3f} to {ro.iloc[:10].best_r.max():.3f}. The new model also matches FloodScan best with no
-          time offset at every one of these gauges.</li>
+          time offset at every one of these fifteen gauges.</li>
       <li><strong>Activation years.</strong> {B.yrs(yr_res)} with the re-selected gauges, against {B.yrs(yr_old)} with the endorsed gauges
           (the same on either model). 2019, a FloodScan 1-in-3 year, drops out; 2020, below the FloodScan 1-in-3 level, comes in. Against the
           design's 1-in-4 benchmark the scores are unchanged; against 1-in-3 there is one hit fewer and one false alarm more.</li>
@@ -232,7 +249,7 @@ def main():
           {B.yrs(cf['new_reselected']['rf_shared'])}, against {B.yrs(cf['old_endorsed']['rf_shared'])} on the old design and
           {B.yrs(cf['new_endorsed']['rf_shared'])} on the new model with the endorsed gauges.</li>
       <li><strong>Levels.</strong> The re-selected gauges carry more water: 1-in-4 levels of {cf['new_reselected']['thr'].min():,.0f}&ndash;{cf['new_reselected']['thr'].max():,.0f} m³/s,
-          against {cf['new_endorsed']['thr'].drop('hybas_1120840690').min():,.0f}&ndash;{cf['new_endorsed']['thr'].max():,.0f} for the endorsed main-channel
+          against {thr_end_main.min():,.0f}&ndash;{thr_end_main.max():,.0f} for the endorsed main-channel
           gauges on the new model. The small tributary gauge of the endorsed set drops out.</li>
     </ul>
     <div class="callout">Only the gauge selection is re-run. The return period (1-in-4), the gauge count (6 of 10) and the lead window were
@@ -241,7 +258,7 @@ def main():
       to the new model, its list of gauges may change too.</div>
 
     <h2><span class="num">2</span>Which gauges</h2>
-    <p>Outlets of the 42 candidates (hover for ranks). Filled: the ten re-selected on the new model. Open rings: the ten endorsed gauges.</p>
+    <p>Outlets of the 42 Google candidates (hover for ranks). Filled: the ten re-selected on the new model. Open rings: the ten endorsed gauges.</p>
     <div class="key"><span><i style="background:{C_RES}"></i>re-selected (new model)</span><span><i style="border:2.5px solid {C_OLD};width:9px;height:9px"></i>endorsed (old model)</span><span><i style="background:#b8c1c9"></i>other candidates</span></div>
     <div class="map">{gauge_map(ro, rn, endorsed, selected)}</div>
     <details><summary>Full ranking: all 43 candidates</summary>

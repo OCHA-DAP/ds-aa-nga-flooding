@@ -292,7 +292,7 @@ def main():
        it on the new model with exactly the method used to design it on the old one: the same ten gauges, the same
        August&ndash;November season, the same 1998&ndash;2023 calibration years, the same level and gauge count. Only the
        per-gauge levels are refitted, on the new model's own record. The readiness trigger runs on GloFAS and does not
-       change. {API_CHECKED}.</p>
+       change. Analysis of {API_CHECKED}.</p>
   </header>
 
   <article>
