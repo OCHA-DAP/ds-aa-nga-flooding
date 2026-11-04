@@ -1,0 +1,412 @@
+{
+ "generated": "2026-11-04",
+ "selected_new": [
+  "hybas_1120838490",
+  "hybas_1120838270",
+  "hybas_1120837740",
+  "hybas_1120837500",
+  "hybas_1120837510",
+  "hybas_1120838030",
+  "hybas_1120838280",
+  "hybas_1121967520",
+  "hybas_1120837770",
+  "hybas_1121966800"
+ ],
+ "endorsed": [
+  "hybas_1120842990",
+  "hybas_1120843610",
+  "hybas_1120845060",
+  "hybas_1120849600",
+  "hybas_1120848550",
+  "hybas_1121970280",
+  "hybas_1120842550",
+  "hybas_1120840700",
+  "hybas_1120840560",
+  "hybas_1120840690"
+ ],
+ "ranking_new": [
+  {
+   "rank": 1,
+   "gauge_id": "hybas_1120838490",
+   "source": "grrr",
+   "best_r": 0.7647,
+   "best_lag": 0
+  },
+  {
+   "rank": 2,
+   "gauge_id": "hybas_1120838270",
+   "source": "grrr",
+   "best_r": 0.7646,
+   "best_lag": 0
+  },
+  {
+   "rank": 3,
+   "gauge_id": "hybas_1120837740",
+   "source": "grrr",
+   "best_r": 0.7645,
+   "best_lag": 0
+  },
+  {
+   "rank": 4,
+   "gauge_id": "hybas_1120837500",
+   "source": "grrr",
+   "best_r": 0.7645,
+   "best_lag": 0
+  },
+  {
+   "rank": 5,
+   "gauge_id": "hybas_1120837510",
+   "source": "grrr",
+   "best_r": 0.7644,
+   "best_lag": 0
+  },
+  {
+   "rank": 6,
+   "gauge_id": "hybas_1120838030",
+   "source": "grrr",
+   "best_r": 0.7643,
+   "best_lag": 0
+  },
+  {
+   "rank": 7,
+   "gauge_id": "hybas_1120838280",
+   "source": "grrr",
+   "best_r": 0.7641,
+   "best_lag": 0
+  },
+  {
+   "rank": 8,
+   "gauge_id": "hybas_1121967520",
+   "source": "grrr",
+   "best_r": 0.7592,
+   "best_lag": 0
+  },
+  {
+   "rank": 9,
+   "gauge_id": "hybas_1120837770",
+   "source": "grrr",
+   "best_r": 0.7591,
+   "best_lag": 0
+  },
+  {
+   "rank": 10,
+   "gauge_id": "hybas_1121966800",
+   "source": "grrr",
+   "best_r": 0.7589,
+   "best_lag": 0
+  },
+  {
+   "rank": 11,
+   "gauge_id": "hybas_1120839560",
+   "source": "grrr",
+   "best_r": 0.7585,
+   "best_lag": 0
+  },
+  {
+   "rank": 12,
+   "gauge_id": "hybas_1121970280",
+   "source": "grrr",
+   "best_r": 0.7571,
+   "best_lag": 0
+  },
+  {
+   "rank": 13,
+   "gauge_id": "hybas_1120840560",
+   "source": "grrr",
+   "best_r": 0.757,
+   "best_lag": 0
+  },
+  {
+   "rank": 14,
+   "gauge_id": "hybas_1120840700",
+   "source": "grrr",
+   "best_r": 0.757,
+   "best_lag": 0
+  },
+  {
+   "rank": 15,
+   "gauge_id": "hybas_1120842550",
+   "source": "grrr",
+   "best_r": 0.757,
+   "best_lag": 0
+  },
+  {
+   "rank": 16,
+   "gauge_id": "hybas_1120848550",
+   "source": "grrr",
+   "best_r": 0.7569,
+   "best_lag": 0
+  },
+  {
+   "rank": 17,
+   "gauge_id": "hybas_1120849600",
+   "source": "grrr",
+   "best_r": 0.7562,
+   "best_lag": 0
+  },
+  {
+   "rank": 18,
+   "gauge_id": "hybas_1120845060",
+   "source": "grrr",
+   "best_r": 0.756,
+   "best_lag": 0
+  },
+  {
+   "rank": 19,
+   "gauge_id": "hybas_1120842990",
+   "source": "grrr",
+   "best_r": 0.7551,
+   "best_lag": 0
+  },
+  {
+   "rank": 20,
+   "gauge_id": "hybas_1120843610",
+   "source": "grrr",
+   "best_r": 0.755,
+   "best_lag": 0
+  },
+  {
+   "rank": 21,
+   "gauge_id": "hybas_1121972120",
+   "source": "grrr",
+   "best_r": 0.7517,
+   "best_lag": 2
+  },
+  {
+   "rank": 22,
+   "gauge_id": "hybas_1120849880",
+   "source": "grrr",
+   "best_r": 0.75,
+   "best_lag": 2
+  },
+  {
+   "rank": 23,
+   "gauge_id": "hybas_1121972370",
+   "source": "grrr",
+   "best_r": 0.7496,
+   "best_lag": 2
+  },
+  {
+   "rank": 24,
+   "gauge_id": "hybas_1120855850",
+   "source": "grrr",
+   "best_r": 0.7424,
+   "best_lag": 3
+  },
+  {
+   "rank": 25,
+   "gauge_id": "hybas_1120836240",
+   "source": "grrr",
+   "best_r": 0.7385,
+   "best_lag": 1
+  },
+  {
+   "rank": 26,
+   "gauge_id": "hybas_1120835720",
+   "source": "grrr",
+   "best_r": 0.7378,
+   "best_lag": 1
+  },
+  {
+   "rank": 27,
+   "gauge_id": "hybas_1120834480",
+   "source": "grrr",
+   "best_r": 0.7355,
+   "best_lag": 2
+  },
+  {
+   "rank": 28,
+   "gauge_id": "hybas_1120838680",
+   "source": "grrr",
+   "best_r": 0.7334,
+   "best_lag": 1
+  },
+  {
+   "rank": 29,
+   "gauge_id": "hybas_1120840690",
+   "source": "grrr",
+   "best_r": 0.7334,
+   "best_lag": 1
+  },
+  {
+   "rank": 30,
+   "gauge_id": "hybas_1121969660",
+   "source": "grrr",
+   "best_r": 0.7315,
+   "best_lag": 1
+  },
+  {
+   "rank": 31,
+   "gauge_id": "hybas_1120838040",
+   "source": "grrr",
+   "best_r": 0.7311,
+   "best_lag": 2
+  },
+  {
+   "rank": 32,
+   "gauge_id": "hybas_1120847840",
+   "source": "grrr",
+   "best_r": 0.7283,
+   "best_lag": 1
+  },
+  {
+   "rank": 33,
+   "gauge_id": "hybas_1121971740",
+   "source": "grrr",
+   "best_r": 0.7272,
+   "best_lag": 2
+  },
+  {
+   "rank": 34,
+   "gauge_id": "hybas_1120843330",
+   "source": "grrr",
+   "best_r": 0.7256,
+   "best_lag": 1
+  },
+  {
+   "rank": 35,
+   "gauge_id": "hybas_1120853190",
+   "source": "grrr",
+   "best_r": 0.7251,
+   "best_lag": 2
+  },
+  {
+   "rank": 36,
+   "gauge_id": "hybas_1121970880",
+   "source": "grrr",
+   "best_r": 0.7232,
+   "best_lag": 1
+  },
+  {
+   "rank": 37,
+   "gauge_id": "hybas_1120856740",
+   "source": "grrr",
+   "best_r": 0.723,
+   "best_lag": 2
+  },
+  {
+   "rank": 38,
+   "gauge_id": "hybas_1120858800",
+   "source": "grrr",
+   "best_r": 0.7203,
+   "best_lag": 2
+  },
+  {
+   "rank": 39,
+   "gauge_id": "hybas_1120861630",
+   "source": "grrr",
+   "best_r": 0.7183,
+   "best_lag": 2
+  },
+  {
+   "rank": 40,
+   "gauge_id": "hybas_1120835110",
+   "source": "grrr",
+   "best_r": 0.7151,
+   "best_lag": 1
+  },
+  {
+   "rank": 41,
+   "gauge_id": "hybas_1120865840",
+   "source": "grrr",
+   "best_r": 0.7109,
+   "best_lag": 3
+  },
+  {
+   "rank": 42,
+   "gauge_id": "hybas_1120861420",
+   "source": "grrr",
+   "best_r": 0.7066,
+   "best_lag": 2
+  },
+  {
+   "rank": 43,
+   "gauge_id": "wuroboki",
+   "source": "glofas",
+   "best_r": 0.6786,
+   "best_lag": 1
+  }
+ ],
+ "levels_reselected": {
+  "hybas_1120838490": 4339.3,
+  "hybas_1120838270": 4340.3,
+  "hybas_1120837740": 4340.2,
+  "hybas_1120837500": 4339.5,
+  "hybas_1120837510": 4339.2,
+  "hybas_1120838030": 4340.9,
+  "hybas_1120838280": 4301.0,
+  "hybas_1121967520": 3709.1,
+  "hybas_1120837770": 3705.7,
+  "hybas_1121966800": 3701.9
+ },
+ "years": {
+  "old_endorsed": [
+   1998,
+   1999,
+   2012,
+   2018,
+   2019,
+   2022
+  ],
+  "new_endorsed": [
+   1998,
+   1999,
+   2012,
+   2018,
+   2019,
+   2022
+  ],
+  "new_reselected": [
+   1998,
+   1999,
+   2012,
+   2018,
+   2020,
+   2022
+  ]
+ },
+ "forecast_years_2016_2022": {
+  "old_endorsed": [
+   2018,
+   2019,
+   2022
+  ],
+  "new_endorsed": [
+   2016,
+   2018,
+   2019,
+   2022
+  ],
+  "new_reselected": [
+   2018,
+   2020,
+   2022
+  ]
+ },
+ "first_day": {
+  "old_endorsed": {
+   "1998": "1998-09-26",
+   "1999": "1999-09-07",
+   "2012": "2012-08-23",
+   "2018": "2018-09-13",
+   "2019": "2019-10-16",
+   "2022": "2022-09-03"
+  },
+  "new_endorsed": {
+   "1998": "1998-09-25",
+   "1999": "1999-09-07",
+   "2012": "2012-09-13",
+   "2018": "2018-09-13",
+   "2019": "2019-09-22",
+   "2022": "2022-08-28"
+  },
+  "new_reselected": {
+   "1998": "1998-09-26",
+   "1999": "1999-08-31",
+   "2012": "2012-09-15",
+   "2018": "2018-09-12",
+   "2020": "2020-10-03",
+   "2022": "2022-08-29"
+  }
+ }
+}

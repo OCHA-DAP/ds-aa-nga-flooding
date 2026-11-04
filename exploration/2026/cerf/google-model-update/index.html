@@ -48,6 +48,7 @@ details { margin:10px 0 0; font-size:13.5px; } details summary { cursor:pointer;
 .provenance { margin:34px 44px 40px; padding-top:14px; border-top:1px solid #e2e7e7; font-size:12px; color:var(--n7); line-height:1.7; } .provenance a { color:var(--b6); }
 @media (max-width:640px) { article { padding:4px 22px 16px; } .hero { padding:32px 22px 28px; } .provenance { margin:28px 22px 32px; } }
 
+
 .sm-legend { display:flex; flex-wrap:wrap; gap:18px; margin:14px 0 4px; font-size:13px; color:var(--n8,#3a4552); }
 .sm-legend span.sw { display:inline-block; width:18px; height:3px; border-radius:2px; vertical-align:middle; margin-right:7px; }
 .sm-legend span.sw.dash { background:none !important; border-top:3px dashed; height:0; }
@@ -176,6 +177,9 @@ function drawSM(root, spec) {
           the record 1998&ndash;2023 (the calibration years) and, for forecasts, the seasons 2016&ndash;2022 that both
           archives cover completely. What the new model says about 2023&ndash;2025 beyond that is in section 6: the rule is not met in
           2024 or 2025.</li>
+      <li><strong>Gauges.</strong> This page keeps the ten endorsed gauges and refits only their levels. A
+          <a href="reselected-gauges/">variant page</a> also re-runs the design's gauge selection on the new model and applies the
+          rule to the ten gauges it picks.</li>
     </ul>
 
     <div class="callout warn"><strong>Before Google switches Flood Hub to the new model.</strong> On 4 November 2026 the Flood Hub API still serves
@@ -261,7 +265,8 @@ function drawSM(root, spec) {
           forecast 2018, 2019, 2022).</li>
       <li>Same years for both versions: levels fitted on 1998&ndash;2023 for both; activations, timing, FloodScan scores, correlations
           and the old-levels-on-new-flows count all over 1998&ndash;2023; forecasts over the complete seasons 2016&ndash;2022.</li>
-      <li>The gauge set is the endorsed one; gauge selection was not re-run. FloodScan benchmark years are the design's.</li>
+      <li>The gauge set is the endorsed one; gauge selection is re-run on the new model in the <a href="reselected-gauges/">variant page</a>.
+          FloodScan benchmark years are the design's.</li>
       <li>Data: Google Runoff Reanalysis &amp; Reforecast, public Google Cloud bucket <code>flood-forecasting</code>, old version
           <code>model_id_8583a5c2_v0</code>, new version <code>distributed_model_2026_11</code> (CC-BY-4.0).</li>
     </ul>
