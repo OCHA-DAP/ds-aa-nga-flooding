@@ -175,6 +175,24 @@ ACTION_MIN_GAUGES = 6
 READINESS_GLOFAS_THRESH = 3132.0
 READINESS_MAX_LEADTIME = 12  # days
 
+# EWDS queue limits for check_forecasts. Since the 2026-10-26 EWDS
+# "protection measures" one newly computed request can sit queued for hours
+# (5h41m on the 2026-11-05 run). The reanalysis is supplementary: after
+# EWDS_REANALYSIS_BUDGET_MIN in total, give up and fall back to older days,
+# which earlier runs already had computed and which return in seconds. The
+# forecast is required: fail the run (on_failure email) rather than let it
+# run into the next day's 20:00 UTC schedule (max_concurrent_runs: 1).
+# Timed-out requests are deleted on EWDS.
+EWDS_REANALYSIS_BUDGET_MIN = float(
+    os.getenv("EWDS_REANALYSIS_BUDGET_MIN", "180")
+)
+# After the budget is spent, each remaining older day still gets this long
+# (enough for an already-computed result, not for a new one)
+EWDS_REANALYSIS_MIN_WAIT_MIN = 2.0
+EWDS_FORECAST_MAX_WAIT_MIN = float(
+    os.getenv("EWDS_FORECAST_MAX_WAIT_MIN", "720")
+)
+
 # --- Listmonk email dispatch ---
 # Lists are resolved by tag at runtime (never by hardcoded id). Created by
 # pipelines/setup_nga_listmonk_lists.py.
