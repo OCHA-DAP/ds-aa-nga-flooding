@@ -37,6 +37,7 @@ def get_glofas_forecast(
     issued_date,
     keep_local_copy=True,
     overwrite=False,
+    max_wait_minutes=None,
 ):
     container = stratus.get_container_client("projects", DATA_STAGE)
     if (
@@ -69,6 +70,7 @@ def get_glofas_forecast(
         forecast_blob_name,
         keep_local_copy=keep_local_copy,
         prod_dev=DATA_STAGE,
+        max_wait_minutes=max_wait_minutes,
     )
 
 
@@ -78,6 +80,7 @@ def get_glofas_reanalysis(
     issued_date,
     keep_local_copy=True,
     overwrite=False,
+    max_wait_minutes=None,
 ):
     container = stratus.get_container_client("projects", DATA_STAGE)
     if (
@@ -112,6 +115,7 @@ def get_glofas_reanalysis(
         reanalysis_blob_name,
         keep_local_copy=keep_local_copy,
         prod_dev=DATA_STAGE,
+        max_wait_minutes=max_wait_minutes,
     )
 
 

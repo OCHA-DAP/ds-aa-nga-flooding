@@ -1,12 +1,19 @@
 import os
 import sys
+import time
 from datetime import datetime, timedelta
 
 import ocha_stratus as stratus
 import pandas as pd
 from dotenv import load_dotenv
 
-from src.constants import ACTION_GAUGE_THRESHOLDS, DATA_STAGE
+from src.constants import (
+    ACTION_GAUGE_THRESHOLDS,
+    DATA_STAGE,
+    EWDS_FORECAST_MAX_WAIT_MIN,
+    EWDS_REANALYSIS_BUDGET_MIN,
+    EWDS_REANALYSIS_MIN_WAIT_MIN,
+)
 from src.datasources import glofas
 from src.monitoring import etl
 
@@ -28,7 +35,11 @@ if __name__ == "__main__":
         "forecast", station_name, update_date
     )
     etl.get_glofas_forecast(
-        forecast_blob_name, coords, update_date, overwrite=overwrite
+        forecast_blob_name,
+        coords,
+        update_date,
+        overwrite=overwrite,
+        max_wait_minutes=EWDS_FORECAST_MAX_WAIT_MIN,
     )
     df_forecast = etl.process_glofas(
         forecast_blob_name, "glofas_forecast", station_name
@@ -39,19 +50,26 @@ if __name__ == "__main__":
     # reanalysis lags by a few days (more during CDS product transitions),
     # so walk back from -2 days until an available day is found. A missing
     # reanalysis must never break the run — the readiness forecast branch
-    # and the action trigger still work without it.
+    # and the action trigger still work without it. The EWDS wait is capped
+    # at EWDS_REANALYSIS_BUDGET_MIN in total (see src/constants.py).
     reanalysis_blob_name = etl.get_blob_name(
         "reanalysis", station_name, update_date
     )
     df_reanalysis = pd.DataFrame()
+    reanalysis_deadline = time.monotonic() + EWDS_REANALYSIS_BUDGET_MIN * 60
     for days_back in range(2, 8):
         reanalysis_update = update_date - timedelta(days=days_back)
+        wait_min = max(
+            (reanalysis_deadline - time.monotonic()) / 60,
+            EWDS_REANALYSIS_MIN_WAIT_MIN,
+        )
         try:
             etl.get_glofas_reanalysis(
                 reanalysis_blob_name,
                 coords,
                 reanalysis_update,
                 overwrite=overwrite,
+                max_wait_minutes=wait_min,
             )
             df_reanalysis = etl.process_glofas(
                 reanalysis_blob_name, "glofas_reanalysis", station_name

@@ -99,6 +99,13 @@ def main(argv=None):
         )
 
     env = dict(os.environ)
+    # DBR 18 sets OPENSSL_FORCE_FIPS_MODE in the job environment. The
+    # eckitlib wheel that eccodes 2.47 pulls in vendors a RHEL-patched
+    # libcrypto that treats the variable's mere presence as "FIPS on" and
+    # aborts the interpreter ("FATAL FIPS SELFTEST FAILURE") when cfgrib
+    # opens a GRIB. The host is not in FIPS mode and Ubuntu's own OpenSSL 3
+    # ignores the variable, so drop it (same fix as ds-raster-pipelines#83).
+    env.pop("OPENSSL_FORCE_FIPS_MODE", None)
     env["STAGE"] = args.stage
     for kv in args.env:
         key, _, value = kv.partition("=")

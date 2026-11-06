@@ -79,6 +79,11 @@ jobs:
         DSCI_LISTMONK_API_KEY: ${{ secrets.DSCI_LISTMONK_API_KEY }}
         MONITORING_DATE: ${{ inputs.date || '' }}
         STAGE: ${{ inputs.stage || vars.STAGE || 'dev'}}
+        # EWDS waits (src/constants.py) sized to finish inside the hosted
+        # runner's 6 h job limit, so a timed-out request is still deleted
+        # rather than orphaned when the runner is killed
+        EWDS_FORECAST_MAX_WAIT_MIN: "240"
+        EWDS_REANALYSIS_BUDGET_MIN: "60"
 
       run: |
         python pipelines/check_forecasts.py
