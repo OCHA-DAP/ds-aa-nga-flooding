@@ -179,18 +179,24 @@ READINESS_MAX_LEADTIME = 12  # days
 # "protection measures" one newly computed request can sit queued for hours
 # (5h41m on the 2026-11-05 run). The reanalysis is supplementary: after
 # EWDS_REANALYSIS_BUDGET_MIN in total, give up and fall back to older days,
-# which earlier runs already had computed and which return in seconds. The
-# forecast is required: fail the run (on_failure email) rather than let it
-# run into the next day's 20:00 UTC schedule (max_concurrent_runs: 1).
-# Timed-out requests are deleted on EWDS.
+# which earlier runs usually had computed and which then return in seconds.
+# The forecast is required: fail the run (on_failure email) rather than let
+# it drift towards the next 20:00 UTC schedule (max_concurrent_runs: 1).
+# 600 min ends the forecast wait by 06:00 UTC, so even with the reanalysis
+# budget after it the run is off the account before the 10:00 UTC Somalia
+# run. Timed-out requests are deleted on EWDS. The GHA fallback workflow
+# lowers both to fit the runner's 6 h job limit.
 EWDS_REANALYSIS_BUDGET_MIN = float(
     os.getenv("EWDS_REANALYSIS_BUDGET_MIN", "180")
 )
-# After the budget is spent, each remaining older day still gets this long
-# (enough for an already-computed result, not for a new one)
+# After the budget is spent, each remaining older day still gets this long:
+# enough for an already-computed result, not for a new one. A day whose
+# request timed out (and was deleted) yesterday is never computed, so on
+# several slow-queue days running the walk-back can come back empty. That
+# costs a WARNING, not the run (readiness forecast + action still evaluate).
 EWDS_REANALYSIS_MIN_WAIT_MIN = 2.0
 EWDS_FORECAST_MAX_WAIT_MIN = float(
-    os.getenv("EWDS_FORECAST_MAX_WAIT_MIN", "720")
+    os.getenv("EWDS_FORECAST_MAX_WAIT_MIN", "600")
 )
 
 # --- Listmonk email dispatch ---
