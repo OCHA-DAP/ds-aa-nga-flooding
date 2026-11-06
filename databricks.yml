@@ -162,8 +162,11 @@ resources:
         - name: test_email
           default: ${var.test_email}
         - name: monitoring_date
-          # YYYY-MM-DD; empty = today
-          default: ""
+          # YYYY-MM-DD. Default = the run's start date (UTC), resolved once
+          # per run so all four tasks share it: check_forecasts can wait hours
+          # on EWDS and cross midnight (2026-11-05 run). Override for a
+          # backfill, and pass it explicitly on a repair-run.
+          default: "{{job.start_time.iso_date}}"
 
       job_clusters:
         - job_cluster_key: main

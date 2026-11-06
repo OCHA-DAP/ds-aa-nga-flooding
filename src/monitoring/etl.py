@@ -1,4 +1,5 @@
-from datetime import timedelta
+import os
+from datetime import datetime, timedelta
 
 import ocha_stratus as stratus
 import pandas as pd
@@ -220,6 +221,36 @@ def get_latest_monitoring_date():
     if result is None:
         raise Exception(f"No data found in {DB_SCHEMA}.{DB_TABLE}")
     return pd.Timestamp(result).to_pydatetime()
+
+
+def resolve_monitoring_date():
+    """Monitoring date for the tasks downstream of check_forecasts.
+
+    ``MONITORING_DATE`` if set. On Databricks it always is: the job's
+    ``monitoring_date`` parameter defaults to the run's start date, shared by
+    every task. Never re-derive "today" in a downstream task: check_forecasts
+    can sit in the EWDS queue for hours, and a run that crosses midnight UTC
+    would then look up the next day, which has no rows (run of 2026-11-05:
+    check_forecasts saved 2026-11-05 at 01:58 UTC on the 6th, save_plots
+    asked for the 6th).
+
+    Fallback when unset (GitHub Actions / local runs): the date
+    check_forecasts last saved, accepted only if it is today or yesterday.
+    """
+    value = os.getenv("MONITORING_DATE", "")
+    if value:
+        return datetime.strptime(value, "%Y-%m-%d")
+    latest = get_latest_monitoring_date()
+    today = datetime.today().date()
+    # Same run → saved today or, after a midnight crossing, yesterday.
+    # Older: check_forecasts saved nothing for this run. Newer: a row this
+    # run did not write (e.g. a mistyped backfill date).
+    if not today - timedelta(days=1) <= latest.date() <= today:
+        raise Exception(
+            f"Latest saved monitoring date is {latest.date()}, not today or "
+            "yesterday: set MONITORING_DATE explicitly"
+        )
+    return latest
 
 
 def evaluate_trigger(df):

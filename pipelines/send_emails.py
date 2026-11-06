@@ -13,7 +13,6 @@ base_campaign template's test banner.
 """
 
 import base64
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -56,11 +55,9 @@ def resolve_list_id(client, list_type):
 
 
 if __name__ == "__main__":
-    monitoring_date = os.getenv("MONITORING_DATE", "")
-    if not monitoring_date:
-        monitoring_date = datetime.today().strftime("%Y-%m-%d")
-
-    monitoring_date_obj = datetime.strptime(monitoring_date, "%Y-%m-%d")
+    # The date check_forecasts saved (not today: see resolve_monitoring_date)
+    monitoring_date_obj = etl.resolve_monitoring_date()
+    monitoring_date = monitoring_date_obj.strftime("%Y-%m-%d")
 
     status = etl.check_trigger_status(monitoring_date)
     action = status["action"]
