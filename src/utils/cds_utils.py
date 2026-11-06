@@ -5,6 +5,7 @@ from typing import Literal
 
 import cdsapi
 import ocha_stratus as stratus
+import requests
 
 try:  # the cdsapi >= 0.7.5 backend
     from ecmwf.datastores.processing import ProcessingFailedError
@@ -34,9 +35,10 @@ def _wait_or_delete(remote, max_wait_minutes: float) -> None:
     failed/rejected request, an exception, an interrupt), the request is
     deleted so it doesn't stay queued on the account. EWDS runs one job at
     a time per account, so an orphan would hold up the next run and the
-    Somalia monitoring on the same service. A status call that errors
-    (EWDS 5xx, connection drop) is retried until the deadline. A
-    failed/rejected request raises at once.
+    Somalia monitoring on the same service. A status call that hits a
+    transport problem (EWDS 5xx/429, connection drop, timeout) is retried
+    until the deadline. Anything else raises at once: a failed/rejected
+    request, a 4xx such as an expired key, or a code error.
     """
     deadline = time.monotonic() + max_wait_minutes * 60
     sleep = 5.0
@@ -47,7 +49,12 @@ def _wait_or_delete(remote, max_wait_minutes: float) -> None:
                     return
             except ProcessingFailedError:
                 raise
-            except Exception as exc:  # noqa: BLE001
+            except requests.HTTPError as exc:
+                code = getattr(exc.response, "status_code", None) or 0
+                if 400 <= code < 500 and code not in (408, 429):
+                    raise
+                print(f"WARNING: status check failed, will retry: {exc}")
+            except requests.RequestException as exc:
                 print(f"WARNING: status check failed, will retry: {exc}")
             remaining = deadline - time.monotonic()
             if remaining <= 0:
